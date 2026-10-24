@@ -33,10 +33,11 @@ internal fun SimulationBadge(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(8.dp)
-                .background(BadgeColor.copy(alpha = 0.85f), RoundedCornerShape(6.dp))
+                .background(BadgeColor.copy(alpha = 0.92f), RoundedCornerShape(6.dp))
                 .padding(horizontal = 8.dp, vertical = 3.dp),
         )
     }
 }
 
-private val BadgeColor = Color(0xFFEF6C00)
+// Dark enough for white text to pass contrast.
+private val BadgeColor = Color(0xFFBF360C)

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ public fun ActionPill(
         fontWeight = FontWeight.SemiBold,
         color = accent,
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .alpha(if (enabled) 1f else 0.4f)
             .clip(CircleShape)
             .background(accent.copy(alpha = 0.12f))
@@ -51,8 +53,7 @@ public fun ActionPill(
 @Composable
 public fun ActionPillRow(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     FlowRow(
-        modifier.fillMaxWidth().padding(horizontal = HorizontalPadding, vertical = 8.dp),
+        modifier.fillMaxWidth().padding(horizontal = HorizontalPadding, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
 }

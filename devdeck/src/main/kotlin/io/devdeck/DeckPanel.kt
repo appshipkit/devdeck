@@ -195,7 +195,7 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
             if (update != null) add(HeaderChip("Update · ${update.label}", updateColor))
             if (network.isActive) add(HeaderChip(network.summary, warning))
             if (heldBytes > 0) add(HeaderChip("Holding ${mb(heldBytes)}", warning))
-            if (MemorySimulator.killOnBackground) add(HeaderChip("Kill on background", warning))
+            if (MemorySimulator.killOnBackground) add(HeaderChip("Kill when backgrounded", warning))
         }
         if (chips.isNotEmpty()) {
             Row(

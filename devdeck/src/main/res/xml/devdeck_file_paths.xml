@@ -2,4 +2,5 @@
 <paths>
     <external-files-path name="devdeck_external" path="devdeck/" />
     <files-path name="devdeck_internal" path="devdeck/" />
+    <cache-path name="devdeck_reports" path="devdeck-reports/" />
 </paths>

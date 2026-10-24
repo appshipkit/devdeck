@@ -17,9 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
 import io.devdeck.components.InfoGroup
@@ -27,6 +28,9 @@ import io.devdeck.components.SearchField
 import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
+import io.devdeck.internal.isDeckDark
+import io.devdeck.internal.plural
+import io.devdeck.internal.shareFiles
 
 public enum class NetworkView(public val label: String) { Timeline("Timeline"), ByEndpoint("By endpoint") }
 
@@ -37,11 +41,14 @@ public fun NetworkInspector(
     initialView: NetworkView = NetworkView.Timeline,
     maxItems: Int = 150,
 ) {
+    val context = LocalContext.current
+    val isDark = isDeckDark()
     val calls by NetworkLogger.calls.collectAsState()
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf(FILTER_ALL) }
     var view by rememberSaveable { mutableStateOf(initialView) }
     val visible = remember(calls, query, filter, highlights) {
+        val needle = query.trim()
         calls.filter { call ->
             val matchesFilter = when (filter) {
                 FILTER_ALL -> true
@@ -52,7 +59,7 @@ public fun NetworkInspector(
                 (
                     query.isBlank() ||
                         listOfNotNull(call.url, call.method, call.operationName, call.responseCode?.toString())
-                            .any { it.contains(query.trim(), ignoreCase = true) }
+                            .any { it.contains(needle, ignoreCase = true) }
                     )
         }
     }
@@ -64,20 +71,21 @@ public fun NetworkInspector(
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "${calls.size} requests · $endpoints endpoints · $failures failed",
+                "${plural(calls.size, "request")} · ${plural(endpoints, "endpoint")} · $failures failed",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = NetworkLogger::clear, enabled = calls.isNotEmpty()) {
-                Icon(
-                    DeckIcons.Delete,
-                    contentDescription = "Clear requests",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = if (calls.isEmpty()) 0.38f else 1f),
-                )
-            }
+            IconButton(
+                onClick = {
+                    val text = visible.take(maxItems).joinToString("\n") { NetworkFormat.line(it) }
+                    context.shareFiles(emptyList(), text = text, subject = "Network requests")
+                },
+                enabled = visible.isNotEmpty(),
+            ) { Icon(DeckIcons.Share, contentDescription = "Share requests") }
+            ConfirmDeleteButton(contentDescription = "Clear requests", onConfirm = NetworkLogger::clear, enabled = calls.isNotEmpty())
         }
         SegmentedPills(
             options = NetworkView.entries,
@@ -93,7 +101,7 @@ public fun NetworkInspector(
                 text = "Errors $failures",
                 selected = filter == FILTER_ERRORS,
                 onClick = { filter = FILTER_ERRORS },
-                color = ErrorColor,
+                color = NetworkColors.error(isDark),
                 showDot = true,
             )
             highlights.forEach { highlight ->
@@ -122,5 +130,3 @@ public fun NetworkInspector(
 
 private const val FILTER_ALL = "__all"
 private const val FILTER_ERRORS = "__errors"
-
-private val ErrorColor = Color(0xFFD32F2F)

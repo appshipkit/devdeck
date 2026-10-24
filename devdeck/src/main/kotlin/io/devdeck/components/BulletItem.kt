@@ -76,7 +76,7 @@ private fun InfoRow(
         modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier)
-            .heightIn(min = 36.dp)
+            .heightIn(min = if (onClick != null) 48.dp else 36.dp)
             .padding(horizontal = HorizontalPadding, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = horizontalArrangement,

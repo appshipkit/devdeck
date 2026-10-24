@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.internal.contentColorOn
 
 @Composable
 internal fun Pill(text: String, color: Color, filled: Boolean = true) {
@@ -20,7 +22,9 @@ internal fun Pill(text: String, color: Color, filled: Boolean = true) {
         text = text,
         style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
         fontWeight = FontWeight.Bold,
-        color = if (filled) Color.White else color,
+        color = if (filled) contentColorOn(color) else color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .then(if (filled) Modifier.background(color, shape) else Modifier.border(1.dp, color, shape))
             .padding(horizontal = 8.dp, vertical = 2.dp),

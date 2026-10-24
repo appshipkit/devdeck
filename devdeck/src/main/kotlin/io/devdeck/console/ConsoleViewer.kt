@@ -12,17 +12,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckState
-import io.devdeck.capture.ScreenCapture
+import io.devdeck.bugreport.ReportFiles
+import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
 import io.devdeck.components.InfoGroup
@@ -30,8 +34,13 @@ import io.devdeck.components.SearchField
 import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
+import io.devdeck.internal.isDeckDark
+import io.devdeck.internal.plural
 import io.devdeck.internal.shareFiles
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 public enum class ConsoleView(public val label: String) { All("All"), ByTag("By tag") }
 
@@ -53,52 +62,64 @@ public fun ConsoleViewer(
     var minLevel by rememberSaveable { mutableStateOf(ConsoleLevel.Verbose) }
     var view by rememberSaveable { mutableStateOf(if (fixedTag != null) ConsoleView.All else initialView) }
 
+    val scope = rememberCoroutineScope()
+    val isDark = isDeckDark()
+
     val visible = remember(source, query, minLevel, fixedTag) {
+        val needle = query.trim()
         source.filter { line ->
             line.level >= minLevel &&
                 (fixedTag == null || line.tag == fixedTag) &&
-                (
-                    query.isBlank() ||
-                        line.tag.contains(query.trim(), ignoreCase = true) ||
-                        line.message.contains(query.trim(), ignoreCase = true)
-                    )
+                (needle.isEmpty() || line.tag.contains(needle, ignoreCase = true) || line.message.contains(needle, ignoreCase = true))
         }
     }
     val errors = remember(visible) { visible.count { it.level >= ConsoleLevel.Error } }
+    val groups = remember(visible, view) {
+        if (view ==
+            ConsoleView.ByTag
+        ) {
+            visible.groupBy { it.tag }.entries.sortedByDescending { it.value.last().timestampMillis }
+        } else {
+            emptyList()
+        }
+    }
 
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "${visible.size} lines · $errors errors${if (frozen != null) " · paused" else ""}",
+                "${plural(visible.size, "line")} · ${plural(errors, "error")}${if (frozen != null) " · paused" else ""}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             IconButton(onClick = { frozen = if (frozen == null) live else null }) {
                 Icon(
-                    if (frozen ==
-                        null
-                    ) {
-                        DeckIcons.Pause
-                    } else {
-                        DeckIcons.PlayArrow
-                    },
+                    if (frozen == null) DeckIcons.Pause else DeckIcons.PlayArrow,
                     contentDescription = if (frozen == null) "Pause" else "Resume",
                 )
             }
-            IconButton(onClick = { shareLines(context, title, visible) }, enabled = visible.isNotEmpty()) {
-                Icon(DeckIcons.Share, contentDescription = "Share")
+            IconButton(
+                onClick = {
+                    val lines = visible
+                    scope.launch {
+                        val file = withContext(Dispatchers.IO) { writeLines(context, title, lines) }
+                        context.shareFiles(listOf(file), subject = title)
+                    }
+                },
+                enabled = visible.isNotEmpty(),
+            ) {
+                Icon(DeckIcons.Share, contentDescription = "Share logs")
             }
-            IconButton(onClick = {
-                buffer.clear()
-                frozen = null
-            }, enabled = source.isNotEmpty()) {
-                Icon(
-                    DeckIcons.Delete,
-                    contentDescription = "Clear",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = if (source.isEmpty()) 0.38f else 1f),
-                )
-            }
+            ConfirmDeleteButton(
+                contentDescription = "Clear logs",
+                onConfirm = {
+                    buffer.clear()
+                    frozen = null
+                },
+                enabled = source.isNotEmpty(),
+            )
         }
         if (fixedTag == null) {
             SegmentedPills(
@@ -117,7 +138,7 @@ public fun ConsoleViewer(
                     text = if (isAll) "All" else "${level.label}+",
                     selected = minLevel == level,
                     onClick = { minLevel = level },
-                    color = if (isAll) Color.Unspecified else level.color,
+                    color = if (isAll) Color.Unspecified else level.color(isDark),
                     showDot = !isAll,
                 )
             }
@@ -126,11 +147,12 @@ public fun ConsoleViewer(
             visible.isEmpty() -> TextItem(if (source.isEmpty()) "Nothing logged yet" else "No lines match")
 
             view == ConsoleView.ByTag -> {
-                val groups = visible.groupBy { it.tag }.entries.sortedByDescending { it.value.last().timestampMillis }
                 InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
                     groups.take(maxRendered).forEach { (tag, lines) ->
-                        ConsoleTagRow(tag, lines) {
-                            deckState?.navigateTo(tag) { ConsoleViewer(buffer, title = "$title · $tag", fixedTag = tag) }
+                        key(tag) {
+                            ConsoleTagRow(tag, lines) {
+                                deckState?.navigateTo(tag) { ConsoleViewer(buffer, title = "$title · $tag", fixedTag = tag) }
+                            }
                         }
                     }
                 }
@@ -138,11 +160,11 @@ public fun ConsoleViewer(
 
             else -> {
                 InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
-                    visible.asReversed().take(maxRendered).forEach { line -> ConsoleLineRow(line, showTag = fixedTag == null) }
+                    visible.asReversed().take(maxRendered).forEach { line ->
+                        key(line.id) { ConsoleLineRow(line, showTag = fixedTag == null) }
+                    }
                 }
-                if (visible.size >
-                    maxRendered
-                ) {
+                if (visible.size > maxRendered) {
                     TextItem("Showing the latest $maxRendered of ${visible.size} lines. Search or filter to narrow down.")
                 }
             }
@@ -152,11 +174,10 @@ public fun ConsoleViewer(
 
 private val LEVEL_FILTERS = listOf(ConsoleLevel.Verbose, ConsoleLevel.Debug, ConsoleLevel.Info, ConsoleLevel.Warn, ConsoleLevel.Error)
 
-private fun shareLines(context: Context, title: String, lines: List<ConsoleLine>) {
-    val directory = File(ScreenCapture.captureDirectory(context), "reports").apply { mkdirs() }
-    val file = File(directory, "${title.filter { it.isLetterOrDigit() }.lowercase().ifEmpty { "logs" }}_${System.currentTimeMillis()}.txt")
-    file.writeText(ConsoleFormat.export(lines))
-    context.shareFiles(listOf(file), subject = title)
-}
+private fun writeLines(context: Context, title: String, lines: List<ConsoleLine>): File = ReportFiles.write(
+    context,
+    name = "${title.filter { it.isLetterOrDigit() }.lowercase().ifEmpty { "logs" }}_${System.currentTimeMillis()}.txt",
+    text = ConsoleFormat.export(lines),
+)
 
 private const val LIST_DIVIDER_THRESHOLD = 2
