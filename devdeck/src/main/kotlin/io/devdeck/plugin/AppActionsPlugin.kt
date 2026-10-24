@@ -10,6 +10,8 @@ import io.devdeck.components.ButtonItem
 import io.devdeck.components.ConfirmButtonItem
 import io.devdeck.components.ExpandableItem
 import io.devdeck.components.SwitchItem
+import io.devdeck.device.AppInfo
+import io.devdeck.device.AppSettingsButton
 import kotlinx.coroutines.launch
 
 public class AppActionsPlugin(
@@ -29,6 +31,10 @@ public class AppActionsPlugin(
     override fun Content() {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+        ExpandableItem("App info") {
+            AppInfo()
+            AppSettingsButton(title = "Open in system settings")
+        }
         if (deepLinks) ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions) }
         if (webViewDebugging) {
             SwitchItem(

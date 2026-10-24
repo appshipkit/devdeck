@@ -51,6 +51,8 @@ android {
 
     buildFeatures {
         compose = true
+        // Lets DevDeck's App info show the build type and flavor.
+        buildConfig = true
     }
 }
 

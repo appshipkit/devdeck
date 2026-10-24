@@ -10,7 +10,9 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - MIT license, code of conduct, and a demo GIF in the README showing each feature's effect in the sample app.
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
-- `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`; feature flags of every type now show *Overridden* and a *Reset to default* action.
+- `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
+- The feature flags page has *Restart screen* and *Restart app* buttons, so flag changes that are read once per screen or process take effect.
+- After switching endpoints, `EndpointPlugin` shows a *Restart app* button so the app picks up the new endpoint (unless `restartOnChange` already restarts it).
 - Share buttons on the Logs and Network activity pages, and share-all / delete-all in the capture gallery.
 - Consumer R8 rules for devdeck-okhttp, devdeck-timber and devdeck-appdistribution, so minified builds don't fail when OkHttp, Timber or Firebase isn't on the classpath.
 
@@ -22,6 +24,9 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - The device & app snapshot shows share, save and copy as small icons on the card; they are not part of the shared image.
 - The deep link launcher opens links from a send icon inside the field, leaving more room on small phones.
 - The sample app is named DevDeck.
+- Permissions open on their own page instead of expanding inside the System section.
+- The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable, R8 obfuscated or shrunk, signed with the debug or a release key, where it was installed from, target and min SDK, and install and update times, plus a shortcut to the app's system settings. `AppInfo()` and the device & app snapshot show the same details.
+- Toggle flags no longer show an *Overridden* subtitle.
 - Clearing logs, crash logs, breadcrumbs, requests, console lines, captures or shared preferences, and resetting all feature flags, now ask for a second tap.
 - Network request actions (*Copy URL*, *Copy cURL*, *Share*) and label rows wrap on narrow screens instead of overflowing.
 - Category, level and status colors have dark-theme variants, and labels on colored fills pick a readable text color.

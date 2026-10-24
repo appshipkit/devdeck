@@ -2,6 +2,7 @@ package io.devdeck.plugin
 
 import androidx.compose.runtime.Composable
 import io.devdeck.components.ExpandableItem
+import io.devdeck.components.PageLinkItem
 import io.devdeck.device.DeveloperOptionsButton
 import io.devdeck.device.DeviceInfo
 import io.devdeck.device.PermissionsList
@@ -18,7 +19,7 @@ public class DevicePlugin(
     @Composable
     override fun Content() {
         if (deviceInfo) ExpandableItem("Device info") { DeviceInfo() }
-        if (permissions) ExpandableItem("Permissions") { PermissionsList() }
+        if (permissions) PageLinkItem("Permissions") { PermissionsList() }
         if (developerOptions) DeveloperOptionsButton()
     }
 }
