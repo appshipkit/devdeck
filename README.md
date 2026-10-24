@@ -303,10 +303,10 @@ The last 50 steps are saved with every crash and shown as *Steps before the cras
 ### Screen capture, bug reports and device info
 
 - **Screenshot / screen recording / gallery:** under User Interface. Recording asks for Android's screen-capture permission and shows a Stop notification.
-- **Device & app snapshot:** under Info. One image with app version, build type, SDKs, device, Android version, screen and locale, plus your `buildInfo`. Share it, save it, or copy it as text.
+- **Device & app snapshot:** under Info. One image with app version, build type, SDKs, device, Android version, screen and locale, plus your `buildInfo`. Share it, save it, or copy it as text from the icons on the card; the icons are left out of the image.
 - **App settings:** the ⚙ button next to the drawer's close button opens the app's system settings page.
 - **Bug report:** a description, recent steps, your logs, recent logcat, device info and chosen captures, sent through the share sheet.
-- **Permissions:** under System. Each permission shows Granted or Denied with what you can do about it. *Request* shows the system dialog, or opens the app's settings once Android stops asking. *Revoke* (Android 13+) removes a runtime permission when the app closes. *Open settings* handles special permissions such as drawing over other apps. Install-time permissions can't change, so they are only listed. To grant or revoke silently, use `adb shell pm grant` / `pm revoke`.
+- **Permissions:** under System. Each permission shows Granted or Denied with what you can do about it. *Request* shows the system dialog, or opens the app's settings once Android stops asking. *Revoke* (Android 13+) removes a runtime permission when the app closes; until then the row shows *Revoked when the app restarts*. The list refreshes when you come back from a permission dialog or settings screen. *Open settings* handles special permissions such as drawing over other apps. Install-time permissions can't change, so they are only listed. To grant or revoke silently, use `adb shell pm grant` / `pm revoke`.
 
 ---
 

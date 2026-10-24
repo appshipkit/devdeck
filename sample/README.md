@@ -213,5 +213,5 @@ DevDeckHost(
 9. **Storage:** change a flag, then open *System → Shared preferences → devdeck_flags* to see and edit the raw value.
 10. **Deep link:** in *App → Open a deep link*, tap the `devdeck://sample/legacy` suggestion.
 11. **Screen capture and bug report:** take a screenshot, then attach it in *Info → Generate a bug report* and share.
-   - Open *Info → Device & app snapshot* and tap *Share image*. The saved PNG also appears in the capture gallery and can be attached to bug reports.
+   - Open *Info → Device & app snapshot* and tap the share icon in the top-right corner of the card. The save icon puts the PNG in the capture gallery, where it can be attached to bug reports, and the copy icon copies the details as text.
 12. **Two-finger swipe:** swipe left with two fingers over any control on either screen. The drawer opens, and single-finger taps and scrolls on the screen keep working as normal.
