@@ -1,20 +1,11 @@
 package io.devdeck.network
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,7 +16,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.devdeck.components.FilterPill
+import io.devdeck.components.FilterPillRow
+import io.devdeck.components.SearchField
+import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
 
@@ -69,31 +65,31 @@ public fun NetworkInspector(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-            NetworkView.entries.forEachIndexed { index, option ->
-                SegmentedButton(
-                    selected = view == option,
-                    onClick = { view = option },
-                    shape = SegmentedButtonDefaults.itemShape(index, NetworkView.entries.size),
-                ) { Text(option.label) }
-            }
-        }
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = { Text("Search URL, operation, status") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        SegmentedPills(
+            options = NetworkView.entries,
+            selected = view,
+            onSelected = { view = it },
+            label = { it.label },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FilterChip(selected = filter == FILTER_ALL, onClick = { filter = FILTER_ALL }, label = { Text("All ${calls.size}") })
-            FilterChip(selected = filter == FILTER_ERRORS, onClick = { filter = FILTER_ERRORS }, label = { Text("Errors $failures") })
+        SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search URL, operation, status")
+        FilterPillRow(verticalAlignment = Alignment.CenterVertically) {
+            FilterPill(text = "All ${calls.size}", selected = filter == FILTER_ALL, onClick = { filter = FILTER_ALL })
+            FilterPill(
+                text = "Errors $failures",
+                selected = filter == FILTER_ERRORS,
+                onClick = { filter = FILTER_ERRORS },
+                color = ErrorColor,
+                showDot = true,
+            )
             highlights.forEach { highlight ->
-                FilterChip(selected = filter == highlight.label, onClick = { filter = highlight.label }, label = { Text(highlight.label) })
+                FilterPill(
+                    text = highlight.label,
+                    selected = filter == highlight.label,
+                    onClick = { filter = highlight.label },
+                    color = highlight.color,
+                    showDot = true,
+                )
             }
             IconButton(onClick = NetworkLogger::clear, enabled = calls.isNotEmpty()) {
                 Icon(
@@ -115,3 +111,5 @@ public fun NetworkInspector(
 
 private const val FILTER_ALL = "__all"
 private const val FILTER_ERRORS = "__errors"
+
+private val ErrorColor = Color(0xFFD32F2F)

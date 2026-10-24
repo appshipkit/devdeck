@@ -10,8 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import io.devdeck.components.ActionPill
+import io.devdeck.components.ActionPillRow
 import io.devdeck.components.BulletItem
-import io.devdeck.components.ButtonItem
 import java.util.Locale
 import kotlinx.coroutines.delay
 
@@ -30,10 +31,12 @@ public fun MemoryInfo(modifier: Modifier = Modifier) {
         BulletItem("Native heap", mb(memory.nativeHeapBytes))
         BulletItem("Device available", "${mb(memory.systemAvailableBytes)} of ${mb(memory.systemTotalBytes)}")
         BulletItem("Low memory", if (memory.isLowMemory) "Yes" else "No")
-        ButtonItem(title = "Run garbage collection", onClick = {
-            Runtime.getRuntime().gc()
-            refresh++
-        })
+        ActionPillRow {
+            ActionPill(text = "Run garbage collection", onClick = {
+                Runtime.getRuntime().gc()
+                refresh++
+            })
+        }
     }
 }
 

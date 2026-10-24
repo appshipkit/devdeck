@@ -38,6 +38,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     StoragePlugin(),
     DevicePlugin(),
     tapCounterPlugin,
+    controlsDemoPlugin,
     InfoPlugin(buildInfo = { mapOf("Endpoint" to SampleEndpoints.current(context).url) }),
 )
 

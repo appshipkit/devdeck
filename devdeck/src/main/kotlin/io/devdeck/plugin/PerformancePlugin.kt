@@ -9,7 +9,7 @@ import io.devdeck.performance.PerformanceMonitor
 public class PerformancePlugin(
     private val overlay: Boolean = true,
     private val memory: Boolean = true,
-    override val section: String? = "Performance ⚡",
+    override val section: String? = "System 📱",
 ) : DeckPlugin {
 
     override val id: String = "performance"

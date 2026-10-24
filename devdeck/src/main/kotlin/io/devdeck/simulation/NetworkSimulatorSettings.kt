@@ -1,12 +1,13 @@
 package io.devdeck.simulation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.devdeck.components.ButtonItem
+import io.devdeck.components.DropdownItem
 import io.devdeck.components.NumberInputItem
-import io.devdeck.components.SingleSelectItem
 import io.devdeck.components.TextInputItem
 
 @Composable
@@ -14,16 +15,15 @@ public fun NetworkSimulatorSettings(modifier: Modifier = Modifier, title: String
     val simulation = NetworkSimulator.simulation
     val update: (NetworkSimulation) -> Unit = { NetworkSimulator.simulation = it }
     Column(modifier.fillMaxWidth()) {
-        SingleSelectItem(
+        DropdownItem(
             title = title,
             options = NetworkCondition.entries,
             selected = simulation.condition,
             onSelected = { update(simulation.copy(condition = it)) },
             optionLabel = { it.label },
         )
-        when (simulation.condition) {
-            NetworkCondition.Normal -> Unit
-            NetworkCondition.Slow -> {
+        AnimatedVisibility(simulation.condition == NetworkCondition.Slow) {
+            Column {
                 NumberInputItem(
                     title = "Extra delay per request (ms)",
                     value = simulation.delayMillis,
@@ -37,8 +37,10 @@ public fun NetworkSimulatorSettings(modifier: Modifier = Modifier, title: String
                     range = 0L..MAX_SPEED_KBPS,
                 )
             }
-            NetworkCondition.Failing -> {
-                SingleSelectItem(
+        }
+        AnimatedVisibility(simulation.condition == NetworkCondition.Failing) {
+            Column {
+                DropdownItem(
                     title = "Failure",
                     options = NetworkFailure.entries,
                     selected = simulation.failure,
@@ -53,13 +55,15 @@ public fun NetworkSimulatorSettings(modifier: Modifier = Modifier, title: String
                 )
             }
         }
-        if (simulation.isActive) {
-            TextInputItem(
-                title = "Only URLs containing (empty = all)",
-                value = simulation.urlFilter,
-                onValueCommit = { update(simulation.copy(urlFilter = it)) },
-            )
-            ButtonItem(title = "Back to normal network", onClick = NetworkSimulator::reset)
+        AnimatedVisibility(simulation.isActive) {
+            Column {
+                TextInputItem(
+                    title = "Only URLs containing (empty = all)",
+                    value = simulation.urlFilter,
+                    onValueCommit = { update(simulation.copy(urlFilter = it)) },
+                )
+                ButtonItem(title = "Back to normal network", onClick = NetworkSimulator::reset)
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ public class AppearancePlugin(
     private val nightMode: Boolean = true,
     private val languageTags: List<String> = emptyList(),
     private val displaySettings: Boolean = true,
-    override val section: String? = "Appearance 🎨",
+    override val section: String? = "User Interface 🎨",
 ) : DeckPlugin {
 
     override val id: String = "appearance"

@@ -97,7 +97,7 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 
 ## Choosing plugins
 
-`DevDeck.install(this)` uses `DeckPlugins.defaults()`. To choose your own, pass a list; plugins render top to bottom, grouped by section. Tap a section header to expand or collapse it; sections start collapsed, so the drawer opens as a short list. The defaults follow a test session: test conditions first, then logs, everyday actions and tools, with reference info at the bottom.
+`DevDeck.install(this)` uses `DeckPlugins.defaults()`. To choose your own, pass a list; plugins render top to bottom, grouped by section. Each section is a card with its emoji as a badge; tap a card's header to expand or collapse it. Sections start collapsed, so the drawer opens as a short list. The header shows the app version and any active network or memory simulation. The defaults follow a test session: test conditions first, then logs, everyday actions and tools, with reference info at the bottom.
 
 ```kotlin
 val flags = SharedPreferencesFlagStore(this)
@@ -133,10 +133,10 @@ DevDeck.install(
 | `CrashPlugin` | Logs | Saved crashes with stack traces | ✓ |
 | `AppActionsPlugin` | App | Deep-link launcher, WebView debugging, restart, clear cache/data, kill | ✓ |
 | `UiToolsPlugin` | User Interface | Slow animations, keyline overlay, screenshot, screen recording, gallery | ✓ |
-| `AppearancePlugin` | Appearance | Dark mode (Android 12+) and app language (Android 13+) override | ✓ |
-| `PerformancePlugin` | Performance | FPS / jank / memory overlay and memory details | ✓ |
-| `StoragePlugin` | Storage | SharedPreferences browser/editor and storage usage | ✓ |
-| `DevicePlugin` | Device | Device info, permissions, app info, developer options | ✓ |
+| `AppearancePlugin` | User Interface | Dark mode (Android 12+) and app language (Android 13+) override | ✓ |
+| `PerformancePlugin` | System | FPS / jank / memory overlay and memory details | ✓ |
+| `StoragePlugin` | System | SharedPreferences browser/editor and storage usage | ✓ |
+| `DevicePlugin` | System | Device info, permissions, app info, developer options | ✓ |
 | `InfoPlugin` | Info | Device & app snapshot image, bug report, version | ✓ |
 
 Every plugin takes a `section` (or `null` for no header) and switches to hide individual rows, e.g. `UiToolsPlugin(screenCapture = false)`.
@@ -255,7 +255,7 @@ Pass `emptySet()` to show everything. The filters apply to new lines.
 ## Your own plugins
 
 ```kotlin
-val cachePlugin = deckPlugin(id = "cache", section = "Storage 💾") {
+val cachePlugin = deckPlugin(id = "cache", section = "System 📱") {
     ButtonItem("Clear image cache", onClick = { imageLoader.memoryCache?.clear() })
     PageLinkItem("Database tables") { TableList() }
 }
@@ -265,9 +265,10 @@ Use the same building blocks as the built-in plugins:
 
 | Building blocks | Use for |
 |---|---|
-| `SwitchItem`, `TextInputItem`, `NumberInputItem`, `JsonInputItem`, `SingleSelectItem` | Editing values |
+| `SwitchItem`, `CheckboxItem`, `DropdownItem`, `SingleSelectItem`, `TextInputItem`, `NumberInputItem`, `JsonInputItem` | Editing values (`CompactToggle`, `DeckCheckbox` and `DeckRadio` are the bare controls) |
 | `ButtonItem`, `ConfirmButtonItem` | Actions (the confirm version needs a second tap) |
-| `PageLinkItem`, `ExpandableItem`, `Section`, `SectionDivider` | Structure and sub-pages |
+| `PageLinkItem`, `ExpandableItem`, `Section`, `CollapsibleSection`, `SectionDivider`, `DeckCard` | Structure and sub-pages; `DeckCard` gives custom `drawerContent` the same card look |
+| `SegmentedPills`, `FilterPill`, `FilterPillRow`, `ActionPill`, `ActionPillRow`, `SearchField` | View switchers, filters and search, as in the log viewers and network inspector |
 | `BulletItem`, `KeyValueItem`, `CodeBlock`, `TextItem` | Showing information |
 
 - Close or navigate the drawer from your plugin with `LocalDeckState.current?.close()` or `?.navigateTo(title) { … }`.
@@ -290,7 +291,7 @@ DevDeck.isEnabled = false                               // hide everywhere, e.g.
 DevDeck.updateConfig { it.copy(plugins = it.plugins + cachePlugin) }
 ```
 
-`DeckStyle` also sets the panel width, colors and container color. Pass `collapsibleSections = false` to show every section open, with plain headers.
+`DeckStyle` also sets the panel width, colors, the panel background (`containerColor`) and the section cards (`cardColor`). Pass `collapsibleSections = false` to show every section open, with plain headers.
 
 ### Payment and 3DS screens
 

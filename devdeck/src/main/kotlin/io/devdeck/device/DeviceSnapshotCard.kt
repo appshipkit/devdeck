@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import io.devdeck.LocalDeckColors
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.internal.copyToClipboard
 import io.devdeck.internal.shareFiles
@@ -84,34 +86,35 @@ public fun DeviceSnapshotCard(modifier: Modifier = Modifier, buildInfo: () -> Ma
 @Composable
 private fun SnapshotImage(snapshot: SystemSnapshot, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(12.dp)
+    val palette = if (LocalDeckColors.current?.isDark ?: isSystemInDarkTheme()) DarkSnapshotPalette else LightSnapshotPalette
     Column(
         modifier
             .fillMaxWidth()
-            .background(SnapshotBackground, shape)
-            .border(1.dp, SnapshotBorder, shape)
+            .background(palette.background, shape)
+            .border(1.dp, palette.border, shape)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(snapshot.appName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = SnapshotText)
-        Text("Device & app snapshot", style = MaterialTheme.typography.bodyMedium, color = SnapshotMuted)
+        Text(snapshot.appName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = palette.text)
+        Text("Device & app snapshot", style = MaterialTheme.typography.bodyMedium, color = palette.muted)
         snapshot.sections.forEach { section ->
-            HorizontalDivider(Modifier.padding(vertical = 4.dp), color = SnapshotBorder)
-            Text(section.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = SnapshotAccent)
+            HorizontalDivider(Modifier.padding(vertical = 4.dp), color = palette.border)
+            Text(section.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = palette.accent)
             section.rows.forEach { (label, value) ->
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold, color = SnapshotMuted)) { append("$label  ") }
-                        withStyle(SpanStyle(color = SnapshotText)) { append(value) }
+                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold, color = palette.muted)) { append("$label  ") }
+                        withStyle(SpanStyle(color = palette.text)) { append(value) }
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
-        HorizontalDivider(Modifier.padding(vertical = 4.dp), color = SnapshotBorder)
+        HorizontalDivider(Modifier.padding(vertical = 4.dp), color = palette.border)
         Text(
             "Generated ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date(snapshot.generatedAtMillis))} · DevDeck",
             style = MaterialTheme.typography.labelSmall,
-            color = SnapshotMuted,
+            color = palette.muted,
         )
     }
 }
@@ -124,8 +127,20 @@ private suspend fun saveSnapshot(context: Context, layer: GraphicsLayer): File? 
     file
 }.getOrNull()
 
-private val SnapshotBackground = Color.White
-private val SnapshotBorder = Color(0xFFE0E0E0)
-private val SnapshotText = Color(0xFF1C1B1F)
-private val SnapshotMuted = Color(0xFF5F6368)
-private val SnapshotAccent = Color(0xFF6750A4)
+private data class SnapshotPalette(val background: Color, val border: Color, val text: Color, val muted: Color, val accent: Color)
+
+private val LightSnapshotPalette = SnapshotPalette(
+    background = Color.White,
+    border = Color(0xFFE0E0E0),
+    text = Color(0xFF1C1B1F),
+    muted = Color(0xFF5F6368),
+    accent = Color(0xFF6750A4),
+)
+
+private val DarkSnapshotPalette = SnapshotPalette(
+    background = Color(0xFF1E1E22),
+    border = Color(0xFF3A3A40),
+    text = Color(0xFFE6E1E5),
+    muted = Color(0xFFA8A8B0),
+    accent = Color(0xFFD0BCFF),
+)

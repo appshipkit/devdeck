@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import io.devdeck.components.ButtonItem
-import io.devdeck.components.SingleSelectItem
+import io.devdeck.components.DropdownItem
 import io.devdeck.components.TextItem
 import java.util.Locale
 
@@ -39,7 +39,7 @@ public fun NightModeSelector(modifier: Modifier = Modifier, title: String = "Dar
     var selected by remember {
         mutableStateOf(NightModeOption.entries.firstOrNull { it.name == prefs.getString(KEY_NIGHT_MODE, null) } ?: NightModeOption.System)
     }
-    SingleSelectItem(
+    DropdownItem(
         title = title,
         options = NightModeOption.entries,
         selected = selected,
@@ -62,7 +62,7 @@ public fun LanguageSelector(languageTags: List<String>, modifier: Modifier = Mod
     val context = LocalContext.current
     val options = remember(languageTags) { listOf(SYSTEM_LANGUAGE) + languageTags }
     var selected by remember { mutableStateOf(currentLanguage(context)) }
-    SingleSelectItem(
+    DropdownItem(
         title = title,
         options = options,
         selected = selected,

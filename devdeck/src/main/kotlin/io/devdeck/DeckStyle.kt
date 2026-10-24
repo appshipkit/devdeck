@@ -14,6 +14,7 @@ public data class DeckStyle(
     val widthFraction: Float = 0.85f,
     val scrimColor: Color = Color.Black.copy(alpha = 0.4f),
     val containerColor: Color = Color.Unspecified,
+    val cardColor: Color = Color.Unspecified,
     val lightColorScheme: ColorScheme? = null,
     val darkColorScheme: ColorScheme? = null,
     val animationDurationMillis: Int = 250,

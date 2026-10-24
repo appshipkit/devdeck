@@ -61,13 +61,14 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     StoragePlugin(),
     DevicePlugin(),
     tapCounterPlugin,
+    controlsDemoPlugin,
     InfoPlugin(buildInfo = { mapOf("Endpoint" to SampleEndpoints.current(context).url) }),
 )
 ```
 
 | Plugin | What you see in the drawer |
 |---|---|
-| `EndpointPlugin` | **Configuration 🔧 → Endpoint**: expandable radio list. `SampleEndpoints` creates the plugin once, and `SampleEndpoints.current(context)` reads the saved choice with `plugin.current(context)`. |
+| `EndpointPlugin` | **Configuration 🔧 → Endpoint**: dropdown, with the selected URL underneath. `SampleEndpoints` creates the plugin once, and `SampleEndpoints.current(context)` reads the saved choice with `plugin.current(context)`. |
 | `FeatureFlagsPlugin` | **Configuration 🔧 → Feature flags**: *Ready for Testing ✅* / *In Development ⚠️* sections, category pages, and *Bulk Edit ✏️* (reset, import or export via clipboard). |
 | `NetworkSimulatorPlugin` | **Simulate 🧪 → Network**: make *Network demo* requests slow or fail. |
 | `MemorySimulatorPlugin` | **Simulate 🧪**: memory warnings, *Fill memory*, and *Kill app when backgrounded*. |
@@ -77,12 +78,13 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `LogsPlugin` | **Logs 📚**: custom `DeckLogger` logs. General, Analytics and Lifecycle rows with entry counts; each opens its own page. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
 | `AppActionsPlugin` | **App 🛠️**: deep-link launcher (suggests `devdeck://sample/legacy`), WebView debugging, restart, clear cache or data, kill. |
-| `UiToolsPlugin` | **User Interface 👗**: slow animations, keyline overlay, screen capture tools. |
-| `AppearancePlugin` | **Appearance 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
-| `PerformancePlugin` | **Performance ⚡**: FPS / jank / memory overlay and memory details. |
-| `StoragePlugin` | **Storage 💾**: SharedPreferences browser/editor and storage usage. |
-| `DevicePlugin` | **Device 📱**: device info, permissions, app info, developer options. |
+| `UiToolsPlugin` | **User Interface 🎨**: slow animations, keyline overlay, screen capture tools. |
+| `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
+| `PerformancePlugin` | **System 📱**: FPS / jank / memory overlay and memory details. |
+| `StoragePlugin` | **System 📱**: SharedPreferences browser/editor and storage usage. |
+| `DevicePlugin` | **System 📱**: device info, permissions, app info, developer options. |
 | `tapCounterPlugin` | **Custom 🧩**: an example of your own plugin. |
+| `controlsDemoPlugin` | **Custom 🧩 → Controls**: the switch, checkbox, dropdown and radio components. |
 | `InfoPlugin` | **Info ℹ️**: *Device & app snapshot* (an image you can share or save, with the current endpoint as build info), bug report, and the version row. |
 
 To experiment, remove a line, reorder the list, or pass options such as `UiToolsPlugin(screenCapture = false)` or `DevicePlugin(permissions = false)`.
@@ -196,13 +198,13 @@ DevDeckHost(
 3. **Feature flags:** in *Feature flags → checkout*, toggle *New checkout* and watch *Current values* change. Tap *Edit* on *Checkout config*, break the JSON to see the error, then *Format* and *Apply*.
 4. **Crash logs:** tap *Trigger test crash* twice, reopen the app, and open *Logs → Crash logs*.
 5. **Logs:** tap the *Logging demo* buttons, then compare *Logs → Logcat* (switch to *By tag*, filter *Error+*), *Logs → Timber logs*, and *Logs → Analytics logs*. Network demo calls also write `SampleApi` lines to logcat. `SampleApp` plants Timber's `DebugTree` too, so Timber lines appear in logcat as well.
-6. **Performance:** turn on *Frame rate & memory overlay* and scroll the main screen.
+6. **Performance:** in *System*, turn on *Frame rate & memory overlay* and scroll the main screen.
 7. **Bad network:** in *Simulate → Network*:
    - Pick *Slow* and tap *Load profile*: the spinner runs for about 3 s before the result.
    - Pick *Failing → No connection*: every button fails at once with `UnknownHostException`. Switch back to *Normal* and they work again.
    - Try *Timeout* and *Server error 503*, a 50% *Failure rate*, or *Only URLs containing* `/orders`.
-8. **Low memory:** in *Simulate*, open *Send memory warning* and tap *Running low*. Open *Fill memory*, tap *Hold 64 MB more* and watch *Java heap* grow, then *Release memory*. Turn on *Kill app when backgrounded*, press Home, and reopen the sample from recents.
-9. **Storage:** change a flag, then open *Storage → Shared preferences → devdeck_flags* to see and edit the raw value.
+8. **Low memory:** in *Simulate*, open *Send memory warning* and tap *Running low*. Open *Fill memory*, tap *+64 MB* and watch *Java heap* grow, then *Release*. Turn on *Kill app when backgrounded*, press Home, and reopen the sample from recents.
+9. **Storage:** change a flag, then open *System → Shared preferences → devdeck_flags* to see and edit the raw value.
 10. **Deep link:** in *App → Open a deep link*, tap the `devdeck://sample/legacy` suggestion.
 11. **Screen capture and bug report:** take a screenshot, then attach it in *Info → Generate a bug report* and share.
    - Open *Info → Device & app snapshot* and tap *Share image*. The saved PNG also appears in the capture gallery and can be attached to bug reports.

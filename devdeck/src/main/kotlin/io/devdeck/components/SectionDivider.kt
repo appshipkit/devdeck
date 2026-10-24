@@ -12,6 +12,6 @@ public fun SectionDivider(modifier: Modifier = Modifier) {
     HorizontalDivider(
         modifier = modifier.padding(horizontal = HorizontalPadding, vertical = 8.dp),
         thickness = 1.dp,
-        color = MaterialTheme.colorScheme.onSurface,
+        color = MaterialTheme.colorScheme.outlineVariant,
     )
 }

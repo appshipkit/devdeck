@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -26,6 +25,11 @@ public fun JsonInputItem(
 ) {
     val drawerState = LocalDeckState.current
     val error = remember(value) { Json.error(value) }
+    val openEditor: (() -> Unit)? = if (enabled && drawerState != null) {
+        { drawerState.navigateTo(title) { JsonEditor(value = value, onValueCommit = onValueCommit) } }
+    } else {
+        null
+    }
     Column(modifier.fillMaxWidth().padding(top = 6.dp)) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -39,17 +43,14 @@ public fun JsonInputItem(
                     color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (enabled && drawerState != null) {
-                OutlinedButton(onClick = {
-                    drawerState.navigateTo(title) { JsonEditor(value = value, onValueCommit = onValueCommit) }
-                }) { Text("Edit") }
-            }
+            if (openEditor != null) ActionPill(text = "Edit", onClick = openEditor)
         }
         CodeBlock(
             text = value,
             language = CodeLanguage.Json,
             collapsedLines = previewLines,
             copyable = false,
+            onDoubleClick = openEditor,
         )
     }
 }

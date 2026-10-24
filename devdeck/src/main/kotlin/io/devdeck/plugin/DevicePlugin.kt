@@ -12,7 +12,7 @@ public class DevicePlugin(
     private val permissions: Boolean = true,
     private val appSettings: Boolean = true,
     private val developerOptions: Boolean = true,
-    override val section: String? = "Device 📱",
+    override val section: String? = "System 📱",
 ) : DeckPlugin {
 
     override val id: String = "device"

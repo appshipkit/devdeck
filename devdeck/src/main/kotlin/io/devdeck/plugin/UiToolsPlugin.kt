@@ -9,7 +9,7 @@ public class UiToolsPlugin(
     private val animationSpeed: Boolean = true,
     private val keylineOverlay: Boolean = true,
     private val screenCapture: Boolean = true,
-    override val section: String? = "User Interface 👗",
+    override val section: String? = "User Interface 🎨",
 ) : DeckPlugin {
 
     override val id: String = "ui_tools"

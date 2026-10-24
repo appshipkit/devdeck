@@ -10,7 +10,7 @@ public class StoragePlugin(
     private val sharedPreferences: Boolean = true,
     private val usage: Boolean = true,
     private val includePreferences: (String) -> Boolean = { true },
-    override val section: String? = "Storage 💾",
+    override val section: String? = "System 📱",
 ) : DeckPlugin {
 
     override val id: String = "storage"

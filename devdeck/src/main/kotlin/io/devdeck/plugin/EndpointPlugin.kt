@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import io.devdeck.actions.AppActions
-import io.devdeck.components.SingleSelectItem
+import io.devdeck.components.DropdownItem
 import io.devdeck.logs.DeckLogger
 
 public class EndpointPlugin(
@@ -30,8 +30,9 @@ public class EndpointPlugin(
     override fun Content() {
         val context = LocalContext.current
         var selected by remember { mutableStateOf(current(context)) }
-        SingleSelectItem(
+        DropdownItem(
             title = title,
+            subtitle = selected.url,
             options = endpoints,
             selected = selected,
             onSelected = { endpoint ->

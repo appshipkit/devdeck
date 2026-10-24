@@ -8,5 +8,13 @@ public enum class MemoryWarning(public val label: String, public val level: Int?
     Background("Background", 40),
     Moderate("Moderate", 60),
     Complete("Complete", 80),
-    LowMemory("Low memory (onLowMemory)", null),
+    LowMemory("Low memory", null),
 }
+
+public val CommonMemoryWarnings: List<MemoryWarning> = listOf(
+    MemoryWarning.UiHidden,
+    MemoryWarning.Background,
+    MemoryWarning.RunningLow,
+    MemoryWarning.RunningCritical,
+    MemoryWarning.LowMemory,
+)

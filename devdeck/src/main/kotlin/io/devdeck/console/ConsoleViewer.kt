@@ -1,21 +1,13 @@
 package io.devdeck.console
 
 import android.content.Context
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,10 +18,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckState
 import io.devdeck.capture.ScreenCapture
+import io.devdeck.components.FilterPill
+import io.devdeck.components.FilterPillRow
+import io.devdeck.components.SearchField
+import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.shareFiles
@@ -103,32 +100,24 @@ public fun ConsoleViewer(
             }
         }
         if (fixedTag == null) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-                ConsoleView.entries.forEachIndexed { index, option ->
-                    SegmentedButton(
-                        selected = view == option,
-                        onClick = { view = option },
-                        shape = SegmentedButtonDefaults.itemShape(index, ConsoleView.entries.size),
-                    ) { Text(option.label) }
-                }
-            }
+            SegmentedPills(
+                options = ConsoleView.entries,
+                selected = view,
+                onSelected = { view = it },
+                label = { it.label },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
         }
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = { Text("Search tag or message") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-        )
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search tag or message")
+        FilterPillRow {
             LEVEL_FILTERS.forEach { level ->
-                FilterChip(
+                val isAll = level == ConsoleLevel.Verbose
+                FilterPill(
+                    text = if (isAll) "All" else "${level.label}+",
                     selected = minLevel == level,
                     onClick = { minLevel = level },
-                    label = { Text(if (level == ConsoleLevel.Verbose) "All levels" else "${level.label}+") },
+                    color = if (isAll) Color.Unspecified else level.color,
+                    showDot = !isAll,
                 )
             }
         }

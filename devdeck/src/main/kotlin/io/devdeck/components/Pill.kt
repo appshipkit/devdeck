@@ -3,7 +3,7 @@ package io.devdeck.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun Pill(text: String, color: Color, filled: Boolean = true) {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = CircleShape
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
@@ -23,6 +23,6 @@ internal fun Pill(text: String, color: Color, filled: Boolean = true) {
         color = if (filled) Color.White else color,
         modifier = Modifier
             .then(if (filled) Modifier.background(color, shape) else Modifier.border(1.dp, color, shape))
-            .padding(horizontal = 6.dp, vertical = 2.dp),
+            .padding(horizontal = 8.dp, vertical = 2.dp),
     )
 }

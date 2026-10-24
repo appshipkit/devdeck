@@ -9,12 +9,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -42,10 +42,15 @@ public fun <T> SingleSelectItem(
                     .heightIn(min = 48.dp)
                     .padding(horizontal = HorizontalPadding),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                RadioButton(selected = option == selected, onClick = null, enabled = enabled)
-                Text(optionLabel(option), style = MaterialTheme.typography.bodyLarge)
+                DeckRadio(selected = option == selected, enabled = enabled)
+                Text(
+                    optionLabel(option),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (option == selected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.38f),
+                )
             }
         }
     }
