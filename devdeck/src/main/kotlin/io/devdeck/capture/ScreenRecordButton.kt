@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalContext
 import io.devdeck.LocalDeckState
-import io.devdeck.components.BulletItem
+import io.devdeck.components.ButtonItem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -27,11 +27,11 @@ public fun ScreenRecordButton(title: String = "Record a video", stopTitle: Strin
         }
     }
     if (ScreenCapture.isRecording) {
-        BulletItem(stopTitle) { ScreenCapture.stopRecording(context) }
+        ButtonItem(title = stopTitle, destructive = true, onClick = { ScreenCapture.stopRecording(context) })
     } else {
-        BulletItem(title) {
+        ButtonItem(title = title, onClick = {
             val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             launcher.launch(manager.createScreenCaptureIntent())
-        }
+        })
     }
 }

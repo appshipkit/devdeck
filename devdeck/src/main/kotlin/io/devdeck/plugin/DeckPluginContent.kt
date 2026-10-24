@@ -37,7 +37,12 @@ public fun DeckPluginContent(
                 DeckCard { pluginsContent() }
             } else {
                 key(section) {
-                    SectionCard(section, collapsible = collapsibleSections, closeOthersOnOpen = oneSectionAtATime) { pluginsContent() }
+                    SectionCard(
+                        section,
+                        collapsible = collapsibleSections,
+                        closeOthersOnOpen = oneSectionAtATime,
+                        pluginIds = sectionPlugins.map { it.id },
+                    ) { pluginsContent() }
                 }
             }
         }

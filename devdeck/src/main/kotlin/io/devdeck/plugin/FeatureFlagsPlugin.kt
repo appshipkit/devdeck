@@ -57,7 +57,7 @@ public class FeatureFlagsPlugin(
             )
             ButtonItem(
                 title = "Restart app",
-                subtitle = "Relaunches the app in a new process",
+                subtitle = "Starts the app again",
                 onClick = { AppActions.restart(context) },
             )
         }

@@ -348,6 +348,8 @@ public final class io/devdeck/capture/ScreenRecordButtonKt {
 
 public final class io/devdeck/capture/ScreenRecordingService : android/app/Service {
 	public static final field $stable I
+	public static final field ACTION_PAUSE Ljava/lang/String;
+	public static final field ACTION_RESUME Ljava/lang/String;
 	public static final field ACTION_START Ljava/lang/String;
 	public static final field ACTION_STOP Ljava/lang/String;
 	public static final field EXTRA_DATA Ljava/lang/String;

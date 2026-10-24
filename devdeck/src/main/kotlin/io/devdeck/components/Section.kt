@@ -3,7 +3,6 @@ package io.devdeck.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,8 +20,7 @@ public fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         color = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = RowMinHeight)
-            .padding(horizontal = HorizontalPadding, vertical = 14.dp),
+            .padding(start = HorizontalPadding, end = HorizontalPadding, top = 12.dp, bottom = 4.dp),
     )
 }
 

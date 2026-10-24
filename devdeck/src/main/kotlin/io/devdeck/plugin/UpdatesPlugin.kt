@@ -7,6 +7,8 @@ import io.devdeck.updates.UpdateNotifier
 import io.devdeck.updates.UpdateSource
 import io.devdeck.updates.UpdatesPanel
 
+internal const val UPDATES_PLUGIN_ID = "updates"
+
 public class UpdatesPlugin(
     private val source: UpdateSource,
     private val checkOnStart: Boolean = true,
@@ -15,7 +17,7 @@ public class UpdatesPlugin(
     override val section: String? = "App 🛠️",
 ) : DeckPlugin {
 
-    override val id: String = "updates"
+    override val id: String = UPDATES_PLUGIN_ID
 
     override fun onAttach(context: Context) {
         val app = context.applicationContext

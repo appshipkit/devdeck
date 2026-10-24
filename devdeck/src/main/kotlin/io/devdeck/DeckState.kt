@@ -42,6 +42,9 @@ public class DeckState(initialValue: DeckValue = DeckValue.Closed) {
 
     internal val expandedRows = mutableStateMapOf<String, Boolean>()
 
+    // A plugin id the drawer should open and scroll to, e.g. "updates" from the header chip. Cleared once shown.
+    internal var pendingFocus by mutableStateOf<String?>(null)
+
     public fun open() {
         targetValue = DeckValue.Open
     }

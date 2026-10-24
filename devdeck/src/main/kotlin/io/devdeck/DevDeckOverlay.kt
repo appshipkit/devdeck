@@ -1,5 +1,6 @@
 package io.devdeck
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -38,13 +39,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.core.content.edit
+import io.devdeck.capture.RecordingControls
 import io.devdeck.internal.DeckIcons
+import io.devdeck.internal.DeckSettings
 import io.devdeck.performance.PerformanceMonitor
 import io.devdeck.performance.PerformanceOverlay
 import io.devdeck.simulation.SimulationBadge
@@ -117,6 +123,8 @@ internal fun DevDeckOverlay(
 
             SimulationBadge()
 
+            if (!isVisible) RecordingControls()
+
             if (isVisible) {
                 Box(
                     Modifier
@@ -153,13 +161,24 @@ internal fun DevDeckOverlay(
 
 @Composable
 private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> Unit) {
-    var offset by remember { mutableStateOf(Offset.Zero) }
-    Box(
+    val context = LocalContext.current
+    val layoutDirection = LocalLayoutDirection.current
+    BoxWithConstraints(
         Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(12.dp),
     ) {
+        val sizePx = with(LocalDensity.current) { TriggerSize.roundToPx() }
+        val rangeX = (constraints.maxWidth - sizePx).coerceAtLeast(1).toFloat()
+        val rangeY = (constraints.maxHeight - sizePx).coerceAtLeast(1).toFloat()
+        val default = remember(trigger.alignment, layoutDirection) {
+            val spot = trigger.alignment.align(IntSize.Zero, IntSize(FRACTION_SCALE, FRACTION_SCALE), layoutDirection)
+            Offset(spot.x.toFloat() / FRACTION_SCALE, spot.y.toFloat() / FRACTION_SCALE)
+        }
+        // Stored as a fraction of the free area, so the button keeps its place across screens, rotation and restarts.
+        val fraction = TriggerPosition.get(context) ?: default
+        val position = IntOffset((fraction.x * rangeX).roundToInt(), (fraction.y * rangeY).roundToInt())
         Surface(
             onClick = onClick,
             shape = CircleShape,
@@ -167,33 +186,33 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             shadowElevation = 4.dp,
             modifier = Modifier
-                .align(trigger.alignment)
-                .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+                .offset { position }
                 .then(
                     if (trigger.draggable) {
-                        Modifier.pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
+                        Modifier.pointerInput(rangeX, rangeY, default) {
+                            detectDragGestures(onDragEnd = { TriggerPosition.save(context) }) { change, dragAmount ->
                                 change.consume()
-                                offset += dragAmount
+                                val current = TriggerPosition.get(context) ?: default
+                                TriggerPosition.set(
+                                    Offset(
+                                        (current.x + dragAmount.x / rangeX).coerceIn(0f, 1f),
+                                        (current.y + dragAmount.y / rangeY).coerceIn(0f, 1f),
+                                    ),
+                                )
                             }
                         }
                     } else {
                         Modifier
                     },
                 )
-                .size(44.dp),
+                .size(TriggerSize),
         ) {
             Box(contentAlignment = Alignment.Center) {
                 trigger.icon?.invoke() ?: Icon(DeckIcons.BugReport, contentDescription = "Open debug menu")
             }
         }
         if (UpdateChecker.availableUpdate != null) {
-            Box(
-                Modifier
-                    .align(trigger.alignment)
-                    .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
-                    .size(44.dp),
-            ) {
+            Box(Modifier.offset { position }.size(TriggerSize)) {
                 Box(
                     Modifier
                         .align(Alignment.TopEnd)
@@ -206,3 +225,33 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
         }
     }
 }
+
+/** Where the user dragged the floating button, shared by every screen and kept in DevDeck's settings. */
+private object TriggerPosition {
+    private var position by mutableStateOf<Offset?>(null)
+    private var loaded = false
+
+    fun get(context: Context): Offset? {
+        if (!loaded) {
+            loaded = true
+            val prefs = DeckSettings.of(context)
+            if (prefs.contains(KEY_X)) position = Offset(prefs.getFloat(KEY_X, 0f), prefs.getFloat(KEY_Y, 0f))
+        }
+        return position
+    }
+
+    fun set(value: Offset) {
+        position = value
+    }
+
+    fun save(context: Context) {
+        val value = position ?: return
+        DeckSettings.of(context).edit { putFloat(KEY_X, value.x).putFloat(KEY_Y, value.y) }
+    }
+
+    private const val KEY_X = "trigger.x"
+    private const val KEY_Y = "trigger.y"
+}
+
+private val TriggerSize = 44.dp
+private const val FRACTION_SCALE = 10_000
