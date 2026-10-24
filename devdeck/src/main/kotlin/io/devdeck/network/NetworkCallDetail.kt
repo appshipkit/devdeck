@@ -2,12 +2,11 @@ package io.devdeck.network
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import io.devdeck.components.ActionPill
+import io.devdeck.components.ActionPillRow
 import io.devdeck.components.BulletItem
 import io.devdeck.components.CodeBlock
 import io.devdeck.components.CodeLanguage
@@ -26,6 +27,7 @@ import io.devdeck.components.Pill
 import io.devdeck.components.SectionDivider
 import io.devdeck.components.TextItem
 import io.devdeck.internal.copyToClipboard
+import io.devdeck.internal.isDeckDark
 import io.devdeck.internal.shareFiles
 
 @Composable
@@ -38,24 +40,31 @@ internal fun NetworkCallDetail(callId: Long, modifier: Modifier = Modifier, high
     }
     val context = LocalContext.current
     val matched = remember(call, highlights) { highlights.filter { it.matches(call) } }
+    val isDark = isDeckDark()
 
     Column(modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Pill(call.method, methodColor(call.method))
-                Pill(NetworkFormat.status(call), statusColor(call))
-                if (call.simulation != null) Pill("Simulated", SimulatedColor, filled = false)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
+                Pill(call.method, methodColor(call.method, isDark))
+                Pill(NetworkFormat.status(call), statusColor(call, isDark))
+                if (call.simulation != null) Pill("Simulated", NetworkColors.simulated(isDark), filled = false)
                 matched.forEach { Pill(it.label, it.color, filled = false) }
                 Text(NetworkFormat.duration(call.durationMillis), style = MaterialTheme.typography.bodySmall)
             }
             Text(call.url, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
-            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
-                TextButton(onClick = { context.copyToClipboard("URL", call.url) }) { Text("Copy URL") }
-                TextButton(onClick = { context.copyToClipboard("cURL", NetworkFormat.curl(call)) }) { Text("Copy cURL") }
-                TextButton(onClick = { context.shareFiles(emptyList(), text = NetworkFormat.summary(call), subject = call.displayName) }) {
-                    Text("Share")
-                }
-            }
+        }
+        ActionPillRow {
+            ActionPill(text = "Copy URL", onClick = { context.copyToClipboard("URL", call.url) }, compact = true)
+            ActionPill(text = "Copy cURL", onClick = { context.copyToClipboard("cURL", NetworkFormat.curl(call)) }, compact = true)
+            ActionPill(
+                text = "Share",
+                onClick = { context.shareFiles(emptyList(), text = NetworkFormat.summary(call), subject = call.displayName) },
+                compact = true,
+            )
         }
         SectionDivider()
 

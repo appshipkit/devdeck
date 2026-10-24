@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +43,9 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 public fun BugReportScreen(modifier: Modifier = Modifier, buildInfo: () -> Map<String, String> = { emptyMap() }) {
@@ -48,7 +53,10 @@ public fun BugReportScreen(modifier: Modifier = Modifier, buildInfo: () -> Map<S
     var description by rememberSaveable { mutableStateOf("") }
     var includeLogs by rememberSaveable { mutableStateOf(true) }
     var includeDeviceInfo by rememberSaveable { mutableStateOf(true) }
-    val captures = remember(ScreenCapture.galleryVersion) { ScreenCapture.captures(context) }
+    val scope = rememberCoroutineScope()
+    val captures by produceState(emptyList<File>(), context, ScreenCapture.galleryVersion) {
+        value = withContext(Dispatchers.IO) { ScreenCapture.captures(context) }
+    }
     val selected = remember { mutableStateListOf<File>() }
 
     Column(modifier.fillMaxWidth()) {
@@ -84,12 +92,20 @@ public fun BugReportScreen(modifier: Modifier = Modifier, buildInfo: () -> Map<S
         ButtonItem(
             title = "Share report",
             onClick = {
-                val report = buildReport(context, description, includeDeviceInfo, buildInfo())
-                val attachments = buildList {
-                    addAll(selected.filter { it.exists() })
-                    if (includeLogs) add(writeLogFile(context))
+                val extraInfo = buildInfo()
+                val chosen = selected.toList()
+                val text = description
+                val withDeviceInfo = includeDeviceInfo
+                val withLogs = includeLogs
+                scope.launch {
+                    val (report, attachments) = withContext(Dispatchers.IO) {
+                        buildReport(context, text, withDeviceInfo, extraInfo) to buildList {
+                            addAll(chosen.filter { it.exists() })
+                            if (withLogs) add(writeLogFile(context))
+                        }
+                    }
+                    context.shareFiles(attachments, text = report, subject = "Bug report: ${context.packageName}")
                 }
-                context.shareFiles(attachments, text = report, subject = "Bug report: ${context.packageName}")
             },
         )
     }
@@ -111,16 +127,16 @@ private fun buildReport(context: Context, description: String, includeDeviceInfo
     }
 
 private fun writeLogFile(context: Context): File {
-    val directory = File(ScreenCapture.captureDirectory(context), "reports").apply { mkdirs() }
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
-    val file = File(directory, "logs_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.txt")
     val customLogs = DeckLogger.entries.value.reversed().joinToString(separator = "\n") { entry ->
         val payload = entry.payload?.let { "\n    $it" }.orEmpty()
         "${formatter.format(Date(entry.timestampMillis))} [${entry.tag}] ${entry.message}$payload"
     }
     val logcat = LogcatReader.buffer.lines.value.takeLast(LOGCAT_LINES_IN_REPORT)
-    file.writeText(
-        buildString {
+    return ReportFiles.write(
+        context,
+        name = "logs_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.txt",
+        text = buildString {
             appendLine("=== Recent steps ===")
             appendLine(Breadcrumbs.format(Breadcrumbs.recent(STEPS_IN_REPORT)).ifEmpty { "(none)" })
             appendLine()
@@ -133,7 +149,6 @@ private fun writeLogFile(context: Context): File {
             }
         },
     )
-    return file
 }
 
 private const val LOGCAT_LINES_IN_REPORT = 1_000

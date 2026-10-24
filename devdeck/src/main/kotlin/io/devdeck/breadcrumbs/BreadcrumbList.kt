@@ -26,12 +26,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
 import io.devdeck.components.InfoGroup
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
+import io.devdeck.internal.DeckPalette
+import io.devdeck.internal.isDeckDark
 import io.devdeck.internal.shareFiles
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -44,41 +48,40 @@ public fun BreadcrumbList(modifier: Modifier = Modifier, maxRendered: Int = 200)
     var filter by rememberSaveable { mutableStateOf<BreadcrumbType?>(null) }
     val visible = remember(all, filter) { all.filter { filter == null || it.type == filter }.asReversed() }
     val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.US) }
+    val isDark = isDeckDark()
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (visible.size == 1) "1 step" else "${visible.size} steps",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             IconButton(
                 onClick = { context.shareFiles(emptyList(), text = Breadcrumbs.format(visible.asReversed()), subject = "Breadcrumbs") },
                 enabled = visible.isNotEmpty(),
             ) { Icon(DeckIcons.Share, contentDescription = "Share breadcrumbs") }
-            IconButton(onClick = Breadcrumbs::clear, enabled = all.isNotEmpty()) {
-                Icon(
-                    DeckIcons.Delete,
-                    contentDescription = "Clear breadcrumbs",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = if (all.isEmpty()) 0.38f else 1f),
-                )
-            }
+            ConfirmDeleteButton(contentDescription = "Clear breadcrumbs", onConfirm = Breadcrumbs::clear, enabled = all.isNotEmpty())
         }
         FilterPillRow {
             FilterPill(text = "All", selected = filter == null, onClick = { filter = null })
             BreadcrumbType.entries.forEach { type ->
-                FilterPill(text = type.label, selected = filter == type, onClick = { filter = type }, color = type.color, showDot = true)
+                FilterPill(text = type.label, selected = filter == type, onClick = {
+                    filter = type
+                }, color = type.color(isDark), showDot = true)
             }
         }
         if (visible.isEmpty()) TextItem("Nothing recorded yet. Open screens, tap around or send requests.")
         InfoGroup(dividerThreshold = 2) {
-            visible.take(maxRendered).forEach { BreadcrumbRow(it, formatter.format(Date(it.timestampMillis))) }
+            visible.take(maxRendered).forEach { BreadcrumbRow(it, formatter.format(Date(it.timestampMillis)), it.type.color(isDark)) }
         }
     }
 }
 
 @Composable
-private fun BreadcrumbRow(crumb: Breadcrumb, time: String) {
+private fun BreadcrumbRow(crumb: Breadcrumb, time: String, color: Color) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.Top,
@@ -90,19 +93,18 @@ private fun BreadcrumbRow(crumb: Breadcrumb, time: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 2.dp),
         )
-        Box(Modifier.padding(top = 5.dp).size(8.dp).background(crumb.type.color, CircleShape))
+        Box(Modifier.padding(top = 5.dp).size(8.dp).background(color, CircleShape))
         Column(Modifier.weight(1f)) {
-            Text(crumb.type.label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = crumb.type.color)
+            Text(crumb.type.label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = color)
             Text(crumb.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
-internal val BreadcrumbType.color: Color
-    get() = when (this) {
-        BreadcrumbType.Screen -> Color(0xFF1E88E5)
-        BreadcrumbType.Tap -> Color(0xFF8E24AA)
-        BreadcrumbType.Network -> Color(0xFF00897B)
-        BreadcrumbType.App -> Color(0xFFF57C00)
-        BreadcrumbType.Custom -> Color(0xFF757575)
-    }
+internal fun BreadcrumbType.color(isDark: Boolean): Color = when (this) {
+    BreadcrumbType.Screen -> DeckPalette.Blue
+    BreadcrumbType.Tap -> DeckPalette.Purple
+    BreadcrumbType.Network -> DeckPalette.Teal
+    BreadcrumbType.App -> DeckPalette.Orange
+    BreadcrumbType.Custom -> DeckPalette.Grey
+}.pick(isDark)

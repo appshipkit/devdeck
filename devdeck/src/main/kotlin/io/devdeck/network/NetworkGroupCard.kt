@@ -1,33 +1,33 @@
 package io.devdeck.network
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckState
 import io.devdeck.components.Pill
+import io.devdeck.internal.isDeckDark
 
 @Composable
 internal fun NetworkGroupCard(group: NetworkGroup, highlights: List<NetworkHighlight>) {
     val deckState = LocalDeckState.current
+    val isDark = isDeckDark()
     val matched = remember(group, highlights) { highlights.filter { highlight -> group.calls.any(highlight.matches) } }
-    val accent = matched.firstOrNull()?.color ?: if (group.failures > 0) Color(0xFFD32F2F) else Color(0xFF2E7D32)
+    val accent = matched.firstOrNull()?.color ?: if (group.failures > 0) NetworkColors.error(isDark) else NetworkColors.success(isDark)
     CardRow(
         accent = accent,
         onClick = { deckState?.navigateTo(group.title) { NetworkGroupDetail(group.key, highlights = highlights) } },
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Pill(group.method, methodColor(group.method))
-            Pill("${group.count} ${if (group.count == 1) "call" else "calls"}", CallCountColor)
-            if (group.failures > 0) Pill("${group.failures} failed", Color(0xFFD32F2F))
-            if (group.pending > 0) Pill("${group.pending} pending", Color(0xFF9E9E9E), filled = false)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Pill(group.method, methodColor(group.method, isDark))
+            Pill("${group.count} ${if (group.count == 1) "call" else "calls"}", NetworkColors.callCount(isDark))
+            if (group.failures > 0) Pill("${group.failures} failed", NetworkColors.error(isDark))
+            if (group.pending > 0) Pill("${group.pending} pending", NetworkColors.pending(isDark), filled = false)
             matched.forEach { Pill(it.label, it.color, filled = false) }
         }
         Text(

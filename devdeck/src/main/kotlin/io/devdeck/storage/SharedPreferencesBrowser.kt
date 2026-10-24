@@ -6,28 +6,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import io.devdeck.LocalDeckState
-import io.devdeck.components.ActionPill
 import io.devdeck.components.BulletItem
 import io.devdeck.components.ConfirmButtonItem
+import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.InfoGroup
 import io.devdeck.components.JsonInputItem
 import io.devdeck.components.NumberInputItem
@@ -36,31 +35,44 @@ import io.devdeck.components.SectionDivider
 import io.devdeck.components.SwitchItem
 import io.devdeck.components.TextInputItem
 import io.devdeck.components.TextItem
-import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.Json
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (String) -> Boolean = { true }) {
     val context = LocalContext.current
-    val names = remember(context) { StorageFiles.sharedPreferencesNames(context).filter(include) }
+    val scope = rememberCoroutineScope()
     var version by remember { mutableIntStateOf(0) }
+    val loaded by produceState<List<String>?>(null, context, version) {
+        value = withContext(Dispatchers.IO) { StorageFiles.sharedPreferencesNames(context) }
+    }
+    val names = remember(loaded, include) { loaded.orEmpty().filter(include) }
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (names.size == 1) "1 file" else "${names.size} files",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            if (names.isNotEmpty()) {
-                ClearAllButton(onClear = {
-                    names.forEach { context.getSharedPreferences(it, Context.MODE_PRIVATE).edit { clear() } }
-                    version++
-                })
-            }
+            ConfirmDeleteButton(
+                contentDescription = "Clear all files",
+                onConfirm = {
+                    scope.launch {
+                        withContext(Dispatchers.IO) {
+                            names.forEach { context.getSharedPreferences(it, Context.MODE_PRIVATE).edit(commit = true) { clear() } }
+                        }
+                        version++
+                    }
+                },
+                enabled = names.isNotEmpty(),
+            )
         }
-        if (names.isEmpty()) TextItem("No SharedPreferences files")
+        if (loaded != null && names.isEmpty()) TextItem("No SharedPreferences files")
         InfoGroup(dividerThreshold = 2) { names.forEach { name -> key(name, version) { PreferenceFileRow(name) } } }
     }
 }
@@ -68,39 +80,20 @@ public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (Str
 @Composable
 private fun PreferenceFileRow(name: String) {
     val prefs = rememberObservedPreferences(name)
-    val count = prefs.values.all.size
-    PageLinkItem(title = name, subtitle = if (count == 1) "1 key" else "$count keys") { SharedPreferencesFile(name) }
-}
-
-@Composable
-private fun ClearAllButton(onClear: () -> Unit) {
-    var confirming by remember { mutableStateOf(false) }
-    LaunchedEffect(confirming) {
-        if (confirming) {
-            delay(CONFIRM_TIMEOUT_MILLIS)
-            confirming = false
-        }
-    }
-    if (confirming) {
-        ActionPill(
-            text = "Clear all files?",
-            onClick = {
-                confirming = false
-                onClear()
-            },
-            color = MaterialTheme.colorScheme.error,
-            compact = true,
-        )
-    } else {
-        IconButton(onClick = { confirming = true }) {
-            Icon(DeckIcons.Delete, contentDescription = "Clear all files", tint = MaterialTheme.colorScheme.error)
-        }
-    }
+    val count = prefs?.values?.all?.size
+    PageLinkItem(
+        title = name,
+        subtitle = when (count) {
+            null -> "…"
+            1 -> "1 key"
+            else -> "$count keys"
+        },
+    ) { SharedPreferencesFile(name) }
 }
 
 @Composable
 public fun SharedPreferencesFile(name: String, modifier: Modifier = Modifier) {
-    val prefs = rememberObservedPreferences(name)
+    val prefs = rememberObservedPreferences(name) ?: return
     val entries = prefs.values.all.toSortedMap()
     Column(modifier.fillMaxWidth()) {
         if (entries.isEmpty()) TextItem("This file is empty")
@@ -119,7 +112,7 @@ public fun SharedPreferencesFile(name: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun PreferenceEditor(name: String, key: String) {
-    val prefs = rememberObservedPreferences(name)
+    val prefs = rememberObservedPreferences(name) ?: return
     val drawerState = LocalDeckState.current
     val editor = prefs.values
     when (val value = editor.all[key]) {
@@ -154,17 +147,21 @@ private fun PreferenceEditor(name: String, key: String) {
 
 private class ObservedPreferences(val values: SharedPreferences, val version: Int, val refresh: () -> Unit)
 
+/** Opens and loads the file off the main thread; null until it is ready. */
 @Composable
-private fun rememberObservedPreferences(name: String): ObservedPreferences {
+private fun rememberObservedPreferences(name: String): ObservedPreferences? {
     val context = LocalContext.current
-    val prefs = remember(name) { context.getSharedPreferences(name, Context.MODE_PRIVATE) }
+    val prefs by produceState<SharedPreferences?>(null, name) {
+        value = withContext(Dispatchers.IO) { context.getSharedPreferences(name, Context.MODE_PRIVATE).also { it.all } }
+    }
     var version by remember { mutableIntStateOf(0) }
     DisposableEffect(prefs) {
+        val current = prefs
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> version++ }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+        current?.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { current?.unregisterOnSharedPreferenceChangeListener(listener) }
     }
-    return ObservedPreferences(prefs, version) { version++ }
+    return prefs?.let { ObservedPreferences(it, version) { version++ } }
 }
 
 private fun Any?.typeName(): String = when (this) {
@@ -177,6 +174,7 @@ private fun Any?.typeName(): String = when (this) {
     else -> "Unknown"
 }
 
-private fun Any?.preview(): String = toString().replace('\n', ' ').let { if (it.length > 40) it.take(40) + "…" else it }
+// Only bounds the text handed to layout; the subtitle's maxLines does the visible truncation.
+private fun Any?.preview(): String = toString().take(MAX_PREVIEW_CHARS).replace('\n', ' ')
 
-private const val CONFIRM_TIMEOUT_MILLIS = 3_000L
+private const val MAX_PREVIEW_CHARS = 300

@@ -16,6 +16,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.devdeck.internal.contentColorOn
 
 @Composable
 public fun FilterPill(
@@ -38,9 +40,10 @@ public fun FilterPill(
 ) {
     val accent = if (color.isSpecified) color else MaterialTheme.colorScheme.primary
     val background by animateColorAsState(if (selected) accent else accent.copy(alpha = 0.12f), label = "pillBackground")
-    val content by animateColorAsState(if (selected) Color.White else accent, label = "pillContent")
+    val content by animateColorAsState(if (selected) contentColorOn(accent) else accent, label = "pillContent")
     Row(
         modifier
+            .minimumInteractiveComponentSize()
             .clip(CircleShape)
             .background(background)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
@@ -64,7 +67,7 @@ public fun FilterPillRow(
         modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 12.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = verticalAlignment,
         content = content,

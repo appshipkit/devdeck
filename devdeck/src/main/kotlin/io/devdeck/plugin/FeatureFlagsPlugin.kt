@@ -4,7 +4,10 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import io.devdeck.components.ActionPill
+import io.devdeck.components.ActionPillRow
 import io.devdeck.components.ButtonItem
+import io.devdeck.components.ConfirmButtonItem
 import io.devdeck.components.JsonInputItem
 import io.devdeck.components.NumberInputItem
 import io.devdeck.components.PageLinkItem
@@ -40,17 +43,22 @@ public class FeatureFlagsPlugin(
         flags.groupBy { it.section }.forEach { (section, sectionFlags) ->
             Section(section) {
                 sectionFlags.groupBy { it.category }.forEach { (category, categoryFlags) ->
-                    PageLinkItem(title = category) { FlagList(categoryFlags) }
+                    PageLinkItem(title = category.replaceFirstChar { it.titlecase() }) { FlagList(categoryFlags) }
                 }
             }
             SectionDivider()
         }
         if (bulkEdit) {
-            Section("Bulk Edit ✏️") {
-                ButtonItem(title = "Reset", onClick = {
-                    flags.forEach(store::reset)
-                    DeckLogger.log("Feature flags reset")
-                })
+            Section("Bulk edit ✏️") {
+                ConfirmButtonItem(
+                    title = "Reset all flags",
+                    subtitle = "Remove every override",
+                    confirmTitle = "Tap again to reset all flags",
+                    onConfirm = {
+                        flags.forEach(store::reset)
+                        DeckLogger.log("Feature flags reset")
+                    },
+                )
                 ButtonItem(title = "Import from clipboard", onClick = { importFromClipboard(context) })
                 ButtonItem(title = "Export to clipboard", onClick = { exportToClipboard(context) })
             }
@@ -60,7 +68,8 @@ public class FeatureFlagsPlugin(
     @Composable
     private fun FlagList(categoryFlags: List<FeatureFlag<*>>) {
         categoryFlags.forEach { flag ->
-            val subtitle = if (store.isOverridden(flag)) "Overridden" else null
+            val overridden = store.isOverridden(flag)
+            val subtitle = if (overridden) "Overridden" else null
             when (flag) {
                 is FeatureFlag.Toggle -> SwitchItem(
                     title = flag.title,
@@ -72,6 +81,7 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Text -> TextInputItem(
                     title = flag.title,
+                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     onValueCommit = { store[flag] = it },
@@ -79,6 +89,7 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Number -> NumberInputItem(
                     title = flag.title,
+                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     allowDecimals = !flag.wholeNumber,
@@ -88,10 +99,14 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Json -> JsonInputItem(
                     title = flag.title,
+                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     onValueCommit = { store[flag] = it },
                 )
+            }
+            if (overridden && flag.editable) {
+                ActionPillRow { ActionPill(text = "Reset to default", onClick = { store.reset(flag) }, compact = true) }
             }
         }
     }

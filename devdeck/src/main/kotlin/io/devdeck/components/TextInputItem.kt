@@ -16,6 +16,7 @@ public fun TextInputItem(
     commitOnEveryChange: Boolean = false,
     singleLine: Boolean = true,
     validate: ((String) -> String?)? = null,
+    subtitle: String? = null,
 ) {
     InputField(
         title = title,
@@ -27,5 +28,6 @@ public fun TextInputItem(
         commitOnEveryChange = commitOnEveryChange,
         singleLine = singleLine,
         validate = validate,
+        subtitle = subtitle,
     )
 }

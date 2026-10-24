@@ -1,6 +1,7 @@
 package io.devdeck.network
 
 import androidx.compose.ui.graphics.Color
+import io.devdeck.internal.DeckPalette
 import io.devdeck.internal.Json
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -67,27 +68,39 @@ internal object NetworkFormat {
         }
     }
 
+    fun line(call: NetworkCall): String =
+        "${time(call.startedAtMillis)} ${call.method} ${status(call)} ${call.url} · ${duration(call.durationMillis)}"
+
     private fun String.shellEscape(): String = replace("'", "'\\''")
 }
 
-internal fun methodColor(method: String): Color = when (method) {
-    "GET" -> Color(0xFF1E88E5)
-    "POST" -> Color(0xFF43A047)
-    "PUT" -> Color(0xFFFB8C00)
-    "PATCH" -> Color(0xFF8E24AA)
-    "DELETE" -> Color(0xFFE53935)
-    else -> Color(0xFF757575)
+internal fun methodColor(method: String, isDark: Boolean): Color = when (method) {
+    "GET" -> DeckPalette.Blue
+    "POST" -> DeckPalette.Green
+    "PUT" -> DeckPalette.Orange
+    "PATCH" -> DeckPalette.Purple
+    "DELETE" -> DeckPalette.Red
+    else -> DeckPalette.Grey
+}.pick(isDark)
+
+/** Shared status colors for the network screens, picked for the current theme. */
+internal object NetworkColors {
+    fun error(isDark: Boolean): Color = DeckPalette.Red.pick(isDark)
+
+    fun success(isDark: Boolean): Color = DeckPalette.Green.pick(isDark)
+
+    fun pending(isDark: Boolean): Color = DeckPalette.Grey.pick(isDark)
+
+    fun callCount(isDark: Boolean): Color = DeckPalette.DeepPurple.pick(isDark)
+
+    fun simulated(isDark: Boolean): Color = DeckPalette.DeepOrange.pick(isDark)
 }
 
-internal val CallCountColor = Color(0xFF5E35B1)
-
-internal val SimulatedColor = Color(0xFFEF6C00)
-
-internal fun statusColor(call: NetworkCall): Color = when {
-    call.error != null -> Color(0xFFD32F2F)
-    call.responseCode == null -> Color(0xFF9E9E9E)
-    call.responseCode >= 500 -> Color(0xFFD32F2F)
-    call.responseCode >= 400 -> Color(0xFFF57C00)
-    call.responseCode >= 300 -> Color(0xFF1E88E5)
-    else -> Color(0xFF2E7D32)
+internal fun statusColor(call: NetworkCall, isDark: Boolean): Color = when {
+    call.error != null -> NetworkColors.error(isDark)
+    call.responseCode == null -> NetworkColors.pending(isDark)
+    call.responseCode >= 500 -> NetworkColors.error(isDark)
+    call.responseCode >= 400 -> DeckPalette.Orange.pick(isDark)
+    call.responseCode >= 300 -> DeckPalette.Blue.pick(isDark)
+    else -> NetworkColors.success(isDark)
 }

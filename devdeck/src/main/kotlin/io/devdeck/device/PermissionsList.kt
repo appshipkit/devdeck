@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -57,13 +58,15 @@ public fun PermissionsList(modifier: Modifier = Modifier) {
             return@Column
         }
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding, vertical = 6.dp),
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(start = HorizontalPadding, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 "${permissions.count { it.granted }} of ${permissions.size} granted",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
         }
