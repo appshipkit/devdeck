@@ -66,11 +66,15 @@ public class DevDeckOkHttpInterceptor(
 
         val responseBody = response.body
         val contentType = responseBody?.contentType()
+        val peeked = responseBody != null && contentType != null && !contentType.isStreaming() && contentType.isText() &&
+            isSafeToPeek(responseBody.contentLength(), contentType)
         val bodyText = when {
             responseBody == null -> null
+            peeked -> runCatching { response.peekBody(maxBodyBytes).string() }.getOrNull()
             contentType.isStreaming() -> "(streamed body not captured: $contentType)"
-            contentType.isText() -> runCatching { response.peekBody(maxBodyBytes).string() }.getOrNull()
-            else -> "(binary body, ${contentType ?: "unknown type"})"
+            contentType == null -> "(untyped body not captured)"
+            !contentType.isText() -> "(binary body, $contentType)"
+            else -> "(open-ended body not captured: $contentType)"
         }
         NetworkLogger.complete(
             id = id,
@@ -79,7 +83,7 @@ public class DevDeckOkHttpInterceptor(
             headers = response.headers.toPairs(),
             body = bodyText,
             contentType = contentType?.toString(),
-            size = responseBody?.contentLength()?.takeIf { it >= 0 } ?: bodyText?.length?.toLong(),
+            size = responseBody?.contentLength()?.takeIf { it >= 0 } ?: bodyText?.takeIf { peeked }?.length?.toLong(),
             durationMillis = duration,
             protocol = response.protocol.toString(),
         )
@@ -141,9 +145,12 @@ public class DevDeckOkHttpInterceptor(
 
     private fun RequestBody.readText(): String? {
         if (isDuplex() || isOneShot()) return "(streamed body not captured)"
-        if (!contentType().isText()) return "(binary body, ${contentType() ?: "unknown type"})"
         val length = contentLength()
-        if (contentType() == null && length !in 0..maxBodyBytes) return "(untyped body not captured)"
+        if (contentType() == null) {
+            if (length !in 0..maxBodyBytes) return "(untyped body not captured)"
+        } else if (!contentType().isText()) {
+            return "(binary body, ${contentType()})"
+        }
         if (length > maxBodyBytes * LARGE_BODY_FACTOR) return "(body too large to capture: $length bytes)"
         return runCatching {
             val buffer = Buffer()
@@ -170,9 +177,18 @@ public class DevDeckOkHttpInterceptor(
     }
 
     private fun MediaType?.isText(): Boolean {
-        if (this == null) return true
+        if (this == null) return false
         val subtype = subtype.lowercase()
         return type == "text" || TEXT_SUBTYPES.any { subtype.contains(it) }
+    }
+
+    // peekBody blocks until maxBodyBytes or EOF, so only peek bodies that end: a known length, or a document
+    // type (JSON, XML, HTML, GraphQL) that is not used for open-ended streams. Chunked HTTP/1.1, HTTP/2 and
+    // close-delimited bodies all report an unknown length.
+    private fun isSafeToPeek(contentLength: Long, contentType: MediaType): Boolean {
+        if (contentLength >= 0) return true
+        val subtype = contentType.subtype.lowercase()
+        return DOCUMENT_SUBTYPES.any { subtype.contains(it) }
     }
 
     private fun MediaType.charset(): Charset? = charset(null)
@@ -188,6 +204,7 @@ public class DevDeckOkHttpInterceptor(
         const val LARGE_BODY_FACTOR = 4
         const val THROTTLE_CHUNK_BYTES = 8_192L
         val STREAMING_SUBTYPES = listOf("event-stream", "x-mixed-replace", "x-ndjson")
+        val DOCUMENT_SUBTYPES = listOf("json", "xml", "html", "graphql")
         val TEXT_SUBTYPES = listOf("json", "xml", "html", "plain", "x-www-form-urlencoded", "graphql", "javascript")
     }
 }

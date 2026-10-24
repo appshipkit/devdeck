@@ -73,7 +73,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | Plugin | What you see in the drawer |
 |---|---|
 | `EndpointPlugin` | **Configuration 🔧 → Endpoint**: dropdown, with the selected URL underneath. `SampleEndpoints` creates the plugin once, and `SampleEndpoints.current(context)` reads the saved choice with `plugin.current(context)`. |
-| `FeatureFlagsPlugin` | **Configuration 🔧 → Feature flags**: *Ready for Testing ✅* / *In Development ⚠️* sections, category pages, and *Bulk Edit ✏️* (reset, import or export via clipboard). |
+| `FeatureFlagsPlugin` | **Configuration 🔧 → Feature flags**: *Ready for Testing ✅* / *In Development ⚠️* sections, category pages, and *Bulk edit ✏️* (reset, import or export via clipboard). |
 | `NetworkSimulatorPlugin` | **Simulate 🧪 → Network**: make *Network demo* requests slow or fail. |
 | `MemorySimulatorPlugin` | **Simulate 🧪**: memory warnings, *Fill memory*, and *Kill app when backgrounded*. |
 | `NetworkLogsPlugin` | **Logs 📚 → Network activity**: every request sent by `SampleApi`, with *GraphQL*, *Countries* and *Orders* highlights. |

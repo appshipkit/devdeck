@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlin.system.exitProcess
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 public object AppActions {
 
@@ -24,6 +26,11 @@ public object AppActions {
     public fun clearCache(context: Context) {
         context.cacheDir.deleteRecursively()
         context.externalCacheDir?.deleteRecursively()
+    }
+
+    /** Same as [clearCache], but deletes on [Dispatchers.IO] so it is safe to call from the main thread. */
+    public suspend fun clearCacheInBackground(context: Context) {
+        withContext(Dispatchers.IO) { clearCache(context) }
     }
 
     public fun clearAppData(context: Context) {

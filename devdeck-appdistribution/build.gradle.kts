@@ -14,6 +14,7 @@ android {
 
     defaultConfig {
         minSdk = 23
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     lint {
@@ -26,6 +27,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     publishing {
@@ -45,6 +50,8 @@ kotlin {
 dependencies {
     api(project(":devdeck"))
     compileOnly(libs.firebase.appdistribution.api)
+    testImplementation(libs.firebase.appdistribution.api)
+    testImplementation(libs.junit)
 }
 
 afterEvaluate {

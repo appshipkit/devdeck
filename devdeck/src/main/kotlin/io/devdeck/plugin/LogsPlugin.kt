@@ -21,7 +21,7 @@ public class LogsPlugin(
     override val id: String = "logs"
 
     override fun onAttach(context: Context) {
-        if (lifecycleLogs) (context as? Application)?.registerActivityLifecycleCallbacks(LifecycleLogger)
+        (context as? Application)?.let { LifecycleLogger.setRegistered(it, lifecycleLogs) }
     }
 
     @Composable
@@ -49,6 +49,20 @@ public class LogsPlugin(
     }
 
     private object LifecycleLogger : Application.ActivityLifecycleCallbacks {
+        private var registeredWith: Application? = null
+
+        // Re-attaching a new LogsPlugin (install/updateConfig) must not register the callbacks twice.
+        @Synchronized
+        fun setRegistered(application: Application, registered: Boolean) {
+            if (registered == (registeredWith === application)) return
+            registeredWith?.unregisterActivityLifecycleCallbacks(this)
+            registeredWith = null
+            if (registered) {
+                application.registerActivityLifecycleCallbacks(this)
+                registeredWith = application
+            }
+        }
+
         private fun log(activity: Activity, event: String) = DeckLogger.log("${activity.javaClass.simpleName}: $event", tag = LIFECYCLE_TAG)
 
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = log(activity, "onCreate")

@@ -24,6 +24,19 @@ android {
         versionName = appVersion
     }
 
+    buildTypes {
+        // A minified, installable build with DevDeck in it, like the internal QA builds apps ship
+        // to testers. CI builds it so R8 problems with DevDeck's consumer rules show up here first.
+        create("qa") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".qa"
+            matchingFallbacks += "release"
+        }
+    }
+
     lint {
         abortOnError = true
         warningsAsErrors = true

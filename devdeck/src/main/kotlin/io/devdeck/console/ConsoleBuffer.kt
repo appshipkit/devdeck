@@ -15,6 +15,7 @@ public class ConsoleBuffer(public val capacity: Int = 5_000) {
 
     private val pending = ArrayList<ConsoleLine>()
     private var flushScheduled = false
+    private var generation = 0L
 
     public fun append(line: ConsoleLine) {
         synchronized(pending) {
@@ -26,17 +27,29 @@ public class ConsoleBuffer(public val capacity: Int = 5_000) {
     }
 
     public fun clear() {
-        synchronized(pending) { pending.clear() }
-        _lines.value = emptyList()
+        synchronized(pending) {
+            generation++
+            pending.clear()
+            _lines.value = emptyList()
+        }
     }
 
-    private fun flush() {
-        val batch = synchronized(pending) {
-            flushScheduled = false
-            pending.toList().also { pending.clear() }
-        }
-        if (batch.isNotEmpty()) _lines.update { (it + batch).takeLast(capacity) }
+    private fun flush() = publish(takeBatch())
+
+    internal fun takeBatch(): Batch = synchronized(pending) {
+        flushScheduled = false
+        Batch(generation, pending.toList().also { pending.clear() })
     }
+
+    // A batch taken before clear() belongs to the old generation and is dropped.
+    internal fun publish(batch: Batch) {
+        if (batch.lines.isEmpty()) return
+        synchronized(pending) {
+            if (batch.generation == generation) _lines.update { (it + batch.lines).takeLast(capacity) }
+        }
+    }
+
+    internal class Batch(val generation: Long, val lines: List<ConsoleLine>)
 
     private companion object {
         const val FLUSH_DELAY_MILLIS = 250L

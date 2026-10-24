@@ -13,6 +13,7 @@ public fun NumberInputItem(
     enabled: Boolean = true,
     allowDecimals: Boolean = true,
     range: ClosedFloatingPointRange<Double>? = null,
+    subtitle: String? = null,
 ) {
     val text = if (allowDecimals) value.toString().removeSuffix(".0") else value.toLong().toString()
     InputField(
@@ -32,6 +33,7 @@ public fun NumberInputItem(
                 else -> null
             }
         },
+        subtitle = subtitle,
     )
 }
 
@@ -43,6 +45,7 @@ public fun NumberInputItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     range: LongRange? = null,
+    subtitle: String? = null,
 ) {
     NumberInputItem(
         title = title,
@@ -52,5 +55,33 @@ public fun NumberInputItem(
         enabled = enabled,
         allowDecimals = false,
         range = range?.let { it.first.toDouble()..it.last.toDouble() },
+        subtitle = subtitle,
     )
+}
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun NumberInputItem(
+    title: String,
+    value: Double,
+    onValueCommit: (Double) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    allowDecimals: Boolean = true,
+    range: ClosedFloatingPointRange<Double>? = null,
+) {
+    NumberInputItem(title, value, onValueCommit, modifier, enabled, allowDecimals, range, subtitle = null)
+}
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun NumberInputItem(
+    title: String,
+    value: Long,
+    onValueCommit: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    range: LongRange? = null,
+) {
+    NumberInputItem(title, value, onValueCommit, modifier, enabled, range, subtitle = null)
 }

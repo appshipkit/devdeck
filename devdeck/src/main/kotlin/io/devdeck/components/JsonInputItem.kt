@@ -22,6 +22,7 @@ public fun JsonInputItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     previewLines: Int = 6,
+    subtitle: String? = null,
 ) {
     val drawerState = LocalDeckState.current
     val error = remember(value) { Json.error(value) }
@@ -38,7 +39,7 @@ public fun JsonInputItem(
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    text = error ?: "${value.length} chars",
+                    text = error ?: listOfNotNull(subtitle, "${value.length} chars").joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -53,4 +54,17 @@ public fun JsonInputItem(
             onDoubleClick = openEditor,
         )
     }
+}
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun JsonInputItem(
+    title: String,
+    value: String,
+    onValueCommit: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    previewLines: Int = 6,
+) {
+    JsonInputItem(title, value, onValueCommit, modifier, enabled, previewLines, subtitle = null)
 }

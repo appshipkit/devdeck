@@ -36,6 +36,7 @@ internal fun InputField(
     monospace: Boolean = false,
     validate: ((String) -> String?)? = null,
     format: ((String) -> String?)? = null,
+    subtitle: String? = null,
 ) {
     var draft by rememberSaveable(value) { mutableStateOf(value) }
     val error = validate?.invoke(draft)
@@ -57,7 +58,7 @@ internal fun InputField(
             minLines = if (singleLine) 1 else 3,
             maxLines = if (singleLine) 1 else 10,
             isError = error != null,
-            supportingText = error?.let { { Text(it) } },
+            supportingText = (error ?: subtitle)?.let { { Text(it) } },
             textStyle = if (monospace) {
                 MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
             } else {

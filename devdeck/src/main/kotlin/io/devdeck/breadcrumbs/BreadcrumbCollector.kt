@@ -7,10 +7,13 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.InputType
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import io.devdeck.DeckVisibility
 import io.devdeck.gesture.inputObserver
@@ -137,12 +140,33 @@ internal object BreadcrumbCollector {
     }
 
     private fun describe(view: View): String {
-        val text = (view as? TextView)?.text?.toString()?.takeIf { it.isNotBlank() }
+        val text = (view as? TextView)?.let { textView ->
+            val editable = textView is EditText || textView.text is Editable || textView.onCheckIsTextEditor()
+            recordableText(textView.text, editable, textView.inputType)
+        }
         val description = view.contentDescription?.toString()?.takeIf { it.isNotBlank() }
         val id = if (view.id != View.NO_ID) runCatching { view.resources.getResourceEntryName(view.id) }.getOrNull() else null
         val name = text?.let { "\"$it\"" } ?: description?.let { "\"$it\"" } ?: id ?: "unnamed"
         return "${view.javaClass.simpleName} $name" + if (id != null && (text != null || description != null)) " (#$id)" else ""
     }
+
+    // Typed input (EditText, editable or password fields) is never recorded; only static labels are.
+    internal fun recordableText(text: CharSequence?, editable: Boolean, inputType: Int): String? {
+        if (editable || isPasswordInputType(inputType)) return null
+        return text?.toString()?.takeIf { it.isNotBlank() }
+    }
+
+    private fun isPasswordInputType(inputType: Int): Boolean {
+        val variation = inputType and (InputType.TYPE_MASK_CLASS or InputType.TYPE_MASK_VARIATION)
+        return variation in PASSWORD_VARIATIONS
+    }
+
+    private val PASSWORD_VARIATIONS = setOf(
+        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD,
+        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD,
+        InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD,
+    )
 
     private fun View.contains(x: Int, y: Int): Boolean {
         val location = IntArray(2)

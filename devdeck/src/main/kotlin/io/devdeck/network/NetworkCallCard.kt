@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -25,20 +25,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckState
 import io.devdeck.components.Pill
+import io.devdeck.internal.isDeckDark
 
 @Composable
 internal fun NetworkCallCard(call: NetworkCall, highlights: List<NetworkHighlight>, repeatCount: Int = 1, showTitle: Boolean = true) {
     val deckState = LocalDeckState.current
+    val isDark = isDeckDark()
     val matched = remember(call, highlights) { highlights.filter { it.matches(call) } }
-    val accent = matched.firstOrNull()?.color ?: statusColor(call)
+    val accent = matched.firstOrNull()?.color ?: statusColor(call, isDark)
     CardRow(
         accent = accent,
         onClick = { deckState?.navigateTo(call.displayName) { NetworkCallDetail(call.id, highlights = highlights) } },
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Pill(call.method, methodColor(call.method))
-            Pill(NetworkFormat.status(call), statusColor(call))
-            if (call.simulation != null) Pill("Simulated", SimulatedColor, filled = false)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Pill(call.method, methodColor(call.method, isDark))
+            Pill(NetworkFormat.status(call), statusColor(call, isDark))
+            if (call.simulation != null) Pill("Simulated", NetworkColors.simulated(isDark), filled = false)
             if (repeatCount > 1) Pill("×$repeatCount", MaterialTheme.colorScheme.onSurfaceVariant, filled = false)
             matched.forEach { Pill(it.label, it.color, filled = false) }
         }

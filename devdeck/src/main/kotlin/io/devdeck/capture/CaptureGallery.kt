@@ -13,14 +13,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,15 +29,21 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckState
 import io.devdeck.components.BulletItem
+import io.devdeck.components.ConfirmDeleteButton
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.TextItem
+import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.openFile
 import io.devdeck.internal.shareFiles
 import java.io.File
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -48,15 +55,46 @@ public fun GalleryButton(title: String = "Open the gallery") {
 @Composable
 public fun CaptureGallery(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val files = remember(ScreenCapture.galleryVersion) { ScreenCapture.captures(context) }
+    val scope = rememberCoroutineScope()
+    val loaded by produceState<List<File>?>(null, ScreenCapture.galleryVersion) {
+        value = withContext(Dispatchers.IO) { ScreenCapture.captures(context) }
+    }
+    val files = loaded.orEmpty()
+    val delete: (List<File>) -> Unit = { targets ->
+        scope.launch {
+            withContext(Dispatchers.IO) { targets.forEach { it.delete() } }
+            ScreenCapture.notifyGalleryChanged()
+        }
+    }
     Column(modifier.fillMaxWidth()) {
-        if (files.isEmpty()) TextItem("No screenshots or recordings yet")
-        files.forEach { file -> GalleryRow(file) }
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = if (files.size == 1) "1 capture" else "${files.size} captures",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = { context.shareFiles(files, subject = "Captures") }, enabled = files.isNotEmpty()) {
+                Icon(DeckIcons.Share, contentDescription = "Share all captures")
+            }
+            ConfirmDeleteButton(
+                contentDescription = "Delete all captures",
+                onConfirm = { delete(files) },
+                enabled = files.isNotEmpty(),
+                confirmText = "Tap again to delete",
+            )
+        }
+        if (loaded?.isEmpty() == true) TextItem("No screenshots or recordings yet")
+        InfoGroup(dividerThreshold = 2) {
+            files.forEach { file -> key(file.path) { GalleryRow(file, onDelete = { delete(listOf(file)) }) } }
+        }
     }
 }
 
 @Composable
-private fun GalleryRow(file: File) {
+private fun GalleryRow(file: File, onDelete: () -> Unit) {
     val context = LocalContext.current
     val thumbnail by produceState<ImageBitmap?>(null, file) {
         value = withContext(Dispatchers.IO) { loadThumbnail(file) }
@@ -64,8 +102,8 @@ private fun GalleryRow(file: File) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable { context.openFile(file) }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .clickable(role = Role.Button, onClickLabel = "Open") { context.openFile(file) }
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -80,18 +118,25 @@ private fun GalleryRow(file: File) {
             if (image != null) {
                 Image(image, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp))
             } else {
-                Text(if (file.extension == "mp4") "▶" else "…", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    if (file.extension == "mp4") "▶" else "…",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.clearAndSetSemantics {},
+                )
             }
         }
-        Column(Modifier.weight(1f)) {
-            Text(file.name, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Row {
-                TextButton(onClick = { context.shareFiles(listOf(file)) }) { Text("Share") }
-                TextButton(onClick = {
-                    file.delete()
-                    ScreenCapture.notifyGalleryChanged()
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+        Text(
+            file.name,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Row {
+            IconButton(onClick = { context.shareFiles(listOf(file)) }) {
+                Icon(DeckIcons.Share, contentDescription = "Share ${file.name}")
             }
+            ConfirmDeleteButton(contentDescription = "Delete ${file.name}", onConfirm = onDelete, confirmText = "Tap again to delete")
         }
     }
 }

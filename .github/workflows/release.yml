@@ -14,11 +14,13 @@ permissions:
 jobs:
   release:
     name: Tag and release
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Read version
         id: version
@@ -42,7 +44,7 @@ jobs:
 
       - name: Build and test
         if: steps.version.outputs.exists == 'false'
-        run: ./gradlew assembleRelease testDebugUnitTest publishToMavenLocal
+        run: ./gradlew ktlintCheck lintRelease apiCheck assembleRelease testDebugUnitTest publishToMavenLocal
 
       - name: Release notes from CHANGELOG.md
         if: steps.version.outputs.exists == 'false'

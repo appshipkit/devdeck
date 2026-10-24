@@ -10,6 +10,8 @@ timber = "4.7.1"
 ktlint = "1.8.0"
 junit = "4.13.2"
 json = "20260814"
+binaryCompatibilityValidator = "0.18.2"
+asm = "9.6"
 
 [libraries]
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
@@ -30,8 +32,17 @@ ktlint-cli = { group = "com.pinterest.ktlint", name = "ktlint-cli", version.ref 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 
+# Runtime of the binary-compatibility-validator tasks (see the root build.gradle.kts)
+asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
+asm-tree = { group = "org.ow2.asm", name = "asm-tree", version.ref = "asm" }
+kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlin" }
+
+[bundles]
+binary-compatibility-validator-runtime = ["asm", "asm-tree", "kotlin-metadata-jvm"]
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
