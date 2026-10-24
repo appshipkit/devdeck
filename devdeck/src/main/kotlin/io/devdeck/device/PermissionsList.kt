@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -47,6 +48,9 @@ public fun PermissionsList(modifier: Modifier = Modifier) {
     var version by remember { mutableIntStateOf(0) }
     val permissions = remember(context, version) { AppPermissions.load(context) }
     RefreshOnResume { version++ }
+    // Permission dialogs and settings screens take window focus, so regaining it means a result may have landed.
+    val windowFocused = LocalWindowInfo.current.isWindowFocused
+    LaunchedEffect(windowFocused) { if (windowFocused) version++ }
     Column(modifier.fillMaxWidth()) {
         if (permissions.isEmpty()) {
             TextItem("No permissions requested")
@@ -102,6 +106,9 @@ private fun PermissionAction(permission: AppPermission) {
         permission.kind == PermissionKind.InstallTime -> Note("Always granted at install")
 
         permission.kind == PermissionKind.Unavailable -> Note("Not on this Android version")
+
+        permission.granted && permission.name in AppPermissions.pendingRevocations ->
+            Note("Revoked when the app restarts", MaterialTheme.colorScheme.error)
 
         permission.kind == PermissionKind.Special ->
             ActionPill(text = "Open settings", onClick = { AppPermissions.openSettings(context, permission) }, compact = true)

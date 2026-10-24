@@ -72,6 +72,9 @@ internal object DeckIcons {
     val Download: ImageVector by lazy {
         icon("Download", "M19,9h-4V3H9v6H5l7,7 7,-7zM5,18v2h14v-2H5z")
     }
+    val Send: ImageVector by lazy {
+        icon("Send", "M2.01,21L23,12 2.01,3 2,10l15,2 -15,2z")
+    }
     val Settings: ImageVector by lazy {
         icon(
             "Settings",

@@ -1,6 +1,7 @@
 package io.devdeck.network
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
@@ -60,12 +62,23 @@ public fun NetworkInspector(
     val endpoints = remember(calls) { calls.distinctBy { it.groupKey }.size }
 
     Column(modifier.fillMaxWidth()) {
-        Text(
-            "${calls.size} requests · $endpoints endpoints · $failures failed",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-        )
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "${calls.size} requests · $endpoints endpoints · $failures failed",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = NetworkLogger::clear, enabled = calls.isNotEmpty()) {
+                Icon(
+                    DeckIcons.Delete,
+                    contentDescription = "Clear requests",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = if (calls.isEmpty()) 0.38f else 1f),
+                )
+            }
+        }
         SegmentedPills(
             options = NetworkView.entries,
             selected = view,
@@ -74,7 +87,7 @@ public fun NetworkInspector(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
         SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search URL, operation, status")
-        FilterPillRow(verticalAlignment = Alignment.CenterVertically) {
+        FilterPillRow {
             FilterPill(text = "All ${calls.size}", selected = filter == FILTER_ALL, onClick = { filter = FILTER_ALL })
             FilterPill(
                 text = "Errors $failures",
@@ -90,13 +103,6 @@ public fun NetworkInspector(
                     onClick = { filter = highlight.label },
                     color = highlight.color,
                     showDot = true,
-                )
-            }
-            IconButton(onClick = NetworkLogger::clear, enabled = calls.isNotEmpty()) {
-                Icon(
-                    DeckIcons.Delete,
-                    contentDescription = "Clear requests",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = if (calls.isEmpty()) 0.38f else 1f),
                 )
             }
         }

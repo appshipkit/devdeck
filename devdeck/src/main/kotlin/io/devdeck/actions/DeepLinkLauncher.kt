@@ -3,14 +3,14 @@ package io.devdeck.actions
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,16 +19,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import io.devdeck.components.BulletItem
 import io.devdeck.components.SectionTitle
+import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
 
 @Composable
@@ -40,22 +41,24 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         if (launchDeepLink(context, link, restrictToApp)) recent = DeepLinkHistory.add(context, link)
     }
     Column(modifier.fillMaxWidth()) {
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OutlinedTextField(
-                value = uri,
-                onValueChange = { uri = it },
-                placeholder = { Text("myapp://product/123") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
-                keyboardActions = KeyboardActions(onGo = { open(uri.trim()) }),
-                modifier = Modifier.weight(1f),
-            )
-            Button(onClick = { open(uri.trim()) }, enabled = uri.isNotBlank()) { Text("Open") }
-        }
+        OutlinedTextField(
+            value = uri,
+            onValueChange = { uri = it },
+            placeholder = { Text("myapp://product/123", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+            keyboardActions = KeyboardActions(onGo = { if (uri.isNotBlank()) open(uri.trim()) }),
+            trailingIcon = {
+                IconButton(onClick = { open(uri.trim()) }, enabled = uri.isNotBlank()) {
+                    Icon(
+                        DeckIcons.Send,
+                        contentDescription = "Open deep link",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = if (uri.isBlank()) 0.38f else 1f),
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        )
         if (suggestions.isNotEmpty()) {
             SectionTitle("Suggested")
             suggestions.forEach { link ->
