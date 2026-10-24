@@ -243,6 +243,7 @@ public final class io/devdeck/actions/DeepLinkLauncherKt {
 public final class io/devdeck/appearance/AppearanceKt {
 	public static final fun DisplaySettingsButton (Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 	public static final fun LanguageSelector (Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun LocaleSettingsButton (Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 	public static final fun NightModeSelector (Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 

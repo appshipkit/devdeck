@@ -2,16 +2,12 @@ package io.devdeck.device
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.Display
 import androidx.compose.runtime.Immutable
 import androidx.core.os.ConfigurationCompat
-import java.security.MessageDigest
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,7 +46,6 @@ public fun systemSnapshot(context: Context, buildInfo: Map<String, String> = emp
 }
 
 internal fun appRows(context: Context): List<Pair<String, String>> {
-    val packageInfo = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
     val version = appVersionInfo(context)
     val appInfo = context.applicationInfo
     val debuggable = appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
@@ -62,12 +57,8 @@ internal fun appRows(context: Context): List<Pair<String, String>> {
         buildConfig["FLAVOR"]?.takeIf { it.isNotEmpty() }?.let { "Flavor" to it },
         "Debuggable" to if (debuggable) "Yes" else "No",
         "R8" to r8State(),
-        signingSummary(context)?.let { "Signed with" to it },
-        "Installed from" to installerName(context),
         "Target SDK" to appInfo.targetSdkVersion.toString(),
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) "Min SDK" to appInfo.minSdkVersion.toString() else null,
-        packageInfo?.let { "Installed" to formatDateTime(it.firstInstallTime) },
-        packageInfo?.let { "Updated" to formatDateTime(it.lastUpdateTime) },
     )
 }
 
@@ -101,42 +92,6 @@ private fun r8State(): String {
         else -> "Off"
     }
 }
-
-private fun signingSummary(context: Context): String? = runCatching {
-    val pm = context.packageManager
-    val certificates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo?.apkContentsSigners
-    } else {
-        @Suppress("DEPRECATION")
-        pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
-    }
-    val bytes = certificates?.firstOrNull()?.toByteArray() ?: return null
-    val certificate = CertificateFactory.getInstance("X.509").generateCertificate(bytes.inputStream()) as X509Certificate
-    val key = if (certificate.subjectX500Principal.name.contains("CN=Android Debug")) "Debug key" else "Release key"
-    val fingerprint = MessageDigest.getInstance("SHA-256").digest(bytes).take(FINGERPRINT_BYTES)
-        .joinToString(":") { "%02X".format(it) }
-    "$key · SHA-256 $fingerprint…"
-}.getOrNull()
-
-private fun installerName(context: Context): String {
-    val installer = runCatching {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName
-        } else {
-            @Suppress("DEPRECATION")
-            context.packageManager.getInstallerPackageName(context.packageName)
-        }
-    }.getOrNull()
-    return when (installer) {
-        null -> "adb or sideloaded"
-        "com.android.vending" -> "Google Play"
-        "dev.firebase.appdistribution" -> "Firebase App Distribution"
-        "com.android.shell" -> "adb"
-        else -> installer
-    }
-}
-
-private const val FINGERPRINT_BYTES = 8
 
 private fun deviceRows(context: Context): List<Pair<String, String>> {
     val metrics = DisplayMetrics()

@@ -3,6 +3,7 @@ package io.devdeck.plugin
 import androidx.compose.runtime.Composable
 import io.devdeck.appearance.DisplaySettingsButton
 import io.devdeck.appearance.LanguageSelector
+import io.devdeck.appearance.LocaleSettingsButton
 import io.devdeck.appearance.NightModeSelector
 
 public class AppearancePlugin(
@@ -18,6 +19,9 @@ public class AppearancePlugin(
     override fun Content() {
         if (nightMode) NightModeSelector()
         if (languageTags.isNotEmpty()) LanguageSelector(languageTags)
-        if (displaySettings) DisplaySettingsButton()
+        if (displaySettings) {
+            LocaleSettingsButton()
+            DisplaySettingsButton()
+        }
     }
 }

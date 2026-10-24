@@ -11,6 +11,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
 - `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
+- A *System language & region* button in the User Interface section opens Android's language and region settings (`LocaleSettingsButton()`).
 - The feature flags page has *Restart screen* and *Restart app* buttons, so flag changes that are read once per screen or process take effect.
 - After switching endpoints, `EndpointPlugin` shows a *Restart app* button so the app picks up the new endpoint (unless `restartOnChange` already restarts it).
 - Share buttons on the Logs and Network activity pages, and share-all / delete-all in the capture gallery.
@@ -25,7 +26,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - The deep link launcher opens links from a send icon inside the field, leaving more room on small phones.
 - The sample app is named DevDeck.
 - Permissions open on their own page instead of expanding inside the System section.
-- The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable, R8 obfuscated or shrunk, signed with the debug or a release key, where it was installed from, target and min SDK, and install and update times. `AppInfo()` and the device & app snapshot show the same details.
+- The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable or R8 obfuscated or shrunk, and target and min SDK. `AppInfo()` and the device & app snapshot show the same details.
 - Toggle flags no longer show an *Overridden* subtitle.
 - Clearing logs, crash logs, breadcrumbs, requests, console lines, captures or shared preferences, and resetting all feature flags, now ask for a second tap.
 - Network request actions (*Copy URL*, *Copy cURL*, *Share*) and label rows wrap on narrow screens instead of overflowing.
