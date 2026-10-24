@@ -94,19 +94,30 @@ public object LogcatReader {
 internal object LogcatParser {
 
     private val THREADTIME = Regex("""^(\d\d-\d\d \d\d:\d\d:\d\d\.\d{3})\s+(\d+)\s+(\d+)\s+([VDIWEFA])\s+(.*?)\s*: ?(.*)$""")
-    private val year = Calendar.getInstance().get(Calendar.YEAR)
-    private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+    private val timeFormat = object : ThreadLocal<SimpleDateFormat>() {
+        override fun initialValue() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+    }
 
-    fun parse(raw: String, pid: Int): ConsoleLine? {
+    fun parse(raw: String, pid: Int, nowMillis: Long = System.currentTimeMillis()): ConsoleLine? {
         val match = THREADTIME.matchEntire(raw) ?: return null
         val (time, linePid, tid, level, tag, message) = match.destructured
         if (linePid.toIntOrNull() != pid) return null
+        val year = yearFor(time.substring(0, 2).toIntOrNull() ?: 0, nowMillis)
         return ConsoleLine(
             level = ConsoleLevel.fromLetter(level.first()),
             tag = tag.ifBlank { "(no tag)" },
             message = message,
-            timestampMillis = runCatching { timeFormat.parse("$year-$time")?.time }.getOrNull() ?: System.currentTimeMillis(),
+            timestampMillis = runCatching { timeFormat.get()?.parse("$year-$time")?.time }.getOrNull() ?: nowMillis,
             threadId = tid.toIntOrNull(),
         )
     }
+
+    // threadtime omits the year; a line from December read in January belongs to the previous year.
+    fun yearFor(month: Int, nowMillis: Long): Int {
+        val now = Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val year = now.get(Calendar.YEAR)
+        return if (month - (now.get(Calendar.MONTH) + 1) > MONTHS_AHEAD_LIMIT) year - 1 else year
+    }
+
+    private const val MONTHS_AHEAD_LIMIT = 6
 }

@@ -40,14 +40,17 @@ public class ScreenRecordingService : Service() {
             ACTION_START -> {
                 val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val data = IntentCompat.getParcelableExtra(intent, EXTRA_DATA, Intent::class.java)
-                if (data == null || projection != null) {
-                    if (projection == null) {
+                when {
+                    // Already recording: satisfy the foreground-service contract and keep going.
+                    projection != null -> startInForeground()
+
+                    data == null -> {
                         startInForeground()
                         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                        stopSelf()
                     }
-                    stopSelf()
-                } else {
-                    start(resultCode, data)
+
+                    else -> start(resultCode, data)
                 }
             }
 

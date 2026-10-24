@@ -38,7 +38,7 @@ public class EndpointPlugin(
             selected = selected,
             onSelected = { endpoint ->
                 selected = endpoint
-                save(context, key, endpoint)
+                save(context, key, endpoint, synchronous = restartOnChange)
                 DeckLogger.log("$title switched to ${endpoint.name}", payload = endpoint.url)
                 onChanged?.invoke(endpoint)
                 if (restartOnChange) AppActions.restart(context)
@@ -60,8 +60,9 @@ public class EndpointPlugin(
             return endpoints.firstOrNull { it.url == url } ?: default
         }
 
-        private fun save(context: Context, key: String, endpoint: Endpoint) {
-            DeckSettings.of(context).edit(commit = true) { putString(prefKey(key), endpoint.url) }
+        // A restart kills the process right away, so only then must the write hit disk before returning.
+        private fun save(context: Context, key: String, endpoint: Endpoint, synchronous: Boolean) {
+            DeckSettings.of(context).edit(commit = synchronous) { putString(prefKey(key), endpoint.url) }
         }
 
         private fun prefKey(key: String) = if (key == DEFAULT_KEY) "endpoint.url" else "endpoint.url_$key"
