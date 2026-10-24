@@ -67,7 +67,7 @@ public object ScreenCapture {
     }
 
     public fun captures(context: Context): List<File> = captureDirectory(context)
-        .listFiles { file -> file.isFile && (file.extension == "png" || file.extension == "mp4") }
+        .listFiles { file -> file.isFile && (file.isCaptureImage || file.isCaptureVideo) }
         .orEmpty()
         .sortedByDescending { it.lastModified() }
 
