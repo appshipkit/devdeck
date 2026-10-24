@@ -30,7 +30,7 @@ import io.devdeck.components.Pill
 internal fun NetworkCallCard(call: NetworkCall, highlights: List<NetworkHighlight>, repeatCount: Int = 1, showTitle: Boolean = true) {
     val deckState = LocalDeckState.current
     val matched = remember(call, highlights) { highlights.filter { it.matches(call) } }
-    val accent = matched.firstOrNull()?.color ?: if (call.isFailure) statusColor(call) else Color.Transparent
+    val accent = matched.firstOrNull()?.color ?: statusColor(call)
     CardRow(
         accent = accent,
         onClick = { deckState?.navigateTo(call.displayName) { NetworkCallDetail(call.id, highlights = highlights) } },

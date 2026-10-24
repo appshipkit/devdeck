@@ -1,5 +1,11 @@
 package io.devdeck
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -139,6 +146,7 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
                     )
                 }
             }
+            HeaderIconButton(DeckIcons.Settings, "Open app settings") { openAppSettings(context) }
             CloseButton(onClose)
         }
         val update = UpdateChecker.availableUpdate
@@ -177,6 +185,24 @@ private fun DeckPageBar(title: String, onBack: () -> Unit, onClose: () -> Unit) 
             modifier = Modifier.weight(1f).padding(start = 4.dp),
         )
         CloseButton(onClose)
+    }
+}
+
+@Composable
+private fun HeaderIconButton(icon: ImageVector, description: String, onClick: () -> Unit) {
+    val card = LocalDeckColors.current?.card ?: MaterialTheme.colorScheme.surfaceVariant
+    IconButton(onClick = onClick) {
+        Box(Modifier.size(32.dp).background(card, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = description, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+private fun openAppSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+    try {
+        context.startActivity(if (context is Activity) intent else intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    } catch (_: ActivityNotFoundException) {
     }
 }
 

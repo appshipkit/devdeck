@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,14 +29,29 @@ import io.devdeck.LocalDeckState
 import io.devdeck.internal.DeckIcons
 
 @Composable
-internal fun SectionCard(title: String, collapsible: Boolean, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+internal fun SectionCard(
+    title: String,
+    collapsible: Boolean,
+    modifier: Modifier = Modifier,
+    closeOthersOnOpen: Boolean = false,
+    content: @Composable () -> Unit,
+) {
     val drawerState = LocalDeckState.current
-    val key = "section/$title"
+    val key = "$SECTION_KEY_PREFIX$title"
     var localExpanded by rememberSaveable(title) { mutableStateOf(false) }
     val expanded = !collapsible || (drawerState?.expandedRows?.get(key) ?: localExpanded)
     val reveal = rememberRevealOnExpand()
     val toggle = {
-        if (drawerState != null) drawerState.expandedRows[key] = !expanded else localExpanded = !expanded
+        if (drawerState != null) {
+            if (!expanded && closeOthersOnOpen) {
+                drawerState.expandedRows.keys
+                    .filter { it.startsWith(SECTION_KEY_PREFIX) && it != key }
+                    .forEach { drawerState.expandedRows[it] = false }
+            }
+            drawerState.expandedRows[key] = !expanded
+        } else {
+            localExpanded = !expanded
+        }
         if (!expanded) reveal.request()
     }
     val (emoji, name) = remember(title) { splitSectionTitle(title) }
@@ -73,9 +87,11 @@ internal fun SectionCard(title: String, collapsible: Boolean, modifier: Modifier
             Column {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                 Spacer(Modifier.height(4.dp))
-                content()
+                InfoGroup(content = content)
                 Spacer(Modifier.height(4.dp))
             }
         }
     }
 }
+
+private const val SECTION_KEY_PREFIX = "section/"

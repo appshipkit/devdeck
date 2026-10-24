@@ -66,10 +66,15 @@ public object MemorySimulator {
 
     public fun allocate(megabytes: Int): Long {
         val before = heldBytes
+        val runtime = Runtime.getRuntime()
+        val limit = runtime.maxMemory() * MAX_FILL_PERCENT / 100
         try {
-            repeat(megabytes) { chunks += ByteArray(CHUNK_BYTES) }
+            repeat(megabytes) {
+                if (runtime.totalMemory() - runtime.freeMemory() + CHUNK_BYTES > limit) return@repeat
+                chunks += ByteArray(CHUNK_BYTES)
+            }
         } catch (_: OutOfMemoryError) {
-            chunks.removeLastOrNull()
+            repeat(OOM_HEADROOM_CHUNKS) { chunks.removeLastOrNull() }
         }
         heldBytes = chunks.size.toLong() * CHUNK_BYTES
         return heldBytes - before
@@ -77,7 +82,7 @@ public object MemorySimulator {
 
     public fun fillHeap(percent: Int): Long {
         val runtime = Runtime.getRuntime()
-        val target = runtime.maxMemory() * percent.coerceIn(1, 99) / 100
+        val target = runtime.maxMemory() * percent.coerceIn(1, MAX_FILL_PERCENT) / 100
         val used = runtime.totalMemory() - runtime.freeMemory()
         val missing = target - used
         if (missing <= 0) return 0L
@@ -96,6 +101,8 @@ public object MemorySimulator {
         return info.importance > ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE
     }
 
+    private const val MAX_FILL_PERCENT = 90
+    private const val OOM_HEADROOM_CHUNKS = 16
     private const val CHUNK_BYTES = 1024 * 1024
     private const val KILL_DELAY_MILLIS = 1_000L
 }

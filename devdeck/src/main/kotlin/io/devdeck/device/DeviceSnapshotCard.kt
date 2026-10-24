@@ -5,30 +5,36 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckColors
 import io.devdeck.capture.ScreenCapture
+import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.copyToClipboard
 import io.devdeck.internal.shareFiles
 import java.io.File
@@ -61,14 +68,14 @@ public fun DeviceSnapshotCard(modifier: Modifier = Modifier, buildInfo: () -> Ma
                 drawLayer(layer)
             },
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            SnapshotAction(DeckIcons.Share, "Share", primary = true) {
                 scope.launch {
                     val file = saveSnapshot(context, layer) ?: return@launch
                     context.shareFiles(listOf(file), text = snapshot.toText(), subject = "${snapshot.appName} device & app info")
                 }
-            }) { Text("Share image") }
-            OutlinedButton(onClick = {
+            }
+            SnapshotAction(DeckIcons.Download, "Save") {
                 scope.launch {
                     val saved = saveSnapshot(context, layer) != null
                     Toast.makeText(
@@ -77,9 +84,32 @@ public fun DeviceSnapshotCard(modifier: Modifier = Modifier, buildInfo: () -> Ma
                         Toast.LENGTH_SHORT,
                     ).show()
                 }
-            }) { Text("Save") }
-            TextButton(onClick = { context.copyToClipboard("Device & app info", snapshot.toText()) }) { Text("Copy text") }
+            }
+            SnapshotAction(DeckIcons.ContentCopy, "Copy text") { context.copyToClipboard("Device & app info", snapshot.toText()) }
         }
+    }
+}
+
+@Composable
+private fun SnapshotAction(icon: ImageVector, label: String, primary: Boolean = false, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Box(
+            Modifier
+                .size(48.dp)
+                .background(if (primary) colors.primary else colors.primary.copy(alpha = 0.12f), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = if (primary) colors.onPrimary else colors.primary, modifier = Modifier.size(22.dp))
+        }
+        Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurface)
     }
 }
 

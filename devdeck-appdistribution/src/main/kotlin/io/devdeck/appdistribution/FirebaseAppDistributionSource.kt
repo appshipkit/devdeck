@@ -17,6 +17,8 @@ public class FirebaseAppDistributionSource(
 
     override val requiresSignIn: Boolean = true
 
+    override val browseBuildsUrl: String = TESTER_PAGE_URL
+
     override fun isSignedIn(): Boolean = runCatching { distribution().isTesterSignedIn }.getOrDefault(false)
 
     override suspend fun signIn() {
@@ -54,3 +56,5 @@ private suspend fun <T> Task<T>.await(): T = suspendCancellableCoroutine { conti
         }
     }
 }
+
+private const val TESTER_PAGE_URL = "https://appdistribution.firebase.google.com/testerapps"

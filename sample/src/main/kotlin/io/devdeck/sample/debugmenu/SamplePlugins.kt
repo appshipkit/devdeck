@@ -6,6 +6,7 @@ import io.devdeck.flags.FeatureFlagStore
 import io.devdeck.network.NetworkHighlight
 import io.devdeck.plugin.AppActionsPlugin
 import io.devdeck.plugin.AppearancePlugin
+import io.devdeck.plugin.BreadcrumbsPlugin
 import io.devdeck.plugin.CrashPlugin
 import io.devdeck.plugin.DeckPlugin
 import io.devdeck.plugin.DevicePlugin
@@ -31,6 +32,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogcatPlugin(),
     TimberLogsPlugin(),
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
+    BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
     AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),

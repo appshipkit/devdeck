@@ -64,7 +64,7 @@ public fun FilterPillRow(
         modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = verticalAlignment,
         content = content,

@@ -25,6 +25,7 @@ fun DrawerControls(options: DrawerOptions, modifier: Modifier = Modifier) {
         ControlSwitch("Two-finger swipe to open", options.twoFingerSwipe) { options.twoFingerSwipe = it }
         ControlSwitch("Ctrl + Shift + D shortcut", options.keyboardShortcut) { options.keyboardShortcut = it }
         ControlSwitch("Floating button", options.floatingButton) { options.floatingButton = it }
+        ControlSwitch("One section open at a time", options.oneSectionAtATime) { options.oneSectionAtATime = it }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Side", modifier = Modifier.padding(end = 8.dp))
             DeckSide.entries.forEach { side ->

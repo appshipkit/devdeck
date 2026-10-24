@@ -21,4 +21,18 @@ class AppPermissionTest {
         assertEquals("Dynamic receiver not exported permission", permission.displayName)
         assertEquals("io.devdeck.sample", permission.owner)
     }
+
+    @Test
+    fun `denied first, then runtime, then install-time`() {
+        val runtime = AppPermission("android.permission.CAMERA", granted = true, kind = PermissionKind.Runtime)
+        val install = AppPermission("android.permission.INTERNET", granted = true, kind = PermissionKind.InstallTime)
+
+        val sorted = listOf(install, runtime).sortedWith(
+            compareBy({
+                it.granted
+            }, { it.kind == PermissionKind.InstallTime }, { it.displayName }),
+        )
+
+        assertEquals(listOf(runtime, install), sorted)
+    }
 }

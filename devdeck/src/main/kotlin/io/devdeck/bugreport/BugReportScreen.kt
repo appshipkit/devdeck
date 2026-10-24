@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.breadcrumbs.Breadcrumbs
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.SectionDivider
@@ -120,6 +121,9 @@ private fun writeLogFile(context: Context): File {
     val logcat = LogcatReader.buffer.lines.value.takeLast(LOGCAT_LINES_IN_REPORT)
     file.writeText(
         buildString {
+            appendLine("=== Recent steps ===")
+            appendLine(Breadcrumbs.format(Breadcrumbs.recent(STEPS_IN_REPORT)).ifEmpty { "(none)" })
+            appendLine()
             appendLine("=== DevDeck logs ===")
             appendLine(customLogs.ifEmpty { "(none)" })
             if (logcat.isNotEmpty()) {
@@ -133,3 +137,4 @@ private fun writeLogFile(context: Context): File {
 }
 
 private const val LOGCAT_LINES_IN_REPORT = 1_000
+private const val STEPS_IN_REPORT = 100

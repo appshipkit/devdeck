@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.edit
+import io.devdeck.internal.DeckSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,6 +27,9 @@ public object UpdateChecker {
     public var isSignedIn: Boolean by mutableStateOf(true)
         private set
 
+    public var builds: List<AvailableUpdate> by mutableStateOf(emptyList())
+        private set
+
     public val availableUpdate: AvailableUpdate?
         get() = when (val current = status) {
             is UpdateStatus.Available -> current.update
@@ -44,7 +48,7 @@ public object UpdateChecker {
     public fun attach(context: Context, source: UpdateSource, checkIntervalMillis: Long = DEFAULT_CHECK_INTERVAL_MILLIS) {
         this.source = source
         this.checkIntervalMillis = checkIntervalMillis
-        prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        prefs = DeckSettings.of(context)
         isSignedIn = source.isSignedIn()
     }
 
@@ -74,8 +78,12 @@ public object UpdateChecker {
     }
 
     public fun install() {
-        val current = source ?: return
         val update = availableUpdate ?: return
+        install(update)
+    }
+
+    public fun install(update: AvailableUpdate) {
+        val current = source ?: return
         launchExclusive { installUpdate(current, update) }
     }
 
@@ -103,6 +111,7 @@ public object UpdateChecker {
         )
         lastCheckedAtMillis = clock()
         isSignedIn = current.isSignedIn()
+        builds = runCatching { current.availableBuilds() }.getOrDefault(emptyList())
         (status as? UpdateStatus.Available)?.update?.let(::notifyOnce)
     }
 
@@ -116,6 +125,7 @@ public object UpdateChecker {
         status = UpdateStatus.Idle
         lastCheckedAtMillis = null
         isSignedIn = true
+        builds = emptyList()
         notifier = null
         prefs = null
         clock = System::currentTimeMillis
@@ -131,8 +141,7 @@ public object UpdateChecker {
 
     private fun Throwable.describe(): String = message?.takeIf { it.isNotBlank() } ?: javaClass.simpleName
 
-    private const val PREFS = "devdeck_updates"
-    private const val KEY_NOTIFIED = "notified_release"
+    private const val KEY_NOTIFIED = "updates.notified_release"
     public const val DEFAULT_CHECK_INTERVAL_MILLIS: Long = 4L * 60 * 60 * 1000
 }
 

@@ -20,5 +20,9 @@ public interface UpdateSource {
 
     public suspend fun checkForUpdate(): AvailableUpdate?
 
+    public suspend fun availableBuilds(): List<AvailableUpdate> = emptyList()
+
+    public val browseBuildsUrl: String? get() = null
+
     public suspend fun install(update: AvailableUpdate, onProgress: (Float?) -> Unit)
 }

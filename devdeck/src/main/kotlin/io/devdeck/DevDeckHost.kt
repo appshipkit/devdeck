@@ -62,7 +62,9 @@ public fun DevDeckHost(
     val context = LocalContext.current
     LaunchedEffect(plugins) { DeckPluginRegistry.attach(plugins, context) }
     DevDeckHost(
-        drawerContent = { DeckPluginContent(plugins, collapsibleSections = style.collapsibleSections) },
+        drawerContent = {
+            DeckPluginContent(plugins, collapsibleSections = style.collapsibleSections, oneSectionAtATime = style.oneSectionAtATime)
+        },
         modifier = modifier,
         state = state,
         enabled = enabled,

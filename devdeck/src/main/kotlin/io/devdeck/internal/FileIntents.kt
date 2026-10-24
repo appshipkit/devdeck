@@ -35,6 +35,7 @@ internal fun Context.shareFiles(files: List<File>, text: String? = null, subject
     intent.type = when {
         files.all { it.extension == "png" } -> "image/png"
         files.all { it.extension == "mp4" } -> "video/mp4"
+        files.all { it.extension == "txt" } -> "text/plain"
         else -> "*/*"
     }
     text?.let { intent.putExtra(Intent.EXTRA_TEXT, it) }

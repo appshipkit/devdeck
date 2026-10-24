@@ -17,6 +17,12 @@ object SampleUpdateSource : UpdateSource {
         )
     }
 
+    override suspend fun availableBuilds(): List<AvailableUpdate> = listOf(
+        AvailableUpdate("0.2.0", 200, "Card layout, simulators and fixes"),
+        AvailableUpdate("0.1.1", 110, "Fixes for the network inspector"),
+        AvailableUpdate("0.1.0", 100, "First test build"),
+    )
+
     override suspend fun install(update: AvailableUpdate, onProgress: (Float?) -> Unit) {
         onProgress(null)
         delay(600)

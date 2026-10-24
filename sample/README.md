@@ -55,6 +55,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogcatPlugin(),
     TimberLogsPlugin(),
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
+    BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
     AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
@@ -79,6 +80,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `LogcatPlugin` | **Logs 📚 → Logcat**: everything the sample's process writes to logcat, e.g. `SampleApi` responses and the *Logcat* demo buttons. |
 | `TimberLogsPlugin` | **Logs 📚 → Timber logs**: every `Timber` call, grouped by tag. |
 | `LogsPlugin` | **Logs 📚**: custom `DeckLogger` logs. General, Analytics and Lifecycle rows with entry counts; each opens its own page. |
+| `BreadcrumbsPlugin` | **Logs 📚 → Breadcrumbs**: screens, taps, requests and app events. Open the View-based screen, tap its buttons and come back to see them named. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
 | `AppActionsPlugin` | **App 🛠️**: deep-link launcher (suggests `devdeck://sample/legacy`), WebView debugging, restart, clear cache or data, kill. |
 | `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v0.2.0 (200) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
@@ -86,7 +88,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
 | `PerformancePlugin` | **System 📱**: FPS / jank / memory overlay and memory details. |
 | `StoragePlugin` | **System 📱**: SharedPreferences browser/editor and storage usage. |
-| `DevicePlugin` | **System 📱**: device info, permissions, app info, developer options. |
+| `DevicePlugin` | **System 📱**: device info, permissions with request/revoke actions, developer options. |
 | `tapCounterPlugin` | **Custom 🧩**: an example of your own plugin. |
 | `controlsDemoPlugin` | **Custom 🧩 → Controls**: the switch, checkbox, dropdown and radio components. |
 | `InfoPlugin` | **Info ℹ️**: *Device & app snapshot* (an image you can share or save, with the current endpoint as build info), bug report, and the version row. |

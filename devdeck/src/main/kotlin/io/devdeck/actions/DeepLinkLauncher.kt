@@ -29,6 +29,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import io.devdeck.components.BulletItem
 import io.devdeck.components.SectionTitle
+import io.devdeck.internal.DeckSettings
 
 @Composable
 public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<String> = emptyList(), restrictToApp: Boolean = true) {
@@ -85,16 +86,15 @@ private fun launchDeepLink(context: Context, link: String, restrictToApp: Boolea
 }
 
 private object DeepLinkHistory {
-    private const val PREFS = "devdeck_deeplinks"
-    private const val KEY = "recent"
+    private const val KEY = "deeplinks.recent"
     private const val MAX = 10
 
-    fun load(context: Context): List<String> = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
+    fun load(context: Context): List<String> = DeckSettings.of(context).getString(KEY, null)
         ?.split('\n')?.filter { it.isNotBlank() }.orEmpty()
 
     fun add(context: Context, link: String): List<String> {
         val updated = (listOf(link) + load(context).filterNot { it == link }).take(MAX)
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString(KEY, updated.joinToString("\n")) }
+        DeckSettings.of(context).edit { putString(KEY, updated.joinToString("\n")) }
         return updated
     }
 }

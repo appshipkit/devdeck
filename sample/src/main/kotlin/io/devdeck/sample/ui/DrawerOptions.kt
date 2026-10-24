@@ -18,6 +18,7 @@ class DrawerOptions {
     var keyboardShortcut by mutableStateOf(true)
     var floatingButton by mutableStateOf(true)
     var side by mutableStateOf(DeckSide.End)
+    var oneSectionAtATime by mutableStateOf(false)
 
     val gestures: DeckGestures
         get() = DeckGestures(

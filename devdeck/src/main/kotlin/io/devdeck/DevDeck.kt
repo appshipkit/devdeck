@@ -131,7 +131,11 @@ public object DevDeck {
                 if (activeConfig != null) {
                     DevDeckOverlay(
                         drawerContent = {
-                            DeckPluginContent(activeConfig.plugins, collapsibleSections = activeConfig.style.collapsibleSections)
+                            DeckPluginContent(
+                                activeConfig.plugins,
+                                collapsibleSections = activeConfig.style.collapsibleSections,
+                                oneSectionAtATime = activeConfig.style.oneSectionAtATime,
+                            )
                             activeConfig.content?.invoke(this)
                         },
                         state = state,

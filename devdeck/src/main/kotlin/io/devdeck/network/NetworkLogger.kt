@@ -1,5 +1,7 @@
 package io.devdeck.network
 
+import io.devdeck.breadcrumbs.BreadcrumbType
+import io.devdeck.breadcrumbs.Breadcrumbs
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,14 +69,25 @@ public object NetworkLogger {
                 protocol = protocol,
             )
         }
+        breadcrumb(id)
     }
 
     public fun fail(id: Long, error: String, durationMillis: Long? = null) {
         update(id) { it.copy(error = error, durationMillis = durationMillis) }
+        breadcrumb(id)
     }
 
     public fun clear() {
         _calls.value = emptyList()
+    }
+
+    private fun breadcrumb(id: Long) {
+        if (!Breadcrumbs.captureNetwork) return
+        val call = _calls.value.firstOrNull { it.id == id } ?: return
+        val outcome =
+            call.error?.let { "failed: ${it.substringBefore(':').substringAfterLast('.')}" } ?: call.responseCode?.toString().orEmpty()
+        val duration = call.durationMillis?.let { " · $it ms" }.orEmpty()
+        Breadcrumbs.add("${call.method} ${call.displayName} → $outcome$duration", BreadcrumbType.Network)
     }
 
     private fun update(id: Long, transform: (NetworkCall) -> NetworkCall) {

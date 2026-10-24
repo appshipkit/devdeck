@@ -18,7 +18,7 @@ import io.devdeck.components.Pill
 internal fun NetworkGroupCard(group: NetworkGroup, highlights: List<NetworkHighlight>) {
     val deckState = LocalDeckState.current
     val matched = remember(group, highlights) { highlights.filter { highlight -> group.calls.any(highlight.matches) } }
-    val accent = matched.firstOrNull()?.color ?: if (group.failures > 0) Color(0xFFD32F2F) else Color.Transparent
+    val accent = matched.firstOrNull()?.color ?: if (group.failures > 0) Color(0xFFD32F2F) else Color(0xFF2E7D32)
     CardRow(
         accent = accent,
         onClick = { deckState?.navigateTo(group.title) { NetworkGroupDetail(group.key, highlights = highlights) } },

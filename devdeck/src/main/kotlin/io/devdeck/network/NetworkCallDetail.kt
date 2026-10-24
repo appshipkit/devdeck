@@ -21,6 +21,7 @@ import io.devdeck.components.BulletItem
 import io.devdeck.components.CodeBlock
 import io.devdeck.components.CodeLanguage
 import io.devdeck.components.ExpandableItem
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.Pill
 import io.devdeck.components.SectionDivider
 import io.devdeck.components.TextItem
@@ -59,25 +60,27 @@ internal fun NetworkCallDetail(callId: Long, modifier: Modifier = Modifier, high
         SectionDivider()
 
         ExpandableItem("Overview", initiallyExpanded = true) {
-            call.operationName?.let { BulletItem("Operation", it) }
-            call.simulation?.let { BulletItem("Simulated by DevDeck", it) }
-            BulletItem("Method", call.method)
-            BulletItem(
-                "Status",
-                listOfNotNull(
-                    NetworkFormat.status(call),
-                    call.responseMessage?.takeIf {
-                        it.isNotBlank()
-                    },
-                ).joinToString(" "),
-            )
-            BulletItem("Host", call.host)
-            BulletItem("Path", call.path)
-            call.protocol?.let { BulletItem("Protocol", it) }
-            BulletItem("Started", NetworkFormat.dateTime(call.startedAtMillis))
-            BulletItem("Duration", NetworkFormat.duration(call.durationMillis))
-            BulletItem("Request size", NetworkFormat.size(call.requestSize))
-            BulletItem("Response size", NetworkFormat.size(call.responseSize))
+            InfoGroup {
+                call.operationName?.let { BulletItem("Operation", it) }
+                call.simulation?.let { BulletItem("Simulated by DevDeck", it) }
+                BulletItem("Method", call.method)
+                BulletItem(
+                    "Status",
+                    listOfNotNull(
+                        NetworkFormat.status(call),
+                        call.responseMessage?.takeIf {
+                            it.isNotBlank()
+                        },
+                    ).joinToString(" "),
+                )
+                BulletItem("Host", call.host)
+                BulletItem("Path", call.path)
+                call.protocol?.let { BulletItem("Protocol", it) }
+                BulletItem("Started", NetworkFormat.dateTime(call.startedAtMillis))
+                BulletItem("Duration", NetworkFormat.duration(call.durationMillis))
+                BulletItem("Request size", NetworkFormat.size(call.requestSize))
+                BulletItem("Response size", NetworkFormat.size(call.responseSize))
+            }
         }
         call.error?.let { error ->
             ExpandableItem("Error", initiallyExpanded = true) { CodeBlock(error, label = "Error") }

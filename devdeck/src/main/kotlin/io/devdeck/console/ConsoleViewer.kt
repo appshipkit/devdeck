@@ -25,6 +25,7 @@ import io.devdeck.LocalDeckState
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.SearchField
 import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
@@ -105,7 +106,7 @@ public fun ConsoleViewer(
                 selected = view,
                 onSelected = { view = it },
                 optionLabel = { it.label },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
         SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search tag or message")
@@ -125,14 +126,18 @@ public fun ConsoleViewer(
             visible.isEmpty() -> TextItem(if (source.isEmpty()) "Nothing logged yet" else "No lines match")
             view == ConsoleView.ByTag -> {
                 val groups = visible.groupBy { it.tag }.entries.sortedByDescending { it.value.last().timestampMillis }
-                groups.take(maxRendered).forEach { (tag, lines) ->
-                    ConsoleTagRow(tag, lines) {
-                        deckState?.navigateTo(tag) { ConsoleViewer(buffer, title = "$title · $tag", fixedTag = tag) }
+                InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
+                    groups.take(maxRendered).forEach { (tag, lines) ->
+                        ConsoleTagRow(tag, lines) {
+                            deckState?.navigateTo(tag) { ConsoleViewer(buffer, title = "$title · $tag", fixedTag = tag) }
+                        }
                     }
                 }
             }
             else -> {
-                visible.asReversed().take(maxRendered).forEach { line -> ConsoleLineRow(line, showTag = fixedTag == null) }
+                InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
+                    visible.asReversed().take(maxRendered).forEach { line -> ConsoleLineRow(line, showTag = fixedTag == null) }
+                }
                 if (visible.size >
                     maxRendered
                 ) {
@@ -151,3 +156,5 @@ private fun shareLines(context: Context, title: String, lines: List<ConsoleLine>
     file.writeText(ConsoleFormat.export(lines))
     context.shareFiles(listOf(file), subject = title)
 }
+
+private const val LIST_DIVIDER_THRESHOLD = 2

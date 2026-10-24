@@ -133,13 +133,14 @@ DevDeck.install(
 | `LogcatPlugin` | Logs | Live logcat for your app's process | ✓ |
 | `TimberLogsPlugin` | Logs | Every Timber call (module `devdeck-timber`) | — |
 | `LogsPlugin` | Logs | Your own `DeckLogger.log(...)` entries, one row per tag; optional lifecycle logs | ✓ |
+| `BreadcrumbsPlugin` | Logs | Timeline of screens, taps, requests and app events; saved with crashes and bug reports | ✓ |
 | `CrashPlugin` | Logs | Saved crashes with stack traces | ✓ |
 | `AppActionsPlugin` | App | Deep-link launcher, WebView debugging, restart, clear cache/data, kill | ✓ |
 | `UiToolsPlugin` | User Interface | Slow animations, keyline overlay, screenshot, screen recording, gallery | ✓ |
 | `AppearancePlugin` | User Interface | Dark mode (Android 12+) and app language (Android 13+) override | ✓ |
 | `PerformancePlugin` | System | FPS / jank / memory overlay and memory details | ✓ |
 | `StoragePlugin` | System | SharedPreferences browser/editor and storage usage | ✓ |
-| `DevicePlugin` | System | Device info, permissions, app info, developer options | ✓ |
+| `DevicePlugin` | System | Device info, permissions (request, revoke, open settings), developer options | ✓ |
 | `UpdatesPlugin` | App | New test build check, release notes and install (module `devdeck-appdistribution` for Firebase) | — needs a source |
 | `InfoPlugin` | Info | Device & app snapshot image, bug report, version | ✓ |
 
@@ -219,7 +220,7 @@ The memory rows under **Simulate 🧪** reproduce what the app sees on a low-mem
 
 ### Test build updates
 
-`UpdatesPlugin` tells testers when a newer test build is available. It shows a green *Update · v1.4.0 (412)* chip in the drawer header and a dot on the floating button. The plugin row shows the release notes, an *Install* button with download progress, *Check now*, and tester sign-in.
+`UpdatesPlugin` tells testers when a newer test build is available. It shows a green *Update · v1.4.0 (412)* chip in the drawer header and a dot on the floating button. The plugin row shows the release notes, an *Install latest* button with download progress, a refresh icon to check again, and tester sign-in.
 
 With Firebase App Distribution:
 
@@ -233,7 +234,8 @@ DevDeck.install(this, plugins = DeckPlugins.defaults() + UpdatesPlugin(FirebaseA
 ```
 
 - Your app needs Firebase set up (`google-services.json` and the Google Services plugin), and testers must be invited in App Distribution. The first check asks the tester to sign in with their Google account in the browser.
-- Checks run on app start and when the drawer opens, at most every 4 hours (`checkIntervalMillis`), plus *Check now*. `notify = true` also posts one notification per new build (Android 13+ needs the notification permission).
+- Checks run on app start and when the drawer opens, at most every 4 hours (`checkIntervalMillis`), plus the refresh icon. `notify = true` also posts one notification per new build (Android 13+ needs the notification permission).
+- **Older or specific builds:** an `UpdateSource` that overrides `availableBuilds()` gets a *Builds* dropdown to install any listed version. Firebase's SDK only exposes the latest build, so with Firebase an *All builds* pill opens the tester web page instead. Android can't install an older version over a newer one, so downgrading means uninstalling first, and the dropdown warns about that.
 - Not using Firebase? Implement `UpdateSource` (`checkForUpdate()` and `install()`) for GitHub Releases, your own endpoint or any other feed.
 
 ### Logs
@@ -267,11 +269,25 @@ LogcatPlugin(
 Pass `emptySet()` to show everything. The filters apply to new lines.
 </details>
 
+### Breadcrumbs
+
+*Logs → Breadcrumbs* shows what happened before a problem, newest first:
+
+- **Screens:** each activity created, started, resumed, paused, stopped and destroyed.
+- **App events:** the app moving to the background or foreground, configuration changes and system memory warnings.
+- **Taps:** on View screens the tapped button by text or id, e.g. `CheckoutActivity · Button "Place order"`. Compose doesn't expose its views, so Compose taps show the screen and position. Label important Compose controls with `Modifier.breadcrumb("Place order")`.
+- **Requests:** every call through the network inspector, e.g. `POST /orders → 500 · 830 ms`.
+- **Your own steps:** `Breadcrumbs.add("Payment sheet shown")` or `Breadcrumbs.screen("Checkout")`, e.g. from your navigation listener.
+
+The last 50 steps are saved with every crash and shown as *Steps before the crash*. Bug reports include the last 100. Filter by type, share the list or clear it from the page. Turn parts off with `BreadcrumbsPlugin(taps = false, network = false)`.
+
 ### Screen capture, bug reports and device info
 
 - **Screenshot / screen recording / gallery:** under User Interface. Recording asks for Android's screen-capture permission and shows a Stop notification.
 - **Device & app snapshot:** under Info. One image with app version, build type, SDKs, device, Android version, screen and locale, plus your `buildInfo`. Share it, save it, or copy it as text.
-- **Bug report:** a description, your logs, recent logcat, device info and chosen captures, sent through the share sheet.
+- **App settings:** the ⚙ button next to the drawer's close button opens the app's system settings page.
+- **Bug report:** a description, recent steps, your logs, recent logcat, device info and chosen captures, sent through the share sheet.
+- **Permissions:** under System. Each permission shows Granted or Denied with what you can do about it. *Request* shows the system dialog, or opens the app's settings once Android stops asking. *Revoke* (Android 13+) removes a runtime permission when the app closes. *Open settings* handles special permissions such as drawing over other apps. Install-time permissions can't change, so they are only listed. To grant or revoke silently, use `adb shell pm grant` / `pm revoke`.
 
 ---
 
@@ -292,7 +308,7 @@ Use the same building blocks as the built-in plugins:
 | `ButtonItem`, `ConfirmButtonItem` | Actions (the confirm version needs a second tap) |
 | `PageLinkItem`, `ExpandableItem`, `Section`, `CollapsibleSection`, `SectionDivider`, `DeckCard` | Structure and sub-pages; `DeckCard` gives custom `drawerContent` the same card look |
 | `SegmentedPills`, `FilterPill`, `FilterPillRow`, `ActionPill`, `ActionPillRow`, `SearchField` | View switchers, filters and search, as in the log viewers and network inspector |
-| `BulletItem`, `KeyValueItem`, `CodeBlock`, `TextItem` | Showing information |
+| `BulletItem`, `InfoGroup`, `KeyValueItem`, `CodeBlock`, `TextItem` | Showing information; wrap long lists in `InfoGroup` to add dividers between rows |
 
 - Close or navigate the drawer from your plugin with `LocalDeckState.current?.close()` or `?.navigateTo(title) { … }`.
 - For setup work, implement `DeckPlugin` and override `onAttach(context)`; it runs once per plugin `id` with the application context.
@@ -314,7 +330,7 @@ DevDeck.isEnabled = false                               // hide everywhere, e.g.
 DevDeck.updateConfig { it.copy(plugins = it.plugins + cachePlugin) }
 ```
 
-`DeckStyle` also sets the panel width, colors, the panel background (`containerColor`) and the section cards (`cardColor`). Pass `collapsibleSections = false` to show every section open, with plain headers.
+`DeckStyle` also sets the panel width, colors, the panel background (`containerColor`) and the section cards (`cardColor`). Pass `collapsibleSections = false` to show every section open, with plain headers, or `oneSectionAtATime = true` so opening a section closes the others.
 
 ### Payment and 3DS screens
 
@@ -339,6 +355,7 @@ DevDeck.install(this, plugins, excludedActivityPrefixes = emptySet())           
 | `devdeck-appdistribution` | `io.devdeck.appdistribution` | `FirebaseAppDistributionSource` for `UpdatesPlugin`. The Firebase App Distribution API is `compileOnly`; add the full SDK to your tester builds. |
 
 - **Requirements:** minSdk 23, compileSdk 36. Built with AGP 9.4, Kotlin 2.2 and Compose BOM 2026.05. If your app uses an older Compose, debug builds resolve to this BOM's versions.
+- **Stored data:** DevDeck keeps its own settings in one SharedPreferences file, `devdeck_settings`. Feature flags from `SharedPreferencesFlagStore` go to `devdeck_flags` (or the name you pass). Captures and crash logs live under `files/devdeck/`.
 - **Manifest additions:** `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION` and `POST_NOTIFICATIONS` for screen recording, a `FileProvider` (`${applicationId}.devdeck.files`) and the recording service. Debug builds only, if you use `debugImplementation`.
 - **Limits:** *Slow animations* affects View animations only, because Compose follows the system animation scale. Logcat shows your app's process only. Some OEM builds hide debug-level logs.
 

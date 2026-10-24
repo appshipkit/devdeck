@@ -19,6 +19,7 @@ import androidx.core.content.edit
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.DropdownItem
 import io.devdeck.components.TextItem
+import io.devdeck.internal.DeckSettings
 import java.util.Locale
 
 public enum class NightModeOption(public val label: String, internal val mode: Int) {
@@ -35,7 +36,7 @@ public fun NightModeSelector(modifier: Modifier = Modifier, title: String = "Dar
     }
     val context = LocalContext.current
     val manager = remember(context) { context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager }
-    val prefs = remember(context) { context.getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
+    val prefs = remember(context) { DeckSettings.of(context) }
     var selected by remember {
         mutableStateOf(NightModeOption.entries.firstOrNull { it.name == prefs.getString(KEY_NIGHT_MODE, null) } ?: NightModeOption.System)
     }
@@ -104,5 +105,4 @@ private fun setLanguage(context: Context, tag: String) {
 }
 
 private const val SYSTEM_LANGUAGE = "system"
-private const val PREFS = "devdeck_appearance"
-private const val KEY_NIGHT_MODE = "night_mode"
+private const val KEY_NIGHT_MODE = "appearance.night_mode"

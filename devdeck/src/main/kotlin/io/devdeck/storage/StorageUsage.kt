@@ -8,6 +8,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import io.devdeck.components.BulletItem
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.TextItem
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +25,10 @@ public fun StorageUsage(modifier: Modifier = Modifier) {
         if (items == null) {
             TextItem("Calculating…")
         } else {
-            items.forEach { (label, bytes) -> BulletItem(label, formatBytes(bytes)) }
-            BulletItem("Total", formatBytes(items.sumOf { it.second }))
+            InfoGroup {
+                items.forEach { (label, bytes) -> BulletItem(label, formatBytes(bytes)) }
+                BulletItem("Total", formatBytes(items.sumOf { it.second }))
+            }
         }
     }
 }

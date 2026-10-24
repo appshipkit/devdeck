@@ -12,7 +12,12 @@ import io.devdeck.components.DeckCard
 import io.devdeck.components.SectionCard
 
 @Composable
-public fun DeckPluginContent(plugins: List<DeckPlugin>, modifier: Modifier = Modifier, collapsibleSections: Boolean = true) {
+public fun DeckPluginContent(
+    plugins: List<DeckPlugin>,
+    modifier: Modifier = Modifier,
+    collapsibleSections: Boolean = true,
+    oneSectionAtATime: Boolean = false,
+) {
     val groups = plugins.fold(mutableListOf<Pair<String?, MutableList<DeckPlugin>>>()) { acc, plugin ->
         val last = acc.lastOrNull()
         if (last != null && last.first != null && last.first == plugin.section) {
@@ -24,14 +29,16 @@ public fun DeckPluginContent(plugins: List<DeckPlugin>, modifier: Modifier = Mod
     }
     Column(
         modifier.fillMaxWidth().padding(horizontal = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         groups.forEach { (section, sectionPlugins) ->
             val pluginsContent: @Composable () -> Unit = { sectionPlugins.forEach { plugin -> key(plugin.id) { plugin.Content() } } }
             if (section == null) {
                 DeckCard { pluginsContent() }
             } else {
-                key(section) { SectionCard(section, collapsible = collapsibleSections) { pluginsContent() } }
+                key(section) {
+                    SectionCard(section, collapsible = collapsibleSections, closeOthersOnOpen = oneSectionAtATime) { pluginsContent() }
+                }
             }
         }
     }

@@ -29,11 +29,12 @@ public fun ActionPill(
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     enabled: Boolean = true,
+    compact: Boolean = false,
 ) {
     val accent = if (color.isSpecified) color else MaterialTheme.colorScheme.primary
     Text(
         text = text,
-        style = MaterialTheme.typography.labelLarge,
+        style = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
         color = accent,
         modifier = modifier
@@ -41,9 +42,9 @@ public fun ActionPill(
             .clip(CircleShape)
             .background(accent.copy(alpha = 0.12f))
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .heightIn(min = 36.dp)
+            .heightIn(min = if (compact) 28.dp else 36.dp)
             .wrapContentHeight(Alignment.CenterVertically)
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = if (compact) 10.dp else 14.dp),
     )
 }
 

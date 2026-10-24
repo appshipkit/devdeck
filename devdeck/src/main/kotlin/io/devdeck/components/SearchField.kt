@@ -36,6 +36,6 @@ public fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier:
             unfocusedContainerColor = colors.onSurface.copy(alpha = 0.05f),
             focusedContainerColor = colors.onSurface.copy(alpha = 0.03f),
         ),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
     )
 }

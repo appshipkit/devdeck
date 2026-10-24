@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
 import java.text.SimpleDateFormat
@@ -50,7 +51,9 @@ public fun LogList(modifier: Modifier = Modifier, tag: String? = null, maxItems:
             }
         }
         if (entries.isEmpty()) TextItem("No logs yet")
-        entries.forEach { entry -> LogRow(entry, formatter.format(Date(entry.timestampMillis)), showTag = tag == null) }
+        InfoGroup(dividerThreshold = 2) {
+            entries.forEach { entry -> LogRow(entry, formatter.format(Date(entry.timestampMillis)), showTag = tag == null) }
+        }
     }
 }
 

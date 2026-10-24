@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.devdeck.components.FilterPill
 import io.devdeck.components.FilterPillRow
+import io.devdeck.components.InfoGroup
 import io.devdeck.components.SearchField
 import io.devdeck.components.SegmentedPills
 import io.devdeck.components.TextItem
@@ -63,14 +64,14 @@ public fun NetworkInspector(
             "${calls.size} requests · $endpoints endpoints · $failures failed",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
         SegmentedPills(
             options = NetworkView.entries,
             selected = view,
             onSelected = { view = it },
             optionLabel = { it.label },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
         SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search URL, operation, status")
         FilterPillRow(verticalAlignment = Alignment.CenterVertically) {
@@ -101,10 +102,12 @@ public fun NetworkInspector(
         }
         when {
             visible.isEmpty() -> TextItem(if (calls.isEmpty()) "No requests yet" else "No requests match")
-            view == NetworkView.Timeline -> visible.take(maxItems).forEach { call ->
-                NetworkCallCard(call, highlights, repeatCount = repeatCounts[call.groupKey] ?: 1)
+            view == NetworkView.Timeline -> InfoGroup(dividerThreshold = 2) {
+                visible.take(maxItems).forEach { call ->
+                    NetworkCallCard(call, highlights, repeatCount = repeatCounts[call.groupKey] ?: 1)
+                }
             }
-            else -> groups.take(maxItems).forEach { group -> NetworkGroupCard(group, highlights) }
+            else -> InfoGroup(dividerThreshold = 2) { groups.take(maxItems).forEach { group -> NetworkGroupCard(group, highlights) } }
         }
     }
 }

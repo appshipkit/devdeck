@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import io.devdeck.actions.AppActions
 import io.devdeck.components.DropdownItem
+import io.devdeck.internal.DeckSettings
 import io.devdeck.logs.DeckLogger
 
 public class EndpointPlugin(
@@ -48,7 +49,6 @@ public class EndpointPlugin(
 
     public companion object {
         public const val DEFAULT_KEY: String = "default"
-        private const val PREFS = "devdeck_endpoint"
 
         public fun current(
             context: Context,
@@ -56,14 +56,14 @@ public class EndpointPlugin(
             default: Endpoint = endpoints.first(),
             key: String = DEFAULT_KEY,
         ): Endpoint {
-            val url = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(prefKey(key), null)
+            val url = DeckSettings.of(context).getString(prefKey(key), null)
             return endpoints.firstOrNull { it.url == url } ?: default
         }
 
         private fun save(context: Context, key: String, endpoint: Endpoint) {
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit(commit = true) { putString(prefKey(key), endpoint.url) }
+            DeckSettings.of(context).edit(commit = true) { putString(prefKey(key), endpoint.url) }
         }
 
-        private fun prefKey(key: String) = if (key == DEFAULT_KEY) "url" else "url_$key"
+        private fun prefKey(key: String) = if (key == DEFAULT_KEY) "endpoint.url" else "endpoint.url_$key"
     }
 }

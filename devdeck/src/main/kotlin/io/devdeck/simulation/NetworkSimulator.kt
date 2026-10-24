@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.edit
+import io.devdeck.internal.DeckSettings
 import kotlin.random.Random
 
 public object NetworkSimulator {
@@ -32,7 +33,7 @@ public object NetworkSimulator {
 
     public fun init(context: Context) {
         if (prefs != null) return
-        val preferences = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val preferences = DeckSettings.of(context)
         prefs = preferences
         state = preferences.read()
     }
@@ -76,11 +77,10 @@ public object NetworkSimulator {
         )
     }
 
-    private const val PREFS = "devdeck_network_simulator"
-    private const val KEY_CONDITION = "condition"
-    private const val KEY_DELAY = "delay_millis"
-    private const val KEY_BANDWIDTH = "bytes_per_second"
-    private const val KEY_FAILURE = "failure"
-    private const val KEY_FAILURE_RATE = "failure_rate_percent"
-    private const val KEY_URL_FILTER = "url_filter"
+    private const val KEY_CONDITION = "network.condition"
+    private const val KEY_DELAY = "network.delay_millis"
+    private const val KEY_BANDWIDTH = "network.bytes_per_second"
+    private const val KEY_FAILURE = "network.failure"
+    private const val KEY_FAILURE_RATE = "network.failure_rate_percent"
+    private const val KEY_URL_FILTER = "network.url_filter"
 }

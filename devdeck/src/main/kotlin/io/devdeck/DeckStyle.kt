@@ -19,4 +19,5 @@ public data class DeckStyle(
     val darkColorScheme: ColorScheme? = null,
     val animationDurationMillis: Int = 250,
     val collapsibleSections: Boolean = true,
+    val oneSectionAtATime: Boolean = false,
 )

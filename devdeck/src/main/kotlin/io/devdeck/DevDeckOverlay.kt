@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -81,6 +82,10 @@ internal fun DevDeckOverlay(
     }
 
     val isVisible by remember(state) { derivedStateOf { state.isVisible } }
+    DisposableEffect(isVisible) {
+        if (isVisible) DeckVisibility.shown()
+        onDispose { if (isVisible) DeckVisibility.hidden() }
+    }
 
     BackHandler(enabled = state.isOpen) {
         if (!state.navigateBack()) state.close()

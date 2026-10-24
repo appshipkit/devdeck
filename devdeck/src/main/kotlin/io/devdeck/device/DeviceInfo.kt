@@ -5,13 +5,13 @@ import android.hardware.display.DisplayManager
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.Display
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import io.devdeck.components.BulletItem
+import io.devdeck.components.InfoGroup
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 public fun DeviceInfo(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val info = remember(context) { deviceInfo(context) }
-    Column(modifier.fillMaxWidth()) {
+    InfoGroup(modifier.fillMaxWidth()) {
         info.forEach { (label, value) -> BulletItem(label = label, value = value) }
     }
 }

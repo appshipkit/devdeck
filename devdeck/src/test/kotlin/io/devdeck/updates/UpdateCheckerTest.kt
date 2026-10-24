@@ -64,6 +64,26 @@ class UpdateCheckerTest {
     }
 
     @Test
+    fun `builds from the source are listed after a check`() = runBlocking {
+        val builds = listOf(AvailableUpdate("1.4.0", 412), AvailableUpdate("1.3.0", 400))
+        UpdateChecker.use(
+            object : UpdateSource {
+                override val name: String = "Feed"
+
+                override suspend fun checkForUpdate(): AvailableUpdate = builds.first()
+
+                override suspend fun availableBuilds(): List<AvailableUpdate> = builds
+
+                override suspend fun install(update: AvailableUpdate, onProgress: (Float?) -> Unit) = Unit
+            },
+        )
+
+        UpdateChecker.refresh()
+
+        assertEquals(builds, UpdateChecker.builds)
+    }
+
+    @Test
     fun `checks are due when never run or older than the interval`() {
         assertTrue(isCheckDue(null, 5_000, 1_000))
         assertTrue(isCheckDue(1_000, 2_000, 1_000))

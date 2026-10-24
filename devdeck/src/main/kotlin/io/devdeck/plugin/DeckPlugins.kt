@@ -7,6 +7,7 @@ public object DeckPlugins {
         NetworkLogsPlugin(),
         LogcatPlugin(),
         LogsPlugin(),
+        BreadcrumbsPlugin(),
         CrashPlugin(),
         AppActionsPlugin(),
         UiToolsPlugin(),
