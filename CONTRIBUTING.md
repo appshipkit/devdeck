@@ -5,13 +5,27 @@
 Run these before opening a pull request. They are the same checks CI runs:
 
 ```bash
-./gradlew ktlintFormat                 # fix code style
-./gradlew ktlintCheck lintDebug        # code style + Android Lint
-./gradlew testDebugUnitTest            # unit tests
+./gradlew ktlintFormat                         # fix code style
+./gradlew ktlintCheck lintDebug lintRelease    # code style + Android Lint
+./gradlew testDebugUnitTest                    # unit tests
+./gradlew apiCheck                             # public API unchanged (see below)
 ./gradlew assembleDebug assembleRelease publishToMavenLocal
+./gradlew :sample:assembleQa                   # minified sample, catches R8 problems
 ```
 
 Lint warnings fail the build, so fix them rather than ignoring them. Dependency-version warnings are turned off because Dependabot handles updates.
+
+The build needs JDK 17. Gradle picks up an installed JDK 17 for its daemon (see `gradle/gradle-daemon-jvm.properties`) and downloads one only if none is found.
+
+## Public API and binary compatibility
+
+Each published module records its public API in `<module>/api/<module>.api`. `./gradlew apiCheck` (run by CI, the release workflow and `./gradlew check`) fails when the compiled release classes no longer match that file.
+
+- **Adding API** (a new public class, function or property) is fine in a feature release. Run `./gradlew apiDump` and commit the updated `.api` files with your change.
+- **Removing or changing API** (renaming, changing a signature, making something `internal`) breaks apps built against the previous version. That needs a major release and a `BREAKING:` changelog entry, so avoid it where an addition would do. Adding a parameter to an existing public function or constructor changes its JVM signature too, even with a default value: keep the old signature as an overload (it can be `@Deprecated(level = DeprecationLevel.HIDDEN)`).
+- Mark anything users shouldn't call `internal`, so it stays out of the dump.
+
+Review `.api` diffs like code: every line is a promise to library users.
 
 ## Pull requests
 

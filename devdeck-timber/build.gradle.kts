@@ -15,6 +15,7 @@ android {
 
     defaultConfig {
         minSdk = 23
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
@@ -31,6 +32,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     publishing {
@@ -50,6 +55,8 @@ kotlin {
 dependencies {
     api(project(":devdeck"))
     compileOnly(libs.timber)
+    testImplementation(libs.timber)
+    testImplementation(libs.junit)
 }
 
 afterEvaluate {

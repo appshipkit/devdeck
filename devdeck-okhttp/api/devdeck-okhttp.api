@@ -1,0 +1,14 @@
+public final class io/devdeck/okhttp/DevDeckOkHttpInterceptor : okhttp3/Interceptor {
+	public static final field DEFAULT_TIMEOUT_MILLIS J
+	public static final field HTTP_UNAVAILABLE I
+	public static final field LARGE_BODY_FACTOR I
+	public static final field NANOS_PER_MILLI J
+	public static final field PAUSE_STEP_MILLIS J
+	public static final field SIMULATED Ljava/lang/String;
+	public static final field THROTTLE_CHUNK_BYTES J
+	public fun <init> ()V
+	public fun <init> (JZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (JZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun intercept (Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+}
+
