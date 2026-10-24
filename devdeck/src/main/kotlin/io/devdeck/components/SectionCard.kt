@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ internal fun SectionCard(
     collapsible: Boolean,
     modifier: Modifier = Modifier,
     closeOthersOnOpen: Boolean = false,
+    pluginIds: List<String> = emptyList(),
     content: @Composable () -> Unit,
 ) {
     val drawerState = LocalDeckState.current
@@ -54,6 +56,10 @@ internal fun SectionCard(
         }
         if (!expanded) reveal.request()
     }
+    // Opens this section when something asks the drawer to show one of its plugins.
+    // A request is a plugin id, optionally followed by "/" and something inside that plugin.
+    val focusHere = drawerState?.pendingFocus?.let { focus -> pluginIds.any { focus == it || focus.startsWith("$it/") } } == true
+    LaunchedEffect(focusHere) { if (focusHere && !expanded) toggle() }
     val (emoji, name) = remember(title) { splitSectionTitle(title) }
     val rotation by animateFloatAsState(if (expanded) 180f else 0f, label = "sectionChevron")
 
@@ -62,7 +68,7 @@ internal fun SectionCard(
             Modifier
                 .fillMaxWidth()
                 .then(if (collapsible) Modifier.clickable(onClick = toggle) else Modifier)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SectionBadge(name, emoji)

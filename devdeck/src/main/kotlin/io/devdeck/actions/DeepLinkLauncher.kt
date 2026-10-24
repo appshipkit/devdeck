@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import io.devdeck.components.BulletItem
+import io.devdeck.components.ButtonItem
 import io.devdeck.components.SectionTitle
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
@@ -62,7 +62,7 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         if (suggestions.isNotEmpty()) {
             SectionTitle("Suggested")
             suggestions.forEach { link ->
-                BulletItem(link, onClick = {
+                ButtonItem(title = link, onClick = {
                     uri = link
                     open(link)
                 })
@@ -71,7 +71,7 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         if (recent.isNotEmpty()) {
             SectionTitle("Recent")
             recent.forEach { link ->
-                BulletItem(link, onClick = {
+                ButtonItem(title = link, onClick = {
                     uri = link
                     open(link)
                 })

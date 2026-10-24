@@ -4,8 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import io.devdeck.components.ActionPill
-import io.devdeck.components.ActionPillRow
+import io.devdeck.actions.AppActions
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.ConfirmButtonItem
 import io.devdeck.components.JsonInputItem
@@ -18,6 +17,7 @@ import io.devdeck.components.TextInputItem
 import io.devdeck.flags.FeatureFlag
 import io.devdeck.flags.FeatureFlagStore
 import io.devdeck.internal.copyToClipboard
+import io.devdeck.internal.findActivity
 import io.devdeck.internal.readClipboardText
 import io.devdeck.logs.DeckLogger
 import org.json.JSONObject
@@ -48,6 +48,20 @@ public class FeatureFlagsPlugin(
             }
             SectionDivider()
         }
+        // Most apps read flags once per screen or process, so changes show up after a restart.
+        Section("Apply changes 🔄") {
+            ButtonItem(
+                title = "Restart screen",
+                subtitle = "Recreates the current screen",
+                onClick = { context.findActivity()?.recreate() },
+            )
+            ButtonItem(
+                title = "Restart app",
+                subtitle = "Starts the app again",
+                onClick = { AppActions.restart(context) },
+            )
+        }
+        SectionDivider()
         if (bulkEdit) {
             Section("Bulk edit ✏️") {
                 ConfirmButtonItem(
@@ -68,12 +82,9 @@ public class FeatureFlagsPlugin(
     @Composable
     private fun FlagList(categoryFlags: List<FeatureFlag<*>>) {
         categoryFlags.forEach { flag ->
-            val overridden = store.isOverridden(flag)
-            val subtitle = if (overridden) "Overridden" else null
             when (flag) {
                 is FeatureFlag.Toggle -> SwitchItem(
                     title = flag.title,
-                    subtitle = subtitle,
                     checked = store[flag],
                     enabled = flag.editable,
                     onCheckedChange = { store[flag] = it },
@@ -81,7 +92,6 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Text -> TextInputItem(
                     title = flag.title,
-                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     onValueCommit = { store[flag] = it },
@@ -89,7 +99,6 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Number -> NumberInputItem(
                     title = flag.title,
-                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     allowDecimals = !flag.wholeNumber,
@@ -99,14 +108,10 @@ public class FeatureFlagsPlugin(
 
                 is FeatureFlag.Json -> JsonInputItem(
                     title = flag.title,
-                    subtitle = subtitle,
                     value = store[flag],
                     enabled = flag.editable,
                     onValueCommit = { store[flag] = it },
                 )
-            }
-            if (overridden && flag.editable) {
-                ActionPillRow { ActionPill(text = "Reset to default", onClick = { store.reset(flag) }, compact = true) }
             }
         }
     }

@@ -95,9 +95,22 @@ public fun DisplaySettingsButton(modifier: Modifier = Modifier, title: String = 
     )
 }
 
-private fun openDisplaySettings(context: Context) {
+@Composable
+public fun LocaleSettingsButton(modifier: Modifier = Modifier, title: String = "System language & region") {
+    val context = LocalContext.current
+    ButtonItem(
+        title = title,
+        subtitle = "Changes the whole device",
+        modifier = modifier,
+        onClick = { openSettings(context, Settings.ACTION_LOCALE_SETTINGS) },
+    )
+}
+
+private fun openDisplaySettings(context: Context) = openSettings(context, Settings.ACTION_DISPLAY_SETTINGS)
+
+private fun openSettings(context: Context, action: String) {
     try {
-        context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     } catch (_: ActivityNotFoundException) {
     }
 }

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 public fun SectionDivider(modifier: Modifier = Modifier) {
     HorizontalDivider(
-        modifier = modifier.padding(horizontal = HorizontalPadding, vertical = 8.dp),
+        modifier = modifier.padding(horizontal = HorizontalPadding, vertical = 4.dp),
         thickness = 1.dp,
         color = MaterialTheme.colorScheme.outlineVariant,
     )

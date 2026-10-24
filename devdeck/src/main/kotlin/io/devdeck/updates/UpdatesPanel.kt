@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -21,6 +23,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +34,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import io.devdeck.FOCUS_SCROLL_DELAY_MILLIS
 import io.devdeck.LocalDeckColors
+import io.devdeck.LocalDeckState
 import io.devdeck.components.ActionPill
 import io.devdeck.components.ActionPillRow
 import io.devdeck.components.DropdownItem
@@ -39,9 +44,11 @@ import io.devdeck.components.HorizontalPadding
 import io.devdeck.components.TitleAndSubtitle
 import io.devdeck.device.appVersionInfo
 import io.devdeck.internal.DeckIcons
+import io.devdeck.plugin.UPDATES_PLUGIN_ID
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.delay
 
 @Composable
 public fun UpdatesPanel(modifier: Modifier = Modifier, title: String = "Test build updates") {
@@ -50,7 +57,17 @@ public fun UpdatesPanel(modifier: Modifier = Modifier, title: String = "Test bui
     val update = UpdateChecker.availableUpdate
     val success = updateAvailableColor(LocalDeckColors.current?.isDark == true)
     val context = LocalContext.current
-    Column(modifier.fillMaxWidth()) {
+    val deckState = LocalDeckState.current
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(deckState?.pendingFocus) {
+        if (deckState?.pendingFocus == UPDATES_PLUGIN_ID) {
+            // Wait for the section to finish expanding so the scroll lands on the final position.
+            delay(FOCUS_SCROLL_DELAY_MILLIS)
+            bringIntoView.bringIntoView()
+            deckState.pendingFocus = null
+        }
+    }
+    Column(modifier.fillMaxWidth().bringIntoViewRequester(bringIntoView)) {
         Row(
             Modifier.fillMaxWidth().padding(start = HorizontalPadding, end = 4.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,

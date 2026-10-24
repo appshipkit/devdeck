@@ -42,12 +42,16 @@ public class DeckState(initialValue: DeckValue = DeckValue.Closed) {
 
     internal val expandedRows = mutableStateMapOf<String, Boolean>()
 
+    // A plugin id the drawer should open and scroll to, e.g. "updates" from the header chip. Cleared once shown.
+    internal var pendingFocus by mutableStateOf<String?>(null)
+
     public fun open() {
         targetValue = DeckValue.Open
     }
 
     public fun close() {
         targetValue = DeckValue.Closed
+        pendingFocus = null
     }
 
     public fun toggle() {
@@ -103,3 +107,6 @@ public class DeckState(initialValue: DeckValue = DeckValue.Closed) {
 @Composable
 public fun rememberDeckState(initialValue: DeckValue = DeckValue.Closed): DeckState =
     rememberSaveable(saver = DeckState.saver()) { DeckState(initialValue) }
+
+// Long enough for a section to finish expanding before a pendingFocus target scrolls into view.
+internal const val FOCUS_SCROLL_DELAY_MILLIS = 400L

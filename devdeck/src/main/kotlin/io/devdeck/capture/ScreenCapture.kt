@@ -8,9 +8,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.PixelCopy
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
@@ -36,6 +38,18 @@ public object ScreenCapture {
 
     public var isRecording: Boolean by mutableStateOf(false)
         internal set
+
+    internal var isRecordingPaused by mutableStateOf(false)
+
+    // Recording time is the time before the last resume plus the time since it, so pauses don't count.
+    internal var recordedMillisBeforeResume by mutableLongStateOf(0L)
+    internal var resumedAtMillis by mutableLongStateOf(0L)
+
+    // MediaRecorder.pause() arrived in Android 7.0.
+    internal val canPauseRecording: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    internal fun recordingElapsedMillis(now: Long = SystemClock.elapsedRealtime()): Long =
+        recordedMillisBeforeResume + if (isRecordingPaused) 0 else (now - resumedAtMillis).coerceAtLeast(0)
 
     internal var galleryVersion by mutableIntStateOf(0)
 
@@ -108,6 +122,14 @@ public object ScreenCapture {
             .putExtra(ScreenRecordingService.EXTRA_RESULT_CODE, resultCode)
             .putExtra(ScreenRecordingService.EXTRA_DATA, data)
         ContextCompat.startForegroundService(context, intent)
+    }
+
+    internal fun pauseRecording(context: Context) = sendRecordingAction(context, ScreenRecordingService.ACTION_PAUSE)
+
+    internal fun resumeRecording(context: Context) = sendRecordingAction(context, ScreenRecordingService.ACTION_RESUME)
+
+    private fun sendRecordingAction(context: Context, action: String) {
+        context.startService(Intent(context, ScreenRecordingService::class.java).setAction(action))
     }
 
     internal fun stopRecording(context: Context) {

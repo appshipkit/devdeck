@@ -22,6 +22,9 @@ internal object DeckIcons {
     val Pause: ImageVector by lazy {
         icon("Pause", "M6,19h4V5H6v14zM14,5v14h4V5h-4z")
     }
+    val Stop: ImageVector by lazy {
+        icon("Stop", "M6,6h12v12H6z")
+    }
     val PlayArrow: ImageVector by lazy {
         icon("PlayArrow", "M8,5v14l11,-7z")
     }

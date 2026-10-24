@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import io.devdeck.actions.AppActions
+import io.devdeck.components.ButtonItem
 import io.devdeck.components.DropdownItem
 import io.devdeck.internal.DeckSettings
 import io.devdeck.logs.DeckLogger
@@ -31,6 +32,8 @@ public class EndpointPlugin(
     override fun Content() {
         val context = LocalContext.current
         var selected by remember { mutableStateOf(current(context)) }
+        // The endpoint this process started with; apps usually read it once, so a switch needs a restart.
+        val applied = remember { appliedUrls.getOrPut(key) { selected.url } }
         DropdownItem(
             title = title,
             subtitle = selected.url,
@@ -46,10 +49,23 @@ public class EndpointPlugin(
             },
             optionLabel = { it.name },
         )
+        // Apps that apply the switch themselves (restartOnChange or onChanged) don't need the prompt.
+        if (!restartOnChange && onChanged == null && selected.url != applied) {
+            ButtonItem(
+                title = "Restart app",
+                subtitle = "Apply ${selected.name}",
+                onClick = {
+                    save(context, key, selected, synchronous = true)
+                    AppActions.restart(context)
+                },
+            )
+        }
     }
 
     public companion object {
         public const val DEFAULT_KEY: String = "default"
+
+        private val appliedUrls = mutableMapOf<String, String>()
 
         public fun current(
             context: Context,

@@ -7,14 +7,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import io.devdeck.components.BulletItem
+import io.devdeck.components.InfoGroup
 
 @Composable
 public fun AppInfo(modifier: Modifier = Modifier, showSystemShortcuts: Boolean = false) {
     val context = LocalContext.current
-    val app = remember(context) { appVersionInfo(context) }
+    val rows = remember(context) { appRows(context) }
     Column(modifier.fillMaxWidth()) {
-        BulletItem(label = "Package", value = context.packageName)
-        if (app != null) BulletItem(label = "Version", value = "${app.versionName} (${app.versionCode})")
+        InfoGroup {
+            rows.forEach { (label, value) -> BulletItem(label = label, value = value) }
+        }
         if (showSystemShortcuts) {
             AppSettingsButton()
             DeveloperOptionsButton()

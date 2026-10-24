@@ -111,7 +111,7 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 |---|---|---|
 | Two-finger swipe toward the drawer, anywhere on screen | On | `gestures = DeckGestures(twoFingerSwipe = false)` |
 | **Ctrl + Shift + D** (emulator or hardware keyboard) | On | `DeckGestures(keyboardShortcut = DeckShortcut(keyCode = KeyEvent.KEYCODE_F12, ctrl = false, shift = false))`, or `null` to turn off |
-| Floating bug button (draggable) | On | `trigger = DeckTrigger.None` |
+| Floating bug button (draggable; it stays where you leave it) | On | `trigger = DeckTrigger.None` |
 | Code | — | `DevDeck.open()`, `DevDeck.close()`, `DevDeck.toggle()` |
 
 - DevDeck never covers your controls. The swipe is detected by watching touches without taking them, so taps, scrolls and system back keep working.
@@ -162,9 +162,9 @@ DevDeck.install(
 | `AppearancePlugin` | User Interface | Dark mode (Android 12+) and app language (Android 13+) override | ✓ |
 | `PerformancePlugin` | System | FPS / jank / memory overlay and memory details | ✓ |
 | `StoragePlugin` | System | SharedPreferences browser/editor and storage usage | ✓ |
-| `DevicePlugin` | System | Device info, permissions (request, revoke, open settings), developer options | ✓ |
+| `DevicePlugin` | System | Permissions (request, revoke, open settings), developer options | ✓ |
 | `UpdatesPlugin` | App | New test build check, release notes and install (module `devdeck-appdistribution` for Firebase) | — needs a source |
-| `InfoPlugin` | Info | Device & app snapshot image, bug report, version | ✓ |
+| `InfoPlugin` | Info | App info (version, build type, R8, SDK levels), device info, device & app snapshot image, bug report, version | ✓ |
 
 Every plugin takes a `section` (or `null` for no header) and switches to hide individual rows, e.g. `UiToolsPlugin(screenCapture = false)`.
 
@@ -243,7 +243,7 @@ The memory rows under **Simulate 🧪** reproduce what the app sees on a low-mem
 
 ### Test build updates
 
-`UpdatesPlugin` tells testers when a newer test build is available. It shows a green *Update · v1.4.0 (412)* chip in the drawer header and a dot on the floating button. The plugin row shows the release notes, an *Install latest* button with download progress, a refresh icon to check again, and tester sign-in.
+`UpdatesPlugin` tells testers when a newer test build is available. It shows a green *New version · v1.4.0 (412)* chip in the drawer header, which jumps to the plugin row, and a dot on the floating button. The plugin row shows the release notes, an *Install latest* button with download progress, a refresh icon to check again, and tester sign-in.
 
 With Firebase App Distribution:
 
@@ -306,11 +306,12 @@ The last 50 steps are saved with every crash and shown as *Steps before the cras
 
 ### Screen capture, bug reports and device info
 
-- **Screenshot / screen recording / gallery:** under User Interface. Recording asks for Android's screen-capture permission and shows a Stop notification.
+- **Screenshot / screen recording / gallery:** under User Interface. Recording asks for Android's screen-capture permission. While it runs, a small floating bar shows the time with pause/resume (Android 7+) and stop, the drawer header shows a *Recording* chip and a red stop button, and the notification has the same controls. The floating bar is drawn in your app's window, so it appears in the video.
+- **App info and device info:** under Info. App info shows the version, package, build type and flavor (read from your app's `BuildConfig` when it exists and R8 hasn't removed it), whether the build is debuggable, R8 state and SDK levels.
 - **Device & app snapshot:** under Info. One image with app version, build type, SDKs, device, Android version, screen and locale, plus your `buildInfo`. Share it, save it, or copy it as text from the icons on the card; the icons are left out of the image.
 - **App settings:** the ⚙ button next to the drawer's close button opens the app's system settings page.
 - **Bug report:** a description, recent steps, your logs, recent logcat, device info and chosen captures, sent through the share sheet.
-- **Permissions:** under System. Each permission shows Granted or Denied with what you can do about it. *Request* shows the system dialog, or opens the app's settings once Android stops asking. *Revoke* (Android 13+) removes a runtime permission when the app closes; until then the row shows *Revoked when the app restarts*. The list refreshes when you come back from a permission dialog or settings screen. *Open settings* handles special permissions such as drawing over other apps. Install-time permissions can't change, so they are only listed. To grant or revoke silently, use `adb shell pm grant` / `pm revoke`.
+- **Permissions:** under System, on their own page. Each permission shows Granted or Denied with what you can do about it. *Request* shows the system dialog, or opens the app's settings once Android stops asking. *Revoke* (Android 13+) removes a runtime permission when the app closes; until then the row shows *Revoked when the app restarts*. The list refreshes when you come back from a permission dialog or settings screen. *Open settings* handles special permissions such as drawing over other apps. Install-time permissions can't change, so they are only listed. To grant or revoke silently, use `adb shell pm grant` / `pm revoke`.
 
 ---
 

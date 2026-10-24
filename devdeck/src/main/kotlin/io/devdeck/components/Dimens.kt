@@ -6,5 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 internal val HorizontalPadding = 16.dp
-internal val RowMinHeight = 52.dp
-internal val RowPadding = Modifier.heightIn(min = RowMinHeight).padding(horizontal = HorizontalPadding, vertical = 12.dp)
+
+// Material's 48dp minimum touch target; rows grow with a subtitle.
+internal val RowMinHeight = 48.dp
+internal val RowPadding = Modifier.heightIn(min = RowMinHeight).padding(horizontal = HorizontalPadding, vertical = 8.dp)

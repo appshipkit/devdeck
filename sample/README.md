@@ -88,10 +88,10 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
 | `PerformancePlugin` | **System 📱**: FPS / jank / memory overlay and memory details. |
 | `StoragePlugin` | **System 📱**: SharedPreferences browser/editor and storage usage. |
-| `DevicePlugin` | **System 📱**: device info, permissions with request/revoke actions, developer options. |
+| `DevicePlugin` | **System 📱**: permissions with request/revoke actions, developer options. |
 | `tapCounterPlugin` | **Custom 🧩**: an example of your own plugin. |
 | `controlsDemoPlugin` | **Custom 🧩 → Controls**: the switch, checkbox, dropdown and radio components. |
-| `InfoPlugin` | **Info ℹ️**: *Device & app snapshot* (an image you can share or save, with the current endpoint as build info), bug report, and the version row. |
+| `InfoPlugin` | **Info ℹ️**: *App info*, *Device info*, *Device & app snapshot* (an image you can share or save, with the current endpoint as build info), bug report, and the version row. |
 
 To experiment, remove a line, reorder the list, or pass options such as `UiToolsPlugin(screenCapture = false)` or `DevicePlugin(permissions = false)`.
 

@@ -45,20 +45,56 @@ public fun systemSnapshot(context: Context, buildInfo: Map<String, String> = emp
     )
 }
 
-private fun appRows(context: Context): List<Pair<String, String>> {
-    val packageInfo = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
+internal fun appRows(context: Context): List<Pair<String, String>> {
     val version = appVersionInfo(context)
     val appInfo = context.applicationInfo
     val debuggable = appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    val buildConfig = buildConfigValues(context)
     return listOfNotNull(
         version?.let { "Version" to "${it.versionName} (${it.versionCode})" },
         "Package" to context.packageName,
-        "Build type" to if (debuggable) "Debuggable" else "Release",
+        buildConfig["BUILD_TYPE"]?.let { "Build type" to it },
+        buildConfig["FLAVOR"]?.takeIf { it.isNotEmpty() }?.let { "Flavor" to it },
+        "Debuggable" to if (debuggable) "Yes" else "No",
+        "R8" to r8State(),
         "Target SDK" to appInfo.targetSdkVersion.toString(),
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) "Min SDK" to appInfo.minSdkVersion.toString() else null,
-        packageInfo?.let { "Installed" to formatDateTime(it.firstInstallTime) },
-        packageInfo?.let { "Updated" to formatDateTime(it.lastUpdateTime) },
     )
+}
+
+// BuildConfig lives in the app's namespace, which can differ from the application id (e.g. an `.qa` suffix),
+// so try the id, its parent packages and the Application class's package. R8 usually removes it.
+private fun buildConfigValues(context: Context): Map<String, String> {
+    val packageName = context.packageName
+    val candidates = buildList {
+        var name = packageName
+        while (name.contains('.')) {
+            add(name)
+            name = name.substringBeforeLast('.')
+        }
+        context.applicationInfo.className?.substringBeforeLast('.', "")?.takeIf { it.isNotEmpty() }?.let { add(it) }
+    }.distinct()
+    // Library modules have their own BuildConfig; only accept the one generated for this application id.
+    val buildConfig = candidates.firstNotNullOfOrNull { name ->
+        runCatching { Class.forName("$name.BuildConfig") }.getOrNull()
+            ?.takeIf { runCatching { it.getField("APPLICATION_ID").get(null) }.getOrNull() == packageName }
+    } ?: return emptyMap()
+    return listOf("BUILD_TYPE", "FLAVOR").mapNotNull { field ->
+        runCatching { buildConfig.getField(field).get(null) as? String }.getOrNull()?.let { field to it }
+    }.toMap()
+}
+
+// R8 renames classes when it obfuscates and drops Kotlin metadata when it shrinks, unless the app keeps them.
+private class R8Probe
+
+private fun r8State(): String {
+    val renamed = R8Probe::class.java.name != "io.devdeck.device.R8Probe"
+    val metadataStripped = !R8Probe::class.java.isAnnotationPresent(Metadata::class.java)
+    return when {
+        renamed -> "Obfuscated"
+        metadataStripped -> "Shrunk, not obfuscated"
+        else -> "Off"
+    }
 }
 
 private fun deviceRows(context: Context): List<Pair<String, String>> {

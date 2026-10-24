@@ -17,6 +17,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.view.Display
 import android.widget.Toast
@@ -53,6 +54,10 @@ public class ScreenRecordingService : Service() {
                     else -> start(resultCode, data)
                 }
             }
+
+            ACTION_PAUSE -> pause()
+
+            ACTION_RESUME -> resume()
 
             ACTION_STOP -> finish()
         }
@@ -122,6 +127,9 @@ public class ScreenRecordingService : Service() {
             mediaRecorder.start()
         }
         if (started.isSuccess) {
+            ScreenCapture.recordedMillisBeforeResume = 0
+            ScreenCapture.resumedAtMillis = SystemClock.elapsedRealtime()
+            ScreenCapture.isRecordingPaused = false
             ScreenCapture.isRecording = true
             DeckLogger.log("Screen recording started", tag = LOG_TAG)
         } else {
@@ -131,6 +139,28 @@ public class ScreenRecordingService : Service() {
             outputFile = null
             finish()
         }
+    }
+
+    private fun pause() {
+        val mediaRecorder = recorder ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || ScreenCapture.isRecordingPaused) return
+        if (runCatching { mediaRecorder.pause() }.isFailure) return
+        ScreenCapture.recordedMillisBeforeResume = ScreenCapture.recordingElapsedMillis()
+        ScreenCapture.isRecordingPaused = true
+        updateNotification()
+    }
+
+    private fun resume() {
+        val mediaRecorder = recorder ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !ScreenCapture.isRecordingPaused) return
+        if (runCatching { mediaRecorder.resume() }.isFailure) return
+        ScreenCapture.resumedAtMillis = SystemClock.elapsedRealtime()
+        ScreenCapture.isRecordingPaused = false
+        updateNotification()
+    }
+
+    private fun updateNotification() {
+        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIFICATION_ID, buildNotification())
     }
 
     private fun finish() {
@@ -153,6 +183,7 @@ public class ScreenRecordingService : Service() {
             ScreenCapture.notifyGalleryChanged()
         }
         ScreenCapture.isRecording = false
+        ScreenCapture.isRecordingPaused = false
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -175,11 +206,24 @@ public class ScreenRecordingService : Service() {
             Intent(this, ScreenRecordingService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        val paused = ScreenCapture.isRecordingPaused
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.presence_video_online)
-            .setContentTitle("Recording screen")
+            .setContentTitle(if (paused) "Recording paused" else "Recording screen")
             .setContentText("Tap Stop to save the recording")
             .setOngoing(true)
+            .apply {
+                if (ScreenCapture.canPauseRecording) {
+                    val action = if (paused) ACTION_RESUME else ACTION_PAUSE
+                    val intent = PendingIntent.getService(
+                        this@ScreenRecordingService,
+                        1,
+                        Intent(this@ScreenRecordingService, ScreenRecordingService::class.java).setAction(action),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                    )
+                    addAction(0, if (paused) "Resume" else "Pause", intent)
+                }
+            }
             .addAction(0, "Stop", stopIntent)
             .build()
     }
@@ -187,6 +231,8 @@ public class ScreenRecordingService : Service() {
     internal companion object {
         const val ACTION_START = "io.devdeck.action.START_RECORDING"
         const val ACTION_STOP = "io.devdeck.action.STOP_RECORDING"
+        const val ACTION_PAUSE = "io.devdeck.action.PAUSE_RECORDING"
+        const val ACTION_RESUME = "io.devdeck.action.RESUME_RECORDING"
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_DATA = "data"
         private const val CHANNEL_ID = "devdeck_recording"

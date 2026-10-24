@@ -33,10 +33,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.devdeck.LocalDeckState
-import io.devdeck.components.BulletItem
 import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.InfoGroup
+import io.devdeck.components.PageLinkItem
 import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.openFile
@@ -48,8 +47,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 public fun GalleryButton(title: String = "Open the gallery") {
-    val drawerState = LocalDeckState.current
-    BulletItem(title) { drawerState?.navigateTo("Gallery") { CaptureGallery() } }
+    PageLinkItem(title = title, pageTitle = "Gallery") { CaptureGallery() }
 }
 
 @Composable
