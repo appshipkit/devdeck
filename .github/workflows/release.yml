@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: [gradle.properties]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Tag and release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2)
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v${version}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "v${version} is already released"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.version.outputs.exists == 'false'
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.version.outputs.exists == 'false'
+
+      - name: Build and test
+        if: steps.version.outputs.exists == 'false'
+        run: ./gradlew assembleRelease testDebugUnitTest publishToMavenLocal
+
+      - name: Release notes from CHANGELOG.md
+        if: steps.version.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "See CHANGELOG.md" > notes.md; fi
+
+      - name: Create tag and GitHub release
+        if: steps.version.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v${VERSION}" --target "${GITHUB_SHA}" --title "v${VERSION}" --notes-file notes.md
+
+      - name: Close milestone
+        if: steps.version.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          number=$(gh api "repos/${GITHUB_REPOSITORY}/milestones?state=open" --jq '.[] | select(.title == "Next release") | .number')
+          if [ -n "$number" ]; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/milestones/${number}" -f title="v${VERSION}" -f state=closed
+          fi
+
+      - name: Trigger JitPack build
+        if: steps.version.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          curl -s -o /dev/null -w "JitPack responded %{http_code}\n" --max-time 600 \
+            "https://jitpack.io/com/github/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/v${VERSION}/" || true

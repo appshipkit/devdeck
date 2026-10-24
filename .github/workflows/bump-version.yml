@@ -1,0 +1,43 @@
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Release type: fix (0.1.0 -> 0.1.1), feature (-> 0.2.0), major (-> 1.0.0), or auto from CHANGELOG.md"
+        type: choice
+        options: [auto, fix, feature, major]
+        default: auto
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    name: Open release pull request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+      - name: Bump version
+        id: bump
+        run: scripts/bump-version.sh "${{ inputs.bump }}"
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          branch="release/v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh label create skip-changelog --color ededed --description "No CHANGELOG entry needed" --force
+          git checkout -b "$branch"
+          git commit -am "Release v${VERSION}"
+          git push origin "$branch"
+          gh pr create \
+            --title "Release v${VERSION}" \
+            --body "Bumps the version to ${VERSION} and moves the Unreleased changelog entries under it. Merging this creates the v${VERSION} tag and GitHub release." \
+            --label skip-changelog \
+            --base main --head "$branch"

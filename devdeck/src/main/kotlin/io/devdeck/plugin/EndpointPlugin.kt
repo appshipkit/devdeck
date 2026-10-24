@@ -1,0 +1,68 @@
+package io.devdeck.plugin
+
+import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
+import io.devdeck.actions.AppActions
+import io.devdeck.components.SingleSelectItem
+import io.devdeck.logs.DeckLogger
+
+public class EndpointPlugin(
+    private val endpoints: List<Endpoint>,
+    private val default: Endpoint = endpoints.firstOrNull() ?: error("EndpointPlugin needs at least one endpoint"),
+    private val title: String = "Endpoint",
+    private val key: String = DEFAULT_KEY,
+    override val section: String? = "Configuration 🔧",
+    private val restartOnChange: Boolean = false,
+    private val onChanged: ((Endpoint) -> Unit)? = null,
+) : DeckPlugin {
+
+    override val id: String = "endpoint:$key"
+
+    public fun current(context: Context): Endpoint = current(context, endpoints, default, key)
+
+    @Composable
+    override fun Content() {
+        val context = LocalContext.current
+        var selected by remember { mutableStateOf(current(context)) }
+        SingleSelectItem(
+            title = title,
+            options = endpoints,
+            selected = selected,
+            onSelected = { endpoint ->
+                selected = endpoint
+                save(context, key, endpoint)
+                DeckLogger.log("$title switched to ${endpoint.name}", payload = endpoint.url)
+                onChanged?.invoke(endpoint)
+                if (restartOnChange) AppActions.restart(context)
+            },
+            optionLabel = { it.name },
+        )
+    }
+
+    public companion object {
+        public const val DEFAULT_KEY: String = "default"
+        private const val PREFS = "devdeck_endpoint"
+
+        public fun current(
+            context: Context,
+            endpoints: List<Endpoint>,
+            default: Endpoint = endpoints.first(),
+            key: String = DEFAULT_KEY,
+        ): Endpoint {
+            val url = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(prefKey(key), null)
+            return endpoints.firstOrNull { it.url == url } ?: default
+        }
+
+        private fun save(context: Context, key: String, endpoint: Endpoint) {
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit(commit = true) { putString(prefKey(key), endpoint.url) }
+        }
+
+        private fun prefKey(key: String) = if (key == DEFAULT_KEY) "url" else "url_$key"
+    }
+}

@@ -1,0 +1,28 @@
+name: Milestones
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  assign:
+    name: Add merged PR to the next release
+    if: github.event.pull_request.merged == true && github.event.pull_request.milestone == null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign "Next release" milestone
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          number=$(gh api "repos/${GITHUB_REPOSITORY}/milestones?state=open" --jq '.[] | select(.title == "Next release") | .number')
+          if [ -z "$number" ]; then
+            number=$(gh api -X POST "repos/${GITHUB_REPOSITORY}/milestones" -f title="Next release" \
+              -f description="Merged changes waiting for the next version" --jq '.number')
+          fi
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/${PR}" -F milestone="$number" > /dev/null
+          echo "PR #${PR} added to milestone #${number}"

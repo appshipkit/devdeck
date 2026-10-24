@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-files-path name="devdeck_external" path="devdeck/" />
+    <files-path name="devdeck_internal" path="devdeck/" />
+</paths>

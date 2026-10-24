@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">DevDeck Sample</string>
+    <string name="legacy_intro">Plain View-based screen.\n\nThe drawer here comes from DevDeck.install() in SampleApp. Swipe left with two fingers, tap the floating bug, press Ctrl + Shift + D, or use the buttons.</string>
+    <string name="legacy_open_drawer">Open drawer</string>
+    <string name="legacy_toggle_drawer">Toggle drawer availability</string>
+    <string name="legacy_log_analytics">Log analytics event</string>
+</resources>

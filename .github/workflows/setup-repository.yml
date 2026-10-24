@@ -1,0 +1,31 @@
+name: Set up repository
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  setup:
+    name: Create labels and milestone
+    runs-on: ubuntu-latest
+    steps:
+      - name: Labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create bug --color d73a4a --description "Something isn't working" --force
+          gh label create enhancement --color a2eeef --description "New feature or improvement" --force
+          gh label create dependencies --color 0366d6 --description "Dependency updates" --force
+          gh label create skip-changelog --color ededed --description "No CHANGELOG entry needed" --force
+      - name: Next release milestone
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh api "repos/${GITHUB_REPOSITORY}/milestones?state=open" --jq '.[] | select(.title == "Next release") | .number')
+          if [ -z "$existing" ]; then
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/milestones" -f title="Next release" \
+              -f description="Merged changes waiting for the next version" > /dev/null
+          fi

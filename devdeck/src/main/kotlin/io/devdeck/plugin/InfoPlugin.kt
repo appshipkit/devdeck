@@ -1,0 +1,30 @@
+package io.devdeck.plugin
+
+import androidx.compose.runtime.Composable
+import io.devdeck.bugreport.BugReportButton
+import io.devdeck.components.PageLinkItem
+import io.devdeck.device.AppVersionItem
+import io.devdeck.device.DeviceSnapshotCard
+
+public class InfoPlugin(
+    private val snapshot: Boolean = true,
+    private val bugReport: Boolean = true,
+    private val version: Boolean = true,
+    private val versionText: String? = null,
+    private val buildInfo: () -> Map<String, String> = { emptyMap() },
+    override val section: String? = "Info ℹ️",
+) : DeckPlugin {
+
+    override val id: String = "info"
+
+    @Composable
+    override fun Content() {
+        if (snapshot) {
+            PageLinkItem(title = "Device & app snapshot", subtitle = "Share versions and device details as an image") {
+                DeviceSnapshotCard(buildInfo = buildInfo)
+            }
+        }
+        if (bugReport) BugReportButton(buildInfo = buildInfo)
+        if (version) AppVersionItem(text = versionText)
+    }
+}
