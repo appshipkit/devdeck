@@ -12,6 +12,15 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 ### Changed
 - The sample's fake update feed offers 1.1.0 now that the sample is 1.0.0.
 - README install lines use a `LATEST_VERSION` placeholder that matches the JitPack badge, plus a version catalog example.
+- Drawer pages slide in and out instead of switching instantly.
+- The network inspector's clear button sits in the count row, like the other lists.
+- The device & app snapshot shows share, save and copy as small icons on the card; they are not part of the shared image.
+- The deep link launcher opens links from a send icon inside the field, leaving more room on small phones.
+- The sample app is named DevDeck.
+
+### Fixed
+- Search placeholders and the network count row stay on one line on small phones.
+- The permissions list refreshes after a permission dialog or settings screen closes, and shows when a revoke only applies after the app restarts.
 
 ## [1.0.0] - 2026-10-24
 
