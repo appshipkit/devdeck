@@ -6,6 +6,12 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+### Added
+- MIT license, code of conduct, and a demo GIF in the README.
+
+### Changed
+- README install lines use a `LATEST_VERSION` placeholder that matches the JitPack badge, plus a version catalog example.
+
 ## [1.0.0] - 2026-10-24
 
 First stable release. The public API now follows semantic versioning: breaking changes only in a new major version.

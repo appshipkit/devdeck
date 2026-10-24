@@ -29,12 +29,12 @@ DevDeck uses [Semantic Versioning](https://semver.org/). The version lives in on
 
    | Release type | Example | Use for |
    |---|---|---|
-   | `fix` | 0.1.0 → **0.1.1** | Bug fixes only |
-   | `feature` | 0.1.0 → **0.2.0** | New features or behaviour changes |
+   | `fix` | 1.0.0 → **1.0.1** | Bug fixes only |
+   | `feature` | 1.0.0 → **1.1.0** | New features or behaviour changes |
    | `major` | 0.x → **1.0.0**, then 1.x → **2.0.0** | The first stable release, and later breaking changes: removed or renamed public API, changed defaults |
    | `auto` (default) | — | Picks one from the `[Unreleased]` entries in `CHANGELOG.md`: `### Removed` or the word `BREAKING` → major; `### Added` / `### Changed` → feature; only `### Fixed` → fix. While on 0.x, breaking changes stay a feature release, so 1.0.0 only happens when you choose `major` |
 
-   It updates `VERSION_NAME`, moves the *Unreleased* changelog entries under the new version, updates the README's dependency lines, and opens a **Release vX.Y.Z** pull request.
+   It updates `VERSION_NAME`, moves the *Unreleased* changelog entries under the new version, and opens a **Release vX.Y.Z** pull request.
 2. Merge that pull request. The **Release** workflow then:
    - builds and tests,
    - creates the `vX.Y.Z` tag and a GitHub release with the changelog notes,
