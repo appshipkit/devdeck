@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml?query=branch%3Amain)
 [![JitPack](https://jitpack.io/v/appshipkit/devdeck.svg)](https://jitpack.io/#appshipkit/devdeck)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-finger swipe, a floating button, a keyboard shortcut or code, and get your team's debug tools in one place:
 
@@ -14,6 +15,10 @@ A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-
 - browse storage, watch frame rate and memory, and more
 
 Everything is a plugin: pick the ones you need or write your own in a few lines. It works on Compose and classic View screens, and it never ships in release builds.
+
+<p align="center">
+  <img src="docs/devdeck-demo.gif" width="300" alt="DevDeck sample app: opening the drawer, feature flags, network simulator, network inspector, breadcrumbs, test build updates, UI tools and permissions" />
+</p>
 
 ---
 
@@ -29,11 +34,25 @@ dependencyResolutionManagement {
 
 // app/build.gradle.kts
 dependencies {
-    debugImplementation("com.github.appshipkit.devdeck:devdeck:v1.0.0")
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-okhttp:v1.0.0")  // optional: network inspector (OkHttp / Apollo)
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-timber:v1.0.0")  // optional: Timber logs
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v1.0.0")  // optional: Firebase test build updates
+    debugImplementation("com.github.appshipkit.devdeck:devdeck:LATEST_VERSION")
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-okhttp:LATEST_VERSION")  // optional: network inspector (OkHttp / Apollo)
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-timber:LATEST_VERSION")  // optional: Timber logs
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:LATEST_VERSION")  // optional: Firebase test build updates
 }
+```
+
+Replace `LATEST_VERSION` with the version on the [JitPack badge](https://jitpack.io/#appshipkit/devdeck) above, for example `1.0.0`. JitPack accepts the version with or without the `v` of the git tag, so `1.0.0` and `v1.0.0` give the same build.
+
+Using a version catalog:
+
+```toml
+# gradle/libs.versions.toml
+[versions]
+devdeck = "LATEST_VERSION"
+
+[libraries]
+devdeck = { module = "com.github.appshipkit.devdeck:devdeck", version.ref = "devdeck" }
+devdeck-okhttp = { module = "com.github.appshipkit.devdeck:devdeck-okhttp", version.ref = "devdeck" }
 ```
 
 ### 2. Install it
@@ -226,7 +245,7 @@ With Firebase App Distribution:
 
 ```kotlin
 // app/build.gradle.kts, in the variants testers install (never in the Play Store build)
-debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v1.0.0")
+debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:LATEST_VERSION")
 debugImplementation("com.google.firebase:firebase-appdistribution:16.0.0-beta21")
 
 // Application.onCreate
@@ -372,4 +391,8 @@ Run the `sample` configuration in Android Studio. [sample/README.md](sample/READ
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local checks, pull requests and the release process, and [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local checks, pull requests and the release process, and [CHANGELOG.md](CHANGELOG.md) for what changed in each version. Please follow the [code of conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+DevDeck is released under the [MIT License](LICENSE).
