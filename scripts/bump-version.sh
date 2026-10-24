@@ -46,7 +46,7 @@ esac
 today=$(date -u +%Y-%m-%d)
 
 perl -pi -e "s/^VERSION_NAME=.*/VERSION_NAME=${next}/" gradle.properties
-perl -pi -e "s/(com\.github\.Abhishek3289\.devdeck:devdeck[a-z-]*):\Q${current}\E/\1:${next}/g" README.md
+perl -pi -e "s/(com\.github\.abhishek-3289\.devdeck:devdeck[a-z-]*):\Q${current}\E/\1:${next}/g" README.md
 perl -pi -e "s/^## \[Unreleased\]\s*\$/## [Unreleased]\n\n## [${next}] - ${today}\n/" CHANGELOG.md
 
 echo "${current} -> ${next}"
