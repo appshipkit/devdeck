@@ -227,7 +227,6 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
                         "$label · ${formatRecordingTime(recordingElapsed)}",
                         RecordingRed,
                         onClick = { deckState?.pendingFocus = RECORDING_FOCUS },
-                        stop = { ScreenCapture.stopRecording(context) },
                     ),
                 )
             }
@@ -239,11 +238,15 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
             if (MemorySimulator.killOnBackground) add(HeaderChip("Kill when backgrounded", warning))
         }
         if (chips.isNotEmpty()) {
-            Row(
-                Modifier.padding(top = 12.dp, end = 8.dp).horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                chips.forEach { Chip(it) }
+            Row(Modifier.padding(top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Stays put while the chips scroll, so stopping a recording is always one tap.
+                if (ScreenCapture.isRecording) {
+                    StopRecordingButton(onClick = { ScreenCapture.stopRecording(context) })
+                    Spacer(Modifier.width(6.dp))
+                }
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    chips.forEach { Chip(it) }
+                }
             }
         }
     }
@@ -304,42 +307,38 @@ private fun CloseButton(onClose: () -> Unit) {
 // 40dp keeps the touch target close to the guideline while pulling the settings and close buttons together.
 private val HeaderButtonSize = 40.dp
 
-private data class HeaderChip(val text: String, val accent: Color?, val onClick: (() -> Unit)? = null, val stop: (() -> Unit)? = null)
+private data class HeaderChip(val text: String, val accent: Color?, val onClick: (() -> Unit)? = null)
+
+@Composable
+private fun StopRecordingButton(onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(RecordingRed)
+            .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(DeckIcons.Stop, contentDescription = "Stop recording", tint = Color.White, modifier = Modifier.size(14.dp))
+    }
+}
 
 @Composable
 private fun Chip(chip: HeaderChip) {
     val shape = RoundedCornerShape(50)
     val card = LocalDeckColors.current?.card ?: MaterialTheme.colorScheme.surface
     val accent = chip.accent
-    Row(
-        Modifier
+    Text(
+        text = chip.text,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Medium,
+        color = accent ?: MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        modifier = Modifier
             .background(accent?.copy(alpha = 0.14f) ?: card, shape)
             .then(if (accent == null) Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shape) else Modifier)
-            .clip(shape),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = chip.text,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            color = accent ?: MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            modifier = Modifier
-                .then(chip.onClick?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier)
-                .padding(start = 10.dp, end = if (chip.stop != null) 4.dp else 10.dp, top = 4.dp, bottom = 4.dp),
-        )
-        chip.stop?.let { stop ->
-            Box(
-                Modifier
-                    .padding(end = 4.dp)
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(RecordingRed)
-                    .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = stop),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(DeckIcons.Stop, contentDescription = "Stop recording", tint = Color.White, modifier = Modifier.size(12.dp))
-            }
-        }
-    }
+            .clip(shape)
+            .then(chip.onClick?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+    )
 }

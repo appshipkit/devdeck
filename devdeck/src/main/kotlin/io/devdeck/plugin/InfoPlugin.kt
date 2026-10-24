@@ -2,8 +2,11 @@ package io.devdeck.plugin
 
 import androidx.compose.runtime.Composable
 import io.devdeck.bugreport.BugReportButton
+import io.devdeck.components.ExpandableItem
 import io.devdeck.components.PageLinkItem
+import io.devdeck.device.AppInfo
 import io.devdeck.device.AppVersionItem
+import io.devdeck.device.DeviceInfo
 import io.devdeck.device.DeviceSnapshotCard
 
 public class InfoPlugin(
@@ -19,6 +22,8 @@ public class InfoPlugin(
 
     @Composable
     override fun Content() {
+        ExpandableItem("App info") { AppInfo() }
+        ExpandableItem("Device info") { DeviceInfo() }
         if (snapshot) {
             PageLinkItem(title = "Device & app snapshot", subtitle = "Share versions and device details as an image") {
                 DeviceSnapshotCard(buildInfo = buildInfo)

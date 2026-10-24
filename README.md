@@ -162,9 +162,9 @@ DevDeck.install(
 | `AppearancePlugin` | User Interface | Dark mode (Android 12+) and app language (Android 13+) override | ✓ |
 | `PerformancePlugin` | System | FPS / jank / memory overlay and memory details | ✓ |
 | `StoragePlugin` | System | SharedPreferences browser/editor and storage usage | ✓ |
-| `DevicePlugin` | System | Device info, permissions (request, revoke, open settings), developer options | ✓ |
+| `DevicePlugin` | System | Permissions (request, revoke, open settings), developer options | ✓ |
 | `UpdatesPlugin` | App | New test build check, release notes and install (module `devdeck-appdistribution` for Firebase) | — needs a source |
-| `InfoPlugin` | Info | Device & app snapshot image, bug report, version | ✓ |
+| `InfoPlugin` | Info | App info (version, build type, R8, SDK levels), device info, device & app snapshot image, bug report, version | ✓ |
 
 Every plugin takes a `section` (or `null` for no header) and switches to hide individual rows, e.g. `UiToolsPlugin(screenCapture = false)`.
 

@@ -1,14 +1,13 @@
 package io.devdeck.plugin
 
 import androidx.compose.runtime.Composable
-import io.devdeck.components.ExpandableItem
 import io.devdeck.components.PageLinkItem
 import io.devdeck.device.DeveloperOptionsButton
-import io.devdeck.device.DeviceInfo
 import io.devdeck.device.PermissionsList
 
 public class DevicePlugin(
-    private val deviceInfo: Boolean = true,
+    // Device info moved to InfoPlugin; kept so existing calls still compile.
+    @Suppress("unused") private val deviceInfo: Boolean = true,
     private val permissions: Boolean = true,
     private val developerOptions: Boolean = true,
     override val section: String? = "System 📱",
@@ -18,7 +17,6 @@ public class DevicePlugin(
 
     @Composable
     override fun Content() {
-        if (deviceInfo) ExpandableItem("Device info") { DeviceInfo() }
         if (permissions) PageLinkItem("Permissions") { PermissionsList() }
         if (developerOptions) DeveloperOptionsButton()
     }
