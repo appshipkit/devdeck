@@ -19,6 +19,7 @@ import io.devdeck.plugin.NetworkSimulatorPlugin
 import io.devdeck.plugin.PerformancePlugin
 import io.devdeck.plugin.StoragePlugin
 import io.devdeck.plugin.UiToolsPlugin
+import io.devdeck.plugin.UpdatesPlugin
 import io.devdeck.timber.TimberLogsPlugin
 
 fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugin> = listOf(
@@ -32,6 +33,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     CrashPlugin(testCrashButton = true),
     AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
+    UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
     PerformancePlugin(),

@@ -34,6 +34,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,6 +50,8 @@ import io.devdeck.internal.DeckIcons
 import io.devdeck.simulation.MemorySimulator
 import io.devdeck.simulation.NetworkSimulator
 import io.devdeck.simulation.mb
+import io.devdeck.updates.UpdateChecker
+import io.devdeck.updates.updateAvailableColor
 
 @Composable
 internal fun DeckPanel(
@@ -106,6 +109,7 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
     val context = LocalContext.current
     val version = remember(context) { appVersionInfo(context)?.versionName }
     val warning = LocalDeckColors.current?.warning ?: MaterialTheme.colorScheme.error
+    LaunchedEffect(Unit) { UpdateChecker.checkIfDue() }
     val network = NetworkSimulator.simulation
     val heldBytes = MemorySimulator.heldBytes
     Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)) {
@@ -137,8 +141,11 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
             }
             CloseButton(onClose)
         }
+        val update = UpdateChecker.availableUpdate
+        val updateColor = updateAvailableColor(LocalDeckColors.current?.isDark == true)
         val chips = buildList {
             version?.let { add(HeaderChip("v$it", null)) }
+            if (update != null) add(HeaderChip("Update · ${update.label}", updateColor))
             if (network.isActive) add(HeaderChip(network.summary, warning))
             if (heldBytes > 0) add(HeaderChip("Holding ${mb(heldBytes)}", warning))
             if (MemorySimulator.killOnBackground) add(HeaderChip("Kill on background", warning))

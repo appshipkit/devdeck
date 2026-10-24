@@ -5,6 +5,7 @@ composeBom = "2026.05.01"
 activityCompose = "1.12.0"
 core = "1.17.0"
 okhttp = "4.12.0"
+appdistribution = "16.0.0-beta21"
 timber = "4.7.1"
 ktlint = "1.3.1"
 junit = "4.13.2"
@@ -21,6 +22,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+firebase-appdistribution-api = { group = "com.google.firebase", name = "firebase-appdistribution-api", version.ref = "appdistribution" }
 mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 

@@ -13,6 +13,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - Plugins: endpoints, feature flags, custom logs, logcat, crash logs, network inspector, UI tools, performance, appearance, storage, app actions, device and info.
 - `devdeck-okhttp` interceptor and `devdeck-timber` tree.
 - Automatic exclusion of payment and 3DS SDK screens.
+- Test build updates: `UpdatesPlugin` with a header chip, floating-button dot, release notes, install progress and optional notification, plus `devdeck-appdistribution` for Firebase App Distribution and an `UpdateSource` interface for other feeds.
 - Card layout: header with app version and active-simulation chips, and each section as a card with an emoji badge. `DeckCard` wraps your own content in the same card.
 - `CheckboxItem` and `DropdownItem`, plus iOS-style switches and custom radio buttons and checkboxes (`CompactToggle`, `DeckRadio`, `DeckCheckbox`). Endpoint, dark mode, app language and the network simulator use dropdowns.
 - Pill-style filters: a sliding segmented control for *All / By tag* and *Timeline / By endpoint*, coloured level and highlight pills, and a rounded search field (`SegmentedPills`, `FilterPill`, `SearchField`). The network simulator's extra settings animate in and out. Memory warnings and *Fill memory* use compact one-tap pills (`ActionPill`), showing the five warnings that still matter (all levels remain in `MemoryWarning`).

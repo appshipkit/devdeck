@@ -1,4 +1,4 @@
 jdk:
   - openjdk17
 install:
-  - ./gradlew :devdeck:publishToMavenLocal :devdeck-okhttp:publishToMavenLocal :devdeck-timber:publishToMavenLocal
+  - ./gradlew :devdeck:publishToMavenLocal :devdeck-okhttp:publishToMavenLocal :devdeck-timber:publishToMavenLocal :devdeck-appdistribution:publishToMavenLocal

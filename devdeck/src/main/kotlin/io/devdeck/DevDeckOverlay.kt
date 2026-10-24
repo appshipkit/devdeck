@@ -3,11 +3,13 @@ package io.devdeck
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -46,6 +48,8 @@ import io.devdeck.performance.PerformanceOverlay
 import io.devdeck.simulation.SimulationBadge
 import io.devdeck.tools.KeylineOverlay
 import io.devdeck.tools.UiTools
+import io.devdeck.updates.UpdateChecker
+import io.devdeck.updates.updateAvailableColor
 import kotlin.math.roundToInt
 
 @Composable
@@ -173,6 +177,23 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
         ) {
             Box(contentAlignment = Alignment.Center) {
                 trigger.icon?.invoke() ?: Icon(DeckIcons.BugReport, contentDescription = "Open debug menu")
+            }
+        }
+        if (UpdateChecker.availableUpdate != null) {
+            Box(
+                Modifier
+                    .align(trigger.alignment)
+                    .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+                    .size(44.dp),
+            ) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .size(12.dp)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape)
+                        .padding(2.dp)
+                        .background(updateAvailableColor(isSystemInDarkTheme()), CircleShape),
+                )
             }
         }
     }

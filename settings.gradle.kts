@@ -19,4 +19,5 @@ rootProject.name = "devdeck"
 include(":devdeck")
 include(":devdeck-okhttp")
 include(":devdeck-timber")
+include(":devdeck-appdistribution")
 include(":sample")

@@ -30,6 +30,7 @@ dependencies {
     debugImplementation("com.github.Abhishek3289.devdeck:devdeck:0.1.0")
     debugImplementation("com.github.Abhishek3289.devdeck:devdeck-okhttp:0.1.0")  // optional: network inspector (OkHttp / Apollo)
     debugImplementation("com.github.Abhishek3289.devdeck:devdeck-timber:0.1.0")  // optional: Timber logs
+    debugImplementation("com.github.Abhishek3289.devdeck:devdeck-appdistribution:0.1.0")  // optional: Firebase test build updates
 }
 ```
 
@@ -137,6 +138,7 @@ DevDeck.install(
 | `PerformancePlugin` | System | FPS / jank / memory overlay and memory details | ✓ |
 | `StoragePlugin` | System | SharedPreferences browser/editor and storage usage | ✓ |
 | `DevicePlugin` | System | Device info, permissions, app info, developer options | ✓ |
+| `UpdatesPlugin` | App | New test build check, release notes and install (module `devdeck-appdistribution` for Firebase) | — needs a source |
 | `InfoPlugin` | Info | Device & app snapshot image, bug report, version | ✓ |
 
 Every plugin takes a `section` (or `null` for no header) and switches to hide individual rows, e.g. `UiToolsPlugin(screenCapture = false)`.
@@ -212,6 +214,25 @@ The memory rows under **Simulate 🧪** reproduce what the app sees on a low-mem
 - *Send memory warning* calls `onTrimMemory(level)` or `onLowMemory()` on the application, its registered `ComponentCallbacks` and open activities, as Android does.
 - *Fill memory* holds extra Java heap (16 MB, 64 MB, or up to 90% of the limit) until you release it.
 - *Kill app when backgrounded* ends the process the next time the app goes to the background. Reopen it from recents to test restoring state after process death.
+
+### Test build updates
+
+`UpdatesPlugin` tells testers when a newer test build is available. It shows a green *Update · v1.4.0 (412)* chip in the drawer header and a dot on the floating button. The plugin row shows the release notes, an *Install* button with download progress, *Check now*, and tester sign-in.
+
+With Firebase App Distribution:
+
+```kotlin
+// app/build.gradle.kts, in the variants testers install (never in the Play Store build)
+debugImplementation("com.github.Abhishek3289.devdeck:devdeck-appdistribution:0.1.0")
+debugImplementation("com.google.firebase:firebase-appdistribution:16.0.0-beta21")
+
+// Application.onCreate
+DevDeck.install(this, plugins = DeckPlugins.defaults() + UpdatesPlugin(FirebaseAppDistributionSource(), notify = true))
+```
+
+- Your app needs Firebase set up (`google-services.json` and the Google Services plugin), and testers must be invited in App Distribution. The first check asks the tester to sign in with their Google account in the browser.
+- Checks run on app start and when the drawer opens, at most every 4 hours (`checkIntervalMillis`), plus *Check now*. `notify = true` also posts one notification per new build (Android 13+ needs the notification permission).
+- Not using Firebase? Implement `UpdateSource` (`checkForUpdate()` and `install()`) for GitHub Releases, your own endpoint or any other feed.
 
 ### Logs
 
@@ -313,6 +334,7 @@ DevDeck.install(this, plugins, excludedActivityPrefixes = emptySet())           
 | `devdeck` | `io.devdeck` | Drawer, plugins and building blocks. Depends on Compose, AndroidX Activity and Core. |
 | `devdeck-okhttp` | `io.devdeck.okhttp` | `DevDeckOkHttpInterceptor`. OkHttp is `compileOnly`, so your version is used. |
 | `devdeck-timber` | `io.devdeck.timber` | `DevDeckTimberTree`, `TimberLogsPlugin`. Timber is `compileOnly` (4.7.1+, works with 5.x). |
+| `devdeck-appdistribution` | `io.devdeck.appdistribution` | `FirebaseAppDistributionSource` for `UpdatesPlugin`. The Firebase App Distribution API is `compileOnly`; add the full SDK to your tester builds. |
 
 - **Requirements:** minSdk 23, compileSdk 36. Built with AGP 9.4, Kotlin 2.2 and Compose BOM 2026.05. If your app uses an older Compose, debug builds resolve to this BOM's versions.
 - **Manifest additions:** `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION` and `POST_NOTIFICATIONS` for screen recording, a `FileProvider` (`${applicationId}.devdeck.files`) and the recording service. Debug builds only, if you use `debugImplementation`.

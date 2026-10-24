@@ -55,6 +55,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     CrashPlugin(testCrashButton = true),
     AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
+    UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
     PerformancePlugin(),
@@ -78,6 +79,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `LogsPlugin` | **Logs 📚**: custom `DeckLogger` logs. General, Analytics and Lifecycle rows with entry counts; each opens its own page. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
 | `AppActionsPlugin` | **App 🛠️**: deep-link launcher (suggests `devdeck://sample/legacy`), WebView debugging, restart, clear cache or data, kill. |
+| `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v0.2.0 (200) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
 | `UiToolsPlugin` | **User Interface 🎨**: slow animations, keyline overlay, screen capture tools. |
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
 | `PerformancePlugin` | **System 📱**: FPS / jank / memory overlay and memory details. |
