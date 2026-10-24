@@ -14,7 +14,20 @@ public object NetworkLogger {
 
     public var maxBodyChars: Int = 250_000
 
-    public var redactedHeaders: Set<String> = setOf("Authorization", "Cookie", "Set-Cookie", "Proxy-Authorization")
+    public var redactedHeaders: Set<String> = setOf("Authorization", "Cookie", "Set-Cookie", "Proxy-Authorization", "X-Api-Key")
+
+    public var redactedFields: Set<String> = setOf(
+        "password",
+        "passwd",
+        "token",
+        "access_token",
+        "refresh_token",
+        "id_token",
+        "client_secret",
+        "api_key",
+        "apikey",
+        "secret",
+    )
 
     private val nextId = AtomicLong()
     private val _calls = MutableStateFlow<List<NetworkCall>>(emptyList())
@@ -34,9 +47,9 @@ public object NetworkLogger {
             id = id,
             startedAtMillis = System.currentTimeMillis(),
             method = method.uppercase(),
-            url = url,
+            url = NetworkRedaction.url(url, redactedFields),
             requestHeaders = redact(headers),
-            requestBody = body?.truncate(),
+            requestBody = body?.let { NetworkRedaction.body(it, redactedFields) }?.truncate(),
             requestContentType = contentType,
             requestSize = size,
             operationName = GraphQl.operationName(url, headers, body),
@@ -62,7 +75,7 @@ public object NetworkLogger {
                 responseCode = code,
                 responseMessage = message,
                 responseHeaders = redact(headers),
-                responseBody = body?.truncate(),
+                responseBody = body?.let { NetworkRedaction.body(it, redactedFields) }?.truncate(),
                 responseContentType = contentType,
                 responseSize = size,
                 durationMillis = durationMillis,

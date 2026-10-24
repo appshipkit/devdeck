@@ -20,4 +20,5 @@ First release.
 - **User Interface:** slow animations, keyline overlay, screenshots, screen recording, dark mode and app language overrides.
 - **System:** frame rate and memory overlay, memory details, shared preferences browser, storage usage, device info, permissions with request, revoke and settings actions, developer options.
 - **Info:** device and app snapshot image, bug report and version.
+- **Security:** passwords, tokens and API keys are masked in logged URLs and bodies, as well as auth headers. Components are not exported, and workflows use pinned actions with least-privilege permissions.
 - **Building blocks for your own plugins:** switches, checkboxes, dropdowns, radio lists, text, number and JSON inputs, buttons, pills, filters, search, cards, collapsible sections, info lists with dividers and code blocks.

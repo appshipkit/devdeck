@@ -183,7 +183,7 @@ val enabled: Boolean = flags[Flags.newCheckout]
 
 - *Timeline* or *By endpoint* view: calls are grouped by GraphQL operation, or by method + path, with call counts, failures and timings.
 - Each call shows its overview, query params, headers and pretty-printed bodies, with Copy URL, Copy cURL and Share.
-- GraphQL operation names are detected automatically; `Authorization` and cookie headers are redacted.
+- GraphQL operation names are detected automatically. `Authorization`, cookie and API-key headers are redacted, and so are passwords, tokens and API keys in URLs and JSON or form bodies (`NetworkLogger.redactedHeaders` / `redactedFields`).
 - Streaming responses (server-sent events) are passed through untouched.
 - Highlight what matters:
 
@@ -358,6 +358,13 @@ DevDeck.install(this, plugins, excludedActivityPrefixes = emptySet())           
 - **Stored data:** DevDeck keeps its own settings in one SharedPreferences file, `devdeck_settings`. Feature flags from `SharedPreferencesFlagStore` go to `devdeck_flags` (or the name you pass). Captures and crash logs live under `files/devdeck/`.
 - **Manifest additions:** `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION` and `POST_NOTIFICATIONS` for screen recording, a `FileProvider` (`${applicationId}.devdeck.files`) and the recording service. Debug builds only, if you use `debugImplementation`.
 - **Limits:** *Slow animations* affects View animations only, because Compose follows the system animation scale. Logcat shows your app's process only. Some OEM builds hide debug-level logs.
+
+## Security
+
+- **Keep DevDeck out of store builds.** Add it with `debugImplementation` (or your QA flavours) only. It shows network traffic, logs, preferences and files, and can change app state, which is fine for testers but never for end users.
+- **Secrets are masked** in the network inspector, but your own log messages, logcat lines and preference values are shown as they are. Avoid logging secrets.
+- **Nothing leaves the device on its own.** Crash logs, captures and settings stay in the app's private storage. Data is only shared when a tester taps *Share* or sends a bug report.
+- **Found a vulnerability?** Report it privately, as described in [SECURITY.md](SECURITY.md).
 
 ## Sample app
 
