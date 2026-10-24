@@ -23,6 +23,8 @@ sample/src/main/kotlin/io/devdeck/sample/
 │   ├── SamplePlugins.kt      The plugin list and network highlight rules: the whole debug menu in one place
 │   ├── SampleFlags.kt        Feature-flag definitions (toggle, text, number, JSON)
 │   ├── SampleEndpoints.kt    Endpoint list and a helper that reads the selected one
+│   ├── SampleUpdateSource.kt A fake update feed that always offers v0.2.0
+│   ├── ControlsDemoPlugin.kt Switch, checkbox, dropdown and radio components
 │   └── TapCounterPlugin.kt   A custom plugin built with deckPlugin { }
 ├── network/
 │   └── SampleApi.kt          OkHttp client with DevDeckOkHttpInterceptor and six named demo calls

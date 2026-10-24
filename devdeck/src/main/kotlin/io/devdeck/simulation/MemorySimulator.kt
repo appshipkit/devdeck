@@ -1,6 +1,7 @@
 package io.devdeck.simulation
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.content.ComponentCallbacks2
 import android.os.Bundle
@@ -23,7 +24,6 @@ public object MemorySimulator {
 
     private val chunks = mutableListOf<ByteArray>()
     private val activities: MutableSet<Activity> = Collections.newSetFromMap(WeakHashMap())
-    private var startedActivities = 0
     private var application: Application? = null
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
@@ -32,20 +32,9 @@ public object MemorySimulator {
             activities += activity
         }
 
-        override fun onActivityStarted(activity: Activity) {
-            startedActivities++
-        }
-
         override fun onActivityStopped(activity: Activity) {
-            startedActivities = (startedActivities - 1).coerceAtLeast(0)
-            if (killOnBackground && startedActivities == 0 && !activity.isChangingConfigurations) {
-                handler.postDelayed({
-                    if (killOnBackground &&
-                        startedActivities == 0
-                    ) {
-                        Process.killProcess(Process.myPid())
-                    }
-                }, KILL_DELAY_MILLIS)
+            if (killOnBackground && !activity.isChangingConfigurations) {
+                handler.postDelayed({ if (killOnBackground && isInBackground()) Process.killProcess(Process.myPid()) }, KILL_DELAY_MILLIS)
             }
         }
 
@@ -53,6 +42,7 @@ public object MemorySimulator {
             activities -= activity
         }
 
+        override fun onActivityStarted(activity: Activity) = Unit
         override fun onActivityResumed(activity: Activity) = Unit
         override fun onActivityPaused(activity: Activity) = Unit
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
@@ -64,6 +54,7 @@ public object MemorySimulator {
         application.registerActivityLifecycleCallbacks(callbacks)
     }
 
+    @Suppress("DEPRECATION")
     public fun send(warning: MemoryWarning) {
         val app = application ?: return
         val targets: List<ComponentCallbacks2> = listOf(app) + activities.toList()
@@ -76,7 +67,7 @@ public object MemorySimulator {
     public fun allocate(megabytes: Int): Long {
         val before = heldBytes
         try {
-            repeat(megabytes) { chunks += ByteArray(CHUNK_BYTES).also { it.fill(1) } }
+            repeat(megabytes) { chunks += ByteArray(CHUNK_BYTES) }
         } catch (_: OutOfMemoryError) {
             chunks.removeLastOrNull()
         }
@@ -97,6 +88,12 @@ public object MemorySimulator {
         chunks.clear()
         heldBytes = 0L
         Runtime.getRuntime().gc()
+    }
+
+    private fun isInBackground(): Boolean {
+        val info = ActivityManager.RunningAppProcessInfo()
+        ActivityManager.getMyMemoryState(info)
+        return info.importance > ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE
     }
 
     private const val CHUNK_BYTES = 1024 * 1024

@@ -137,6 +137,9 @@ public class DevDeckOkHttpInterceptor(
     private fun RequestBody.readText(): String? {
         if (isDuplex() || isOneShot()) return "(streamed body not captured)"
         if (!contentType().isText()) return "(binary body, ${contentType() ?: "unknown type"})"
+        val length = contentLength()
+        if (contentType() == null && length !in 0..maxBodyBytes) return "(untyped body not captured)"
+        if (length > maxBodyBytes * LARGE_BODY_FACTOR) return "(body too large to capture: $length bytes)"
         return runCatching {
             val buffer = Buffer()
             writeTo(buffer)
@@ -176,6 +179,7 @@ public class DevDeckOkHttpInterceptor(
         const val HTTP_UNAVAILABLE = 503
         const val DEFAULT_TIMEOUT_MILLIS = 10_000L
         const val PAUSE_STEP_MILLIS = 50L
+        const val LARGE_BODY_FACTOR = 4
         const val THROTTLE_CHUNK_BYTES = 8_192L
         val STREAMING_SUBTYPES = listOf("event-stream", "x-mixed-replace", "x-ndjson")
         val TEXT_SUBTYPES = listOf("json", "xml", "html", "plain", "x-www-form-urlencoded", "graphql", "javascript")

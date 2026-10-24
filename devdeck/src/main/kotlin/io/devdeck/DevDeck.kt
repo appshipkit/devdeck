@@ -46,12 +46,14 @@ public object DevDeck {
         override fun onActivityResumed(activity: Activity) = Unit
         override fun onActivityPaused(activity: Activity) = Unit
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
-        override fun onActivityDestroyed(activity: Activity) = Unit
+        override fun onActivityDestroyed(activity: Activity) {
+            if (!activity.isChangingConfigurations) state.navigateToRoot()
+        }
     }
 
     public fun install(application: Application, config: DeckConfig) {
         this.config = config
-        DeckPluginRegistry.attach(config.plugins, application)
+        DeckPluginRegistry.attach(config.plugins, application, reattachReplaced = true)
         if (this.application == null) {
             this.application = application
             application.registerActivityLifecycleCallbacks(callbacks)
@@ -84,7 +86,7 @@ public object DevDeck {
 
     public fun updateConfig(transform: (DeckConfig) -> DeckConfig) {
         val updated = config?.let(transform) ?: return
-        application?.let { DeckPluginRegistry.attach(updated.plugins, it) }
+        application?.let { DeckPluginRegistry.attach(updated.plugins, it, reattachReplaced = true) }
         config = updated
     }
 
@@ -93,6 +95,7 @@ public object DevDeck {
         application = null
         config = null
         state.snapClosed()
+        state.navigateToRoot()
     }
 
     public fun open(): Boolean {

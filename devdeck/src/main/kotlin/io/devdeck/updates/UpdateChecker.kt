@@ -49,8 +49,7 @@ public object UpdateChecker {
     }
 
     public fun check() {
-        if (job?.isActive == true) return
-        job = scope.launch { refresh() }
+        launchExclusive { refresh() }
     }
 
     public fun checkIfDue() {
@@ -59,7 +58,7 @@ public object UpdateChecker {
 
     public fun signIn() {
         val current = source ?: return
-        scope.launch {
+        launchExclusive {
             runCatching { current.signIn() }.onFailure { status = UpdateStatus.Failed(it.describe()) }
             isSignedIn = current.isSignedIn()
             if (isSignedIn) refresh()
@@ -67,6 +66,7 @@ public object UpdateChecker {
     }
 
     public fun signOut() {
+        if (job?.isActive == true) return
         val current = source ?: return
         current.signOut()
         isSignedIn = current.isSignedIn()
@@ -76,7 +76,12 @@ public object UpdateChecker {
     public fun install() {
         val current = source ?: return
         val update = availableUpdate ?: return
-        scope.launch { installUpdate(current, update) }
+        launchExclusive { installUpdate(current, update) }
+    }
+
+    private fun launchExclusive(block: suspend () -> Unit) {
+        if (job?.isActive == true) return
+        job = scope.launch { block() }
     }
 
     internal suspend fun installUpdate(source: UpdateSource, update: AvailableUpdate) {

@@ -7,6 +7,8 @@ A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-
 
 - switch endpoints and override feature flags
 - inspect network calls (REST and GraphQL)
+- simulate a slow, flaky or offline network and low memory
+- tell testers when a newer test build is available (Firebase App Distribution or your own feed)
 - read your own logs, logcat and Timber logs, plus crash reports
 - take screenshots and screen recordings, share bug reports and device info
 - browse storage, watch frame rate and memory, and more

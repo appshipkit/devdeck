@@ -104,7 +104,7 @@ public fun ConsoleViewer(
                 options = ConsoleView.entries,
                 selected = view,
                 onSelected = { view = it },
-                label = { it.label },
+                optionLabel = { it.label },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }

@@ -41,6 +41,10 @@ public class ScreenRecordingService : Service() {
                 val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val data = IntentCompat.getParcelableExtra(intent, EXTRA_DATA, Intent::class.java)
                 if (data == null || projection != null) {
+                    if (projection == null) {
+                        startInForeground()
+                        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                    }
                     stopSelf()
                 } else {
                     start(resultCode, data)
@@ -51,13 +55,17 @@ public class ScreenRecordingService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun start(resultCode: Int, data: Intent) {
+    private fun startInForeground() {
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
             buildNotification(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION else 0,
         )
+    }
+
+    private fun start(resultCode: Int, data: Intent) {
+        startInForeground()
         val started = runCatching {
             val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             val mediaProjection = manager.getMediaProjection(resultCode, data) ?: error("Projection unavailable")

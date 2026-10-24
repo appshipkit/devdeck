@@ -40,7 +40,7 @@ public fun <T> SegmentedPills(
     selected: T,
     onSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
-    label: (T) -> String = { it.toString() },
+    optionLabel: (T) -> String = { it.toString() },
 ) {
     if (options.isEmpty()) return
     val colors = MaterialTheme.colorScheme
@@ -82,7 +82,7 @@ public fun <T> SegmentedPills(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        label(option),
+                        optionLabel(option),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         color = textColor,

@@ -33,7 +33,7 @@ public fun CollapsibleSection(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val drawerState = LocalDeckState.current
-    val key = "section/$title"
+    val key = "${drawerState?.pages?.lastOrNull()?.title.orEmpty()}/collapsible/$title"
     var localExpanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
     val expanded = drawerState?.expandedRows?.get(key) ?: localExpanded
     val reveal = rememberRevealOnExpand()

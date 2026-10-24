@@ -48,7 +48,10 @@ public fun SharedPreferencesFile(name: String, modifier: Modifier = Modifier) {
             PageLinkItem(title = key, subtitle = "${value.typeName()} · ${value.preview()}") { PreferenceEditor(name, key) }
         }
         SectionDivider()
-        ConfirmButtonItem(title = "Clear all keys", onConfirm = { prefs.values.edit { clear() } })
+        ConfirmButtonItem(title = "Clear all keys", onConfirm = {
+            prefs.values.edit { clear() }
+            prefs.refresh()
+        })
     }
 }
 
@@ -80,7 +83,7 @@ private fun PreferenceEditor(name: String, key: String) {
     })
 }
 
-private class ObservedPreferences(val values: SharedPreferences, val version: Int)
+private class ObservedPreferences(val values: SharedPreferences, val version: Int, val refresh: () -> Unit)
 
 @Composable
 private fun rememberObservedPreferences(name: String): ObservedPreferences {
@@ -92,7 +95,7 @@ private fun rememberObservedPreferences(name: String): ObservedPreferences {
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
-    return ObservedPreferences(prefs, version)
+    return ObservedPreferences(prefs, version) { version++ }
 }
 
 private fun Any?.typeName(): String = when (this) {

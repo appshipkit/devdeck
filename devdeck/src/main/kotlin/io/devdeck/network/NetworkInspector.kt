@@ -69,7 +69,7 @@ public fun NetworkInspector(
             options = NetworkView.entries,
             selected = view,
             onSelected = { view = it },
-            label = { it.label },
+            optionLabel = { it.label },
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
         SearchField(query = query, onQueryChange = { query = it }, placeholder = "Search URL, operation, status")
