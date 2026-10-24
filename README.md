@@ -17,7 +17,7 @@ A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-
 Everything is a plugin: pick the ones you need or write your own in a few lines. It works on Compose and classic View screens, and it never ships in release builds.
 
 <p align="center">
-  <img src="docs/devdeck-demo.gif" width="300" alt="DevDeck sample app: opening the drawer, feature flags, network simulator, network inspector, breadcrumbs, test build updates, UI tools and permissions" />
+  <img src="docs/devdeck-demo.gif" width="300" alt="DevDeck sample app: feature flag, slow and failing network, network inspector, frame rate and keyline overlays, dark mode, breadcrumbs, test build update and permissions" />
 </p>
 
 ---

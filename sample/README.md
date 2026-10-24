@@ -23,7 +23,7 @@ sample/src/main/kotlin/io/devdeck/sample/
 │   ├── SamplePlugins.kt      The plugin list and network highlight rules: the whole debug menu in one place
 │   ├── SampleFlags.kt        Feature-flag definitions (toggle, text, number, JSON)
 │   ├── SampleEndpoints.kt    Endpoint list and a helper that reads the selected one
-│   ├── SampleUpdateSource.kt A fake update feed that always offers v0.2.0
+│   ├── SampleUpdateSource.kt A fake update feed that always offers v1.1.0
 │   ├── ControlsDemoPlugin.kt Switch, checkbox, dropdown and radio components
 │   └── TapCounterPlugin.kt   A custom plugin built with deckPlugin { }
 ├── network/
@@ -83,7 +83,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `BreadcrumbsPlugin` | **Logs 📚 → Breadcrumbs**: screens, taps, requests and app events. Open the View-based screen, tap its buttons and come back to see them named. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
 | `AppActionsPlugin` | **App 🛠️**: deep-link launcher (suggests `devdeck://sample/legacy`), WebView debugging, restart, clear cache or data, kill. |
-| `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v0.2.0 (200) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
+| `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v1.1.0 (10100) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
 | `UiToolsPlugin` | **User Interface 🎨**: slow animations, keyline overlay, screen capture tools. |
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
 | `PerformancePlugin` | **System 📱**: FPS / jank / memory overlay and memory details. |

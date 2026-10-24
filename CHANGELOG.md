@@ -7,9 +7,10 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 ## [Unreleased]
 
 ### Added
-- MIT license, code of conduct, and a demo GIF in the README.
+- MIT license, code of conduct, and a demo GIF in the README showing each feature's effect in the sample app.
 
 ### Changed
+- The sample's fake update feed offers 1.1.0 now that the sample is 1.0.0.
 - README install lines use a `LATEST_VERSION` placeholder that matches the JitPack badge, plus a version catalog example.
 
 ## [1.0.0] - 2026-10-24
