@@ -29,10 +29,10 @@ dependencyResolutionManagement {
 
 // app/build.gradle.kts
 dependencies {
-    debugImplementation("com.github.appshipkit.devdeck:devdeck:v0.1.0")
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-okhttp:v0.1.0")  // optional: network inspector (OkHttp / Apollo)
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-timber:v0.1.0")  // optional: Timber logs
-    debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v0.1.0")  // optional: Firebase test build updates
+    debugImplementation("com.github.appshipkit.devdeck:devdeck:v1.0.0")
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-okhttp:v1.0.0")  // optional: network inspector (OkHttp / Apollo)
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-timber:v1.0.0")  // optional: Timber logs
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v1.0.0")  // optional: Firebase test build updates
 }
 ```
 
@@ -226,7 +226,7 @@ With Firebase App Distribution:
 
 ```kotlin
 // app/build.gradle.kts, in the variants testers install (never in the Play Store build)
-debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v0.1.0")
+debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:v1.0.0")
 debugImplementation("com.google.firebase:firebase-appdistribution:16.0.0-beta21")
 
 // Application.onCreate

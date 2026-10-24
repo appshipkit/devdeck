@@ -6,8 +6,17 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
+First stable release. The public API now follows semantic versioning: breaking changes only in a new major version.
+
+### Changed
+- Published from the [appshipkit](https://github.com/appshipkit) organization as `com.github.appshipkit.devdeck`.
+- Dependabot only proposes updates that don't force apps onto a newer compileSdk or Kotlin version.
+
 ### Fixed
-- Install lines use the `v`-prefixed version that JitPack publishes (`com.github.appshipkit.devdeck:devdeck:v0.1.0`).
+- Install lines use the `v`-prefixed version that JitPack publishes, e.g. `com.github.appshipkit.devdeck:devdeck:v1.0.0`.
+- The simulated network timeout no longer ends up to 1 ms early.
 
 ## [0.1.0] - 2026-10-24
 
