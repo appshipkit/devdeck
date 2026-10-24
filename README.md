@@ -1,6 +1,6 @@
 # DevDeck
 
-[![CI](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml)
+[![CI](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml?query=branch%3Amain)
 [![JitPack](https://jitpack.io/v/appshipkit/devdeck.svg)](https://jitpack.io/#appshipkit/devdeck)
 
 A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-finger swipe, a floating button, a keyboard shortcut or code, and get your team's debug tools in one place:
