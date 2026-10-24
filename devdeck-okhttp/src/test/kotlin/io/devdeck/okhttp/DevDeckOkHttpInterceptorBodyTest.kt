@@ -65,7 +65,8 @@ class DevDeckOkHttpInterceptorBodyTest {
         response.close()
 
         assertTrue("interceptor blocked for $elapsedMillis ms", elapsedMillis < 2_000)
-        assertTrue(loggedBody().orEmpty().startsWith("(chunked body not captured"))
+        assertTrue(loggedBody().orEmpty().startsWith("(open-ended body not captured"))
+        assertEquals(null, NetworkLogger.calls.value.single().responseSize)
     }
 
     @Test

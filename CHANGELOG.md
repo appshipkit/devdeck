@@ -44,7 +44,6 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - Crash logs, captures, shared preferences, bug reports and cache clearing no longer read or write files on the main thread.
 - Expanded log rows keep their state when new lines arrive.
 - Dependabot no longer proposes Android Gradle Plugin major or minor updates, as the 1.0.0 entry promised.
-- README install instructions use the `v`-prefixed version (`v1.0.0`) that JitPack needs.
 
 ## [1.0.0] - 2026-10-24
 

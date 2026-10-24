@@ -66,13 +66,15 @@ public class DevDeckOkHttpInterceptor(
 
         val responseBody = response.body
         val contentType = responseBody?.contentType()
+        val peeked = responseBody != null && contentType != null && !contentType.isStreaming() && contentType.isText() &&
+            isSafeToPeek(responseBody.contentLength(), contentType)
         val bodyText = when {
             responseBody == null -> null
+            peeked -> runCatching { response.peekBody(maxBodyBytes).string() }.getOrNull()
             contentType.isStreaming() -> "(streamed body not captured: $contentType)"
             contentType == null -> "(untyped body not captured)"
             !contentType.isText() -> "(binary body, $contentType)"
-            !response.isSafeToPeek(responseBody.contentLength(), contentType) -> "(chunked body not captured: $contentType)"
-            else -> runCatching { response.peekBody(maxBodyBytes).string() }.getOrNull()
+            else -> "(open-ended body not captured: $contentType)"
         }
         NetworkLogger.complete(
             id = id,
@@ -81,7 +83,7 @@ public class DevDeckOkHttpInterceptor(
             headers = response.headers.toPairs(),
             body = bodyText,
             contentType = contentType?.toString(),
-            size = responseBody?.contentLength()?.takeIf { it >= 0 } ?: bodyText?.length?.toLong(),
+            size = responseBody?.contentLength()?.takeIf { it >= 0 } ?: bodyText?.takeIf { peeked }?.length?.toLong(),
             durationMillis = duration,
             protocol = response.protocol.toString(),
         )
@@ -180,11 +182,11 @@ public class DevDeckOkHttpInterceptor(
         return type == "text" || TEXT_SUBTYPES.any { subtype.contains(it) }
     }
 
-    // peekBody blocks until maxBodyBytes or EOF, so only peek bodies that end: a known length, a non-chunked
-    // transfer, or a chunked document type (JSON, XML, HTML, GraphQL) that is not used for open-ended streams.
-    private fun Response.isSafeToPeek(contentLength: Long, contentType: MediaType): Boolean {
+    // peekBody blocks until maxBodyBytes or EOF, so only peek bodies that end: a known length, or a document
+    // type (JSON, XML, HTML, GraphQL) that is not used for open-ended streams. Chunked HTTP/1.1, HTTP/2 and
+    // close-delimited bodies all report an unknown length.
+    private fun isSafeToPeek(contentLength: Long, contentType: MediaType): Boolean {
         if (contentLength >= 0) return true
-        if (header("Transfer-Encoding")?.contains("chunked", ignoreCase = true) != true) return true
         val subtype = contentType.subtype.lowercase()
         return DOCUMENT_SUBTYPES.any { subtype.contains(it) }
     }

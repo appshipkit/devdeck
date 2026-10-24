@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.bugreport.ReportFiles
 import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.InfoGroup
 import io.devdeck.components.TextItem
@@ -33,6 +35,9 @@ import io.devdeck.internal.shareFiles
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 public fun LogList(modifier: Modifier = Modifier, tag: String? = null, maxItems: Int = 100) {
@@ -42,6 +47,7 @@ public fun LogList(modifier: Modifier = Modifier, tag: String? = null, maxItems:
         allEntries.asSequence().filter { tag == null || it.tag == tag }.take(maxItems).toList()
     }
     val formatter = remember { SimpleDateFormat("HH:mm:ss.SSS", Locale.US) }
+    val scope = rememberCoroutineScope()
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -53,7 +59,16 @@ public fun LogList(modifier: Modifier = Modifier, tag: String? = null, maxItems:
                 modifier = Modifier.weight(1f),
             )
             IconButton(
-                onClick = { context.shareFiles(emptyList(), text = format(entries), subject = tag?.let { "$it logs" } ?: "Logs") },
+                onClick = {
+                    val subject = tag?.let { "$it logs" } ?: "Logs"
+                    // Payloads can be large, so share a file rather than intent text.
+                    scope.launch {
+                        val file = withContext(Dispatchers.IO) {
+                            ReportFiles.write(context, "logs_${System.currentTimeMillis()}.txt", format(entries))
+                        }
+                        context.shareFiles(listOf(file), subject = subject)
+                    }
+                },
                 enabled = entries.isNotEmpty(),
             ) { Icon(DeckIcons.Share, contentDescription = "Share logs") }
             ConfirmDeleteButton(contentDescription = "Clear logs", onConfirm = { DeckLogger.clear(tag) }, enabled = entries.isNotEmpty())

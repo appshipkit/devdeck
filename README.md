@@ -41,7 +41,7 @@ dependencies {
 }
 ```
 
-Replace `LATEST_VERSION` with the version on the [JitPack badge](https://jitpack.io/#appshipkit/devdeck) above, including its `v`, for example `v1.0.0`. JitPack versions are the release tag names, and releases are tagged `vX.Y.Z`.
+Replace `LATEST_VERSION` with the version on the [JitPack badge](https://jitpack.io/#appshipkit/devdeck) above, for example `1.0.0`. JitPack accepts the version with or without the `v` of the git tag, so `1.0.0` and `v1.0.0` give the same build.
 
 Using a version catalog:
 
@@ -205,8 +205,9 @@ val enabled: Boolean = flags[Flags.newCheckout]
 
 - *Timeline* or *By endpoint* view: calls are grouped by GraphQL operation, or by method + path, with call counts, failures and timings.
 - Each call shows its overview, query params, headers and pretty-printed bodies, with Copy URL, Copy cURL and Share.
-- GraphQL operation names are detected automatically. `Authorization`, cookie and API-key headers are redacted, and so are passwords, tokens and API keys in URLs and JSON or form bodies (`NetworkLogger.redactedHeaders` / `redactedFields`).
-- Streaming responses (server-sent events) are passed through untouched.
+- GraphQL operation names are detected automatically. `Authorization`, cookie, API-key and auth/CSRF token headers are redacted, and so are passwords, tokens, secrets and API keys in URLs and JSON or form bodies (`NetworkLogger.redactedHeaders` / `redactedFields`). Field names match regardless of case, `_` or `-`, so `access_token`, `accessToken` and `access-token` are all hidden.
+- Streaming responses (server-sent events, chunked plain text) and bodies without a content type are passed through without being captured.
+- Memory stays bounded: the last `NetworkLogger.maxCalls` calls (300), up to `maxBodyChars` per body and `maxTotalBodyChars` across all bodies. The oldest bodies are dropped first; their calls stay listed.
 - Highlight what matters:
 
 ```kotlin
@@ -377,7 +378,7 @@ DevDeck.install(this, plugins, excludedActivityPrefixes = emptySet())           
 | `devdeck-appdistribution` | `io.devdeck.appdistribution` | `FirebaseAppDistributionSource` for `UpdatesPlugin`. The Firebase App Distribution API is `compileOnly`; add the full SDK to your tester builds. |
 
 - **Requirements:** minSdk 23, compileSdk 36. Built with AGP 9.4, Kotlin 2.2 and Compose BOM 2026.05. If your app uses an older Compose, debug builds resolve to this BOM's versions.
-- **Stored data:** DevDeck keeps its own settings in one SharedPreferences file, `devdeck_settings`. Feature flags from `SharedPreferencesFlagStore` go to `devdeck_flags` (or the name you pass). Captures and crash logs live under `files/devdeck/`.
+- **Stored data:** DevDeck keeps its own settings in one SharedPreferences file, `devdeck_settings`. Feature flags from `SharedPreferencesFlagStore` go to `devdeck_flags` (or the name you pass). Crash logs live in `files/devdeck/crashes/`, screenshots and recordings in `devdeck/` under the app's external files directory, and exported bug reports and logs in `cache/devdeck-reports/` (the newest 20 are kept).
 - **Manifest additions:** `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION` and `POST_NOTIFICATIONS` for screen recording, a `FileProvider` (`${applicationId}.devdeck.files`) and the recording service. Debug builds only, if you use `debugImplementation`.
 - **R8:** each module ships consumer rules, so minified internal builds (say, a `qa` build type with `isMinifyEnabled = true`) need no extra keep rules. OkHttp, Timber and Firebase are `compileOnly`, and the rules stop R8 from failing when your app doesn't include them.
 - **Limits:** *Slow animations* affects View animations only, because Compose follows the system animation scale. Logcat shows your app's process only. Some OEM builds hide debug-level logs.

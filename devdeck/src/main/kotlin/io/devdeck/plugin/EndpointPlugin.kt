@@ -38,7 +38,8 @@ public class EndpointPlugin(
             selected = selected,
             onSelected = { endpoint ->
                 selected = endpoint
-                save(context, key, endpoint, synchronous = restartOnChange)
+                // Apps may restart the process from onChanged too, so write synchronously before handing over.
+                save(context, key, endpoint, synchronous = restartOnChange || onChanged != null)
                 DeckLogger.log("$title switched to ${endpoint.name}", payload = endpoint.url)
                 onChanged?.invoke(endpoint)
                 if (restartOnChange) AppActions.restart(context)
