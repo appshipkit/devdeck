@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import io.devdeck.DeckState
 import io.devdeck.LocalDeckState
 import io.devdeck.internal.DeckIcons
 
@@ -29,7 +30,7 @@ public fun ExpandableItem(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val drawerState = LocalDeckState.current
-    val key = "${drawerState?.pages?.lastOrNull()?.title.orEmpty()}/$title"
+    val key = expandableKey(drawerState, title)
     var localExpanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
     val expanded = drawerState?.expandedRows?.get(key) ?: localExpanded
     val reveal = rememberRevealOnExpand()
@@ -57,3 +58,5 @@ public fun ExpandableItem(
         AnimatedVisibility(expanded) { Column(content = content) }
     }
 }
+
+internal fun expandableKey(drawerState: DeckState?, title: String): String = "${drawerState?.pages?.lastOrNull()?.title.orEmpty()}/$title"

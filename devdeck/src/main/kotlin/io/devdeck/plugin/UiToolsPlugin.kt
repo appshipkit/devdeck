@@ -5,6 +5,8 @@ import io.devdeck.capture.ScreenCaptureTools
 import io.devdeck.tools.AnimationSpeedSwitch
 import io.devdeck.tools.KeylineOverlaySwitch
 
+internal const val UI_TOOLS_PLUGIN_ID = "ui_tools"
+
 public class UiToolsPlugin(
     private val animationSpeed: Boolean = true,
     private val keylineOverlay: Boolean = true,
@@ -12,7 +14,7 @@ public class UiToolsPlugin(
     override val section: String? = "User Interface 🎨",
 ) : DeckPlugin {
 
-    override val id: String = "ui_tools"
+    override val id: String = UI_TOOLS_PLUGIN_ID
 
     @Composable
     override fun Content() {

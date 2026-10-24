@@ -58,6 +58,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.devdeck.capture.RECORDING_FOCUS
 import io.devdeck.capture.RecordingRed
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.capture.formatRecordingTime
@@ -71,6 +72,7 @@ import io.devdeck.simulation.NetworkSimulator
 import io.devdeck.simulation.mb
 import io.devdeck.updates.UpdateChecker
 import io.devdeck.updates.updateAvailableColor
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun DeckPanel(
@@ -91,6 +93,13 @@ internal fun DeckPanel(
 
     Surface(modifier = modifier, shape = shape, color = colors?.panel ?: MaterialTheme.colorScheme.surface, shadowElevation = 12.dp) {
         CompositionLocalProvider(LocalDeckState provides state) {
+            // Whatever asked to be shown has had time to scroll into view; drop the request so it can't linger.
+            LaunchedEffect(state.pendingFocus) {
+                if (state.pendingFocus != null) {
+                    delay(FOCUS_TIMEOUT_MILLIS)
+                    state.pendingFocus = null
+                }
+            }
             val page = state.pages.lastOrNull()
             AnimatedContent(
                 targetState = PageEntry(page, state.pages.size),
@@ -157,11 +166,12 @@ private fun DeckPageContent(
 }
 
 private const val PAGE_TRANSITION_MILLIS = 280
+private const val FOCUS_TIMEOUT_MILLIS = 2_000L
 
 @Composable
 private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
     val context = LocalContext.current
-    val version = remember(context) { appVersionInfo(context)?.versionName }
+    val version = remember(context) { appVersionInfo(context)?.let { "${it.versionName} (${it.versionCode})" } }
     val warning = LocalDeckColors.current?.warning ?: MaterialTheme.colorScheme.error
     LaunchedEffect(Unit) { UpdateChecker.checkIfDue() }
     val network = NetworkSimulator.simulation
@@ -192,6 +202,15 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                if (version != null) {
+                    Text(
+                        text = "Version $version",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             HeaderIconButton(DeckIcons.Settings, "Open app settings") { openAppSettings(context) }
             CloseButton(onClose)
@@ -203,9 +222,15 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
         val chips = buildList {
             if (ScreenCapture.isRecording) {
                 val label = if (ScreenCapture.isRecordingPaused) "Recording paused" else "● Recording"
-                add(HeaderChip("$label · ${formatRecordingTime(recordingElapsed)}", RecordingRed))
+                add(
+                    HeaderChip(
+                        "$label · ${formatRecordingTime(recordingElapsed)}",
+                        RecordingRed,
+                        onClick = { deckState?.pendingFocus = RECORDING_FOCUS },
+                        stop = { ScreenCapture.stopRecording(context) },
+                    ),
+                )
             }
-            version?.let { add(HeaderChip("v$it", null)) }
             if (update != null) {
                 add(HeaderChip("New version · ${update.label}", updateColor, onClick = { deckState?.pendingFocus = UPDATES_PLUGIN_ID }))
             }
@@ -279,24 +304,42 @@ private fun CloseButton(onClose: () -> Unit) {
 // 40dp keeps the touch target close to the guideline while pulling the settings and close buttons together.
 private val HeaderButtonSize = 40.dp
 
-private data class HeaderChip(val text: String, val accent: Color?, val onClick: (() -> Unit)? = null)
+private data class HeaderChip(val text: String, val accent: Color?, val onClick: (() -> Unit)? = null, val stop: (() -> Unit)? = null)
 
 @Composable
 private fun Chip(chip: HeaderChip) {
     val shape = RoundedCornerShape(50)
     val card = LocalDeckColors.current?.card ?: MaterialTheme.colorScheme.surface
     val accent = chip.accent
-    Text(
-        text = chip.text,
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Medium,
-        color = accent ?: MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        modifier = Modifier
+    Row(
+        Modifier
             .background(accent?.copy(alpha = 0.14f) ?: card, shape)
             .then(if (accent == null) Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shape) else Modifier)
-            .clip(shape)
-            .then(chip.onClick?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    )
+            .clip(shape),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = chip.text,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+            color = accent ?: MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            modifier = Modifier
+                .then(chip.onClick?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier)
+                .padding(start = 10.dp, end = if (chip.stop != null) 4.dp else 10.dp, top = 4.dp, bottom = 4.dp),
+        )
+        chip.stop?.let { stop ->
+            Box(
+                Modifier
+                    .padding(end = 4.dp)
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(RecordingRed)
+                    .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = stop),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(DeckIcons.Stop, contentDescription = "Stop recording", tint = Color.White, modifier = Modifier.size(12.dp))
+            }
+        }
+    }
 }

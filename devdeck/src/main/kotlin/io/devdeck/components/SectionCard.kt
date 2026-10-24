@@ -57,7 +57,8 @@ internal fun SectionCard(
         if (!expanded) reveal.request()
     }
     // Opens this section when something asks the drawer to show one of its plugins.
-    val focusHere = drawerState?.pendingFocus?.let { it in pluginIds } == true
+    // A request is a plugin id, optionally followed by "/" and something inside that plugin.
+    val focusHere = drawerState?.pendingFocus?.let { focus -> pluginIds.any { focus == it || focus.startsWith("$it/") } } == true
     LaunchedEffect(focusHere) { if (focusHere && !expanded) toggle() }
     val (emoji, name) = remember(title) { splitSectionTitle(title) }
     val rotation by animateFloatAsState(if (expanded) 180f else 0f, label = "sectionChevron")

@@ -11,7 +11,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
 - `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
-- While recording the screen, a small floating bar shows the time with pause/resume (Android 7+) and stop, so you don't have to reopen the drawer; the drawer header shows a *Recording* chip, and the notification has Pause/Resume too.
+- While recording the screen, a small floating bar shows the time with pause/resume (Android 7+) and stop, so you don't have to reopen the drawer; the drawer header shows a *Recording* chip with a red stop button (tapping the chip opens the screen capture tools), and the notification has Pause/Resume too.
 - A *System language & region* button in the User Interface section opens Android's language and region settings (`LocaleSettingsButton()`).
 - The feature flags page has *Restart screen* and *Restart app* buttons, so flag changes that are read once per screen or process take effect.
 - After switching endpoints, `EndpointPlugin` shows a *Restart app* button so the app picks up the new endpoint (unless `restartOnChange` already restarts it).
@@ -30,6 +30,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - The update chip in the header reads *New version* and opens the App section at *Test build updates*.
 - Drawer text is a little smaller, list rows use Material's 48dp minimum height, and section titles and dividers take less space, so more fits on small phones.
 - The header's settings and close buttons sit closer together.
+- The app version shows under the drawer subtitle (*Version 1.0.0 (10000)*) instead of as a chip.
 - *Take a screenshot*, *Record a video*, *Open the gallery* and deep link suggestions use the standard button and page rows instead of bullet points.
 - The floating button stays where you drag it, across screens, opening the drawer and app restarts.
 - The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable or R8 obfuscated or shrunk, and target and min SDK. `AppInfo()` and the device & app snapshot show the same details.
