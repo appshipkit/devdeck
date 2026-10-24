@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import io.devdeck.FOCUS_SCROLL_DELAY_MILLIS
 import io.devdeck.LocalDeckColors
 import io.devdeck.LocalDeckState
 import io.devdeck.components.ActionPill
@@ -61,7 +62,7 @@ public fun UpdatesPanel(modifier: Modifier = Modifier, title: String = "Test bui
     LaunchedEffect(deckState?.pendingFocus) {
         if (deckState?.pendingFocus == UPDATES_PLUGIN_ID) {
             // Wait for the section to finish expanding so the scroll lands on the final position.
-            delay(FOCUS_DELAY_MILLIS)
+            delay(FOCUS_SCROLL_DELAY_MILLIS)
             bringIntoView.bringIntoView()
             deckState.pendingFocus = null
         }
@@ -186,5 +187,3 @@ private fun statusText(status: UpdateStatus, source: UpdateSource): String = whe
 }
 
 private fun time(millis: Long): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
-
-private const val FOCUS_DELAY_MILLIS = 350L

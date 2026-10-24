@@ -5,10 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -31,12 +32,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.devdeck.LocalDeckColors
 import io.devdeck.internal.DeckIcons
@@ -51,19 +54,27 @@ internal fun RecordingControls(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val elapsed = rememberRecordingElapsed()
     val paused = ScreenCapture.isRecordingPaused
-    var drag by remember { mutableStateOf(Offset.Zero) }
     val isDark = LocalDeckColors.current?.isDark == true
     val background = if (isDark) Color(0xE6202124) else Color(0xEBFFFFFF)
     val content = if (isDark) Color(0xFFE8EAED) else Color(0xFF202124)
-    Box(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(top = 8.dp)) {
+    BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(top = 8.dp)) {
+        var barSize by remember { mutableStateOf(IntSize.Zero) }
+        // Keep the bar fully on screen: it starts top-centre, so it can move half the spare width either way.
+        val maxX = ((constraints.maxWidth - barSize.width) / 2f).coerceAtLeast(0f)
+        val maxY = (constraints.maxHeight - barSize.height).toFloat().coerceAtLeast(0f)
+        fun clamp(offset: Offset) = Offset(offset.x.coerceIn(-maxX, maxX), offset.y.coerceIn(0f, maxY))
         Row(
             Modifier
                 .align(Alignment.TopCenter)
-                .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
-                .pointerInput(Unit) {
+                .onSizeChanged { barSize = it }
+                .absoluteOffset {
+                    val offset = clamp(ControlsPosition.offset)
+                    IntOffset(offset.x.roundToInt(), offset.y.roundToInt())
+                }
+                .pointerInput(maxX, maxY) {
                     detectDragGestures { change, amount ->
                         change.consume()
-                        drag += amount
+                        ControlsPosition.offset = clamp(ControlsPosition.offset + amount)
                     }
                 }
                 .shadow(4.dp, CircleShape)
@@ -99,6 +110,11 @@ internal fun RecordingControls(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+// Shared across screens and drawer openings, so the bar stays where the tester moved it.
+private object ControlsPosition {
+    var offset by mutableStateOf(Offset.Zero)
 }
 
 /** Recording time in millis, ticking while a recording is running. */

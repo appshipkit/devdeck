@@ -221,7 +221,7 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
         val recordingElapsed = if (ScreenCapture.isRecording) rememberRecordingElapsed() else 0L
         val chips = buildList {
             if (ScreenCapture.isRecording) {
-                val label = if (ScreenCapture.isRecordingPaused) "Recording paused" else "● Recording"
+                val label = if (ScreenCapture.isRecordingPaused) "Recording paused" else "Recording"
                 add(
                     HeaderChip(
                         "$label · ${formatRecordingTime(recordingElapsed)}",

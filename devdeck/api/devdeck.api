@@ -972,8 +972,10 @@ public final class io/devdeck/plugin/AppActionsPlugin : io/devdeck/plugin/DeckPl
 public final class io/devdeck/plugin/AppearancePlugin : io/devdeck/plugin/DeckPlugin {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZLjava/util/List;ZLjava/lang/String;)V
+	public synthetic fun <init> (ZLjava/util/List;ZLjava/lang/String;)V
 	public synthetic fun <init> (ZLjava/util/List;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLjava/util/List;ZLjava/lang/String;Z)V
+	public synthetic fun <init> (ZLjava/util/List;ZLjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun Content (Landroidx/compose/runtime/Composer;I)V
 	public fun getId ()Ljava/lang/String;
 	public fun getSection ()Ljava/lang/String;
@@ -1087,8 +1089,10 @@ public final class io/devdeck/plugin/FeatureFlagsPlugin : io/devdeck/plugin/Deck
 public final class io/devdeck/plugin/InfoPlugin : io/devdeck/plugin/DeckPlugin {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZZZLjava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/lang/String;)V
+	public synthetic fun <init> (ZZZLjava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/lang/String;)V
 	public synthetic fun <init> (ZZZLjava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZLjava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ZZ)V
+	public synthetic fun <init> (ZZZLjava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun Content (Landroidx/compose/runtime/Composer;I)V
 	public fun getId ()Ljava/lang/String;
 	public fun getSection ()Ljava/lang/String;

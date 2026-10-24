@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import io.devdeck.FOCUS_SCROLL_DELAY_MILLIS
 import io.devdeck.LocalDeckState
 import io.devdeck.components.ButtonItem
 import io.devdeck.plugin.UI_TOOLS_PLUGIN_ID
@@ -37,7 +38,7 @@ public fun ScreenRecordButton(title: String = "Record a video", stopTitle: Strin
     val bringIntoView = remember { BringIntoViewRequester() }
     LaunchedEffect(drawerState?.pendingFocus) {
         if (drawerState?.pendingFocus == RECORDING_FOCUS) {
-            delay(FOCUS_DELAY_MILLIS)
+            delay(FOCUS_SCROLL_DELAY_MILLIS)
             bringIntoView.bringIntoView()
             drawerState.pendingFocus = null
         }
@@ -60,5 +61,3 @@ public fun ScreenRecordButton(title: String = "Record a video", stopTitle: Strin
 
 /** Asks the drawer to open the screen capture tools and show the record button. */
 internal const val RECORDING_FOCUS = "$UI_TOOLS_PLUGIN_ID/recording"
-
-private const val FOCUS_DELAY_MILLIS = 450L

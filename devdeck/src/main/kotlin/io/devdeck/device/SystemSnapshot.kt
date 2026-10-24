@@ -74,7 +74,11 @@ private fun buildConfigValues(context: Context): Map<String, String> {
         }
         context.applicationInfo.className?.substringBeforeLast('.', "")?.takeIf { it.isNotEmpty() }?.let { add(it) }
     }.distinct()
-    val buildConfig = candidates.firstNotNullOfOrNull { runCatching { Class.forName("$it.BuildConfig") }.getOrNull() } ?: return emptyMap()
+    // Library modules have their own BuildConfig; only accept the one generated for this application id.
+    val buildConfig = candidates.firstNotNullOfOrNull { name ->
+        runCatching { Class.forName("$name.BuildConfig") }.getOrNull()
+            ?.takeIf { runCatching { it.getField("APPLICATION_ID").get(null) }.getOrNull() == packageName }
+    } ?: return emptyMap()
     return listOf("BUILD_TYPE", "FLAVOR").mapNotNull { field ->
         runCatching { buildConfig.getField(field).get(null) as? String }.getOrNull()?.let { field to it }
     }.toMap()

@@ -49,7 +49,8 @@ public class EndpointPlugin(
             },
             optionLabel = { it.name },
         )
-        if (!restartOnChange && selected.url != applied) {
+        // Apps that apply the switch themselves (restartOnChange or onChanged) don't need the prompt.
+        if (!restartOnChange && onChanged == null && selected.url != applied) {
             ButtonItem(
                 title = "Restart app",
                 subtitle = "Apply ${selected.name}",

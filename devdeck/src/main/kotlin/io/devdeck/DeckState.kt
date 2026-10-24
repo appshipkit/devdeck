@@ -51,6 +51,7 @@ public class DeckState(initialValue: DeckValue = DeckValue.Closed) {
 
     public fun close() {
         targetValue = DeckValue.Closed
+        pendingFocus = null
     }
 
     public fun toggle() {
@@ -106,3 +107,6 @@ public class DeckState(initialValue: DeckValue = DeckValue.Closed) {
 @Composable
 public fun rememberDeckState(initialValue: DeckValue = DeckValue.Closed): DeckState =
     rememberSaveable(saver = DeckState.saver()) { DeckState(initialValue) }
+
+// Long enough for a section to finish expanding before a pendingFocus target scrolls into view.
+internal const val FOCUS_SCROLL_DELAY_MILLIS = 400L

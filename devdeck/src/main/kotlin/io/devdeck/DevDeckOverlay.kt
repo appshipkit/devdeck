@@ -14,6 +14,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -177,7 +179,7 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
             Offset(spot.x.toFloat() / FRACTION_SCALE, spot.y.toFloat() / FRACTION_SCALE)
         }
         // Stored as a fraction of the free area, so the button keeps its place across screens, rotation and restarts.
-        val fraction = TriggerPosition.get(context) ?: default
+        val fraction = (if (trigger.draggable) TriggerPosition.get(context) else null) ?: default
         val position = IntOffset((fraction.x * rangeX).roundToInt(), (fraction.y * rangeY).roundToInt())
         Surface(
             onClick = onClick,
@@ -185,8 +187,10 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             shadowElevation = 4.dp,
+            // Absolute (left-based) placement: the default spot is already mirrored for RTL and drags are physical.
             modifier = Modifier
-                .offset { position }
+                .align(AbsoluteAlignment.TopLeft)
+                .absoluteOffset { position }
                 .then(
                     if (trigger.draggable) {
                         Modifier.pointerInput(rangeX, rangeY, default) {
@@ -212,7 +216,7 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
             }
         }
         if (UpdateChecker.availableUpdate != null) {
-            Box(Modifier.offset { position }.size(TriggerSize)) {
+            Box(Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset { position }.size(TriggerSize)) {
                 Box(
                     Modifier
                         .align(Alignment.TopEnd)

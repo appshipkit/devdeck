@@ -49,7 +49,7 @@ public object ScreenCapture {
     internal val canPauseRecording: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 
     internal fun recordingElapsedMillis(now: Long = SystemClock.elapsedRealtime()): Long =
-        recordedMillisBeforeResume + if (isRecordingPaused) 0 else now - resumedAtMillis
+        recordedMillisBeforeResume + if (isRecordingPaused) 0 else (now - resumedAtMillis).coerceAtLeast(0)
 
     internal var galleryVersion by mutableIntStateOf(0)
 

@@ -11,7 +11,16 @@ public class AppearancePlugin(
     private val languageTags: List<String> = emptyList(),
     private val displaySettings: Boolean = true,
     override val section: String? = "User Interface 🎨",
+    private val localeSettings: Boolean = true,
 ) : DeckPlugin {
+
+    @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        nightMode: Boolean = true,
+        languageTags: List<String> = emptyList(),
+        displaySettings: Boolean = true,
+        section: String? = "User Interface 🎨",
+    ) : this(nightMode, languageTags, displaySettings, section, localeSettings = true)
 
     override val id: String = "appearance"
 
@@ -19,9 +28,7 @@ public class AppearancePlugin(
     override fun Content() {
         if (nightMode) NightModeSelector()
         if (languageTags.isNotEmpty()) LanguageSelector(languageTags)
-        if (displaySettings) {
-            LocaleSettingsButton()
-            DisplaySettingsButton()
-        }
+        if (localeSettings) LocaleSettingsButton()
+        if (displaySettings) DisplaySettingsButton()
     }
 }
