@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -30,6 +31,9 @@ internal val PermissionOrder: Comparator<AppPermission> =
     compareBy({ it.granted }, { it.kind == PermissionKind.InstallTime }, { it.displayName })
 
 internal object AppPermissions {
+
+    // Revocations requested this process; Android only applies them once the process dies.
+    val pendingRevocations = mutableStateListOf<String>()
 
     fun load(context: Context): List<AppPermission> {
         val info = runCatching {
@@ -61,6 +65,7 @@ internal object AppPermissions {
     fun revoke(activity: Activity, permission: AppPermission): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
         activity.revokeSelfPermissionOnKill(permission.name)
+        if (permission.name !in pendingRevocations) pendingRevocations += permission.name
         activity.moveTaskToBack(true)
         return true
     }

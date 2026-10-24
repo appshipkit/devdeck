@@ -6,6 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,37 +83,72 @@ internal fun DeckPanel(
 
     Surface(modifier = modifier, shape = shape, color = colors?.panel ?: MaterialTheme.colorScheme.surface, shadowElevation = 12.dp) {
         CompositionLocalProvider(LocalDeckState provides state) {
-            Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.only(insetSides))) {
-                val page = state.pages.lastOrNull()
-                if (page == null) {
-                    DeckHeader(title = style.title, subtitle = style.subtitle, onClose = state::close)
-                } else {
-                    DeckPageBar(title = page.title, onBack = { state.navigateBack() }, onClose = state::close)
-                }
-                key(page) {
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .imePadding()
-                            .verticalScroll(rememberScrollState())
-                            .padding(top = 4.dp, bottom = 16.dp),
-                    ) {
-                        if (page == null) {
-                            scope.drawerContent()
-                        } else {
-                            DeckCard(Modifier.padding(horizontal = 12.dp)) {
-                                Spacer(Modifier.height(4.dp))
-                                page.content(scope)
-                                Spacer(Modifier.height(4.dp))
-                            }
-                        }
-                    }
+            val page = state.pages.lastOrNull()
+            AnimatedContent(
+                targetState = PageEntry(page, state.pages.size),
+                transitionSpec = {
+                    val forward = targetState.depth > initialState.depth
+                    val enter = slideInHorizontally(tween(PAGE_TRANSITION_MILLIS)) { if (forward) it else -it / 3 }
+                    val exit = slideOutHorizontally(tween(PAGE_TRANSITION_MILLIS)) { if (forward) -it / 3 else it }
+                    (enter togetherWith exit).apply { targetContentZIndex = if (forward) 1f else -1f }
+                },
+                contentKey = { it.page },
+                label = "DeckPage",
+            ) { entry ->
+                DeckPageContent(
+                    entry.page,
+                    state,
+                    style,
+                    scope,
+                    colors?.panel ?: MaterialTheme.colorScheme.surface,
+                    insetSides,
+                    drawerContent,
+                )
+            }
+        }
+    }
+}
+
+private data class PageEntry(val page: DeckPage?, val depth: Int)
+
+@Composable
+private fun DeckPageContent(
+    page: DeckPage?,
+    state: DeckState,
+    style: DeckStyle,
+    scope: DeckScope,
+    background: Color,
+    insetSides: WindowInsetsSides,
+    drawerContent: @Composable DeckScope.() -> Unit,
+) {
+    Column(Modifier.fillMaxSize().background(background).windowInsetsPadding(WindowInsets.safeDrawing.only(insetSides))) {
+        if (page == null) {
+            DeckHeader(title = style.title, subtitle = style.subtitle, onClose = state::close)
+        } else {
+            DeckPageBar(title = page.title, onBack = { state.navigateBack() }, onClose = state::close)
+        }
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(top = 4.dp, bottom = 16.dp),
+        ) {
+            if (page == null) {
+                scope.drawerContent()
+            } else {
+                DeckCard(Modifier.padding(horizontal = 12.dp)) {
+                    Spacer(Modifier.height(4.dp))
+                    page.content(scope)
+                    Spacer(Modifier.height(4.dp))
                 }
             }
         }
     }
 }
+
+private const val PAGE_TRANSITION_MILLIS = 280
 
 @Composable
 private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {

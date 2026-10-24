@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.internal.DeckIcons
 
@@ -21,7 +22,7 @@ public fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier:
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text(placeholder) },
+        placeholder = { Text(placeholder, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         singleLine = true,
         shape = CircleShape,
         leadingIcon = { Icon(DeckIcons.Search, contentDescription = null, tint = colors.onSurfaceVariant) },
