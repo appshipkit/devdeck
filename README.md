@@ -1,7 +1,7 @@
 # DevDeck
 
-[![CI](https://github.com/abhishek-3289/devdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishek-3289/devdeck/actions/workflows/ci.yml)
-[![JitPack](https://jitpack.io/v/abhishek-3289/devdeck.svg)](https://jitpack.io/#abhishek-3289/devdeck)
+[![CI](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/appshipkit/devdeck/actions/workflows/ci.yml)
+[![JitPack](https://jitpack.io/v/appshipkit/devdeck.svg)](https://jitpack.io/#appshipkit/devdeck)
 
 A debug drawer for Android apps, built with Jetpack Compose. Open it with a two-finger swipe, a floating button, a keyboard shortcut or code, and get your team's debug tools in one place:
 
@@ -29,10 +29,10 @@ dependencyResolutionManagement {
 
 // app/build.gradle.kts
 dependencies {
-    debugImplementation("com.github.abhishek-3289.devdeck:devdeck:0.1.0")
-    debugImplementation("com.github.abhishek-3289.devdeck:devdeck-okhttp:0.1.0")  // optional: network inspector (OkHttp / Apollo)
-    debugImplementation("com.github.abhishek-3289.devdeck:devdeck-timber:0.1.0")  // optional: Timber logs
-    debugImplementation("com.github.abhishek-3289.devdeck:devdeck-appdistribution:0.1.0")  // optional: Firebase test build updates
+    debugImplementation("com.github.appshipkit.devdeck:devdeck:0.1.0")
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-okhttp:0.1.0")  // optional: network inspector (OkHttp / Apollo)
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-timber:0.1.0")  // optional: Timber logs
+    debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:0.1.0")  // optional: Firebase test build updates
 }
 ```
 
@@ -226,7 +226,7 @@ With Firebase App Distribution:
 
 ```kotlin
 // app/build.gradle.kts, in the variants testers install (never in the Play Store build)
-debugImplementation("com.github.abhishek-3289.devdeck:devdeck-appdistribution:0.1.0")
+debugImplementation("com.github.appshipkit.devdeck:devdeck-appdistribution:0.1.0")
 debugImplementation("com.google.firebase:firebase-appdistribution:16.0.0-beta21")
 
 // Application.onCreate
