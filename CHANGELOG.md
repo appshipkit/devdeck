@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
 ### Fixed
 - Install lines use the `v`-prefixed version that JitPack publishes (`com.github.appshipkit.devdeck:devdeck:v0.1.0`).
 
