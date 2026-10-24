@@ -14,7 +14,20 @@ public object NetworkLogger {
 
     public var maxBodyChars: Int = 250_000
 
-    public var redactedHeaders: Set<String> = setOf("Authorization", "Cookie", "Set-Cookie", "Proxy-Authorization", "X-Api-Key")
+    /** Total request + response body chars kept across all calls; the oldest calls' bodies are dropped first. */
+    public var maxTotalBodyChars: Int = 12_000_000
+
+    public var redactedHeaders: Set<String> = setOf(
+        "Authorization",
+        "Cookie",
+        "Set-Cookie",
+        "Proxy-Authorization",
+        "X-Api-Key",
+        "X-Auth-Token",
+        "X-Access-Token",
+        "X-CSRF-Token",
+        "X-XSRF-Token",
+    )
 
     public var redactedFields: Set<String> = setOf(
         "password",
@@ -55,7 +68,7 @@ public object NetworkLogger {
             operationName = GraphQl.operationName(url, headers, body),
             simulation = simulation,
         )
-        _calls.update { (listOf(call) + it).take(maxCalls) }
+        _calls.update { (listOf(call) + it).take(maxCalls).withinBodyBudget() }
         return id
     }
 
@@ -104,15 +117,37 @@ public object NetworkLogger {
     }
 
     private fun update(id: Long, transform: (NetworkCall) -> NetworkCall) {
-        _calls.update { calls -> calls.map { if (it.id == id) transform(it) else it } }
+        _calls.update { calls -> calls.map { if (it.id == id) transform(it) else it }.withinBodyBudget() }
     }
 
+    private fun List<NetworkCall>.withinBodyBudget(): List<NetworkCall> {
+        val budget = maxTotalBodyChars.toLong()
+        if (sumOf { it.bodyChars() } <= budget) return this
+        var total = 0L
+        var evicting = false
+        return map { call ->
+            total += call.bodyChars()
+            if (total > budget) evicting = true
+            if (evicting) call.withoutBodies() else call
+        }
+    }
+
+    private fun NetworkCall.bodyChars(): Long = (requestBody?.length ?: 0).toLong() + (responseBody?.length ?: 0)
+
+    private fun NetworkCall.withoutBodies(): NetworkCall =
+        if ((requestBody == null || requestBody == EVICTED_BODY) && (responseBody == null || responseBody == EVICTED_BODY)) {
+            this
+        } else {
+            copy(requestBody = requestBody?.let { EVICTED_BODY }, responseBody = responseBody?.let { EVICTED_BODY })
+        }
+
     private fun redact(headers: List<Pair<String, String>>): List<Pair<String, String>> = headers.map { (name, value) ->
-        if (redactedHeaders.any { it.equals(name, ignoreCase = true) }) name to REDACTED else name to value
+        if (NetworkRedaction.matches(name, redactedHeaders)) name to REDACTED else name to value
     }
 
     private fun String.truncate(): String =
         if (length <= maxBodyChars) this else take(maxBodyChars) + "\n… truncated (${length - maxBodyChars} more chars)"
 
     private const val REDACTED = "██ redacted ██"
+    private const val EVICTED_BODY = "(body dropped to stay within NetworkLogger.maxTotalBodyChars)"
 }

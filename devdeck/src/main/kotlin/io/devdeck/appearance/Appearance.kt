@@ -2,6 +2,7 @@ package io.devdeck.appearance
 
 import android.app.LocaleManager
 import android.app.UiModeManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -90,8 +91,15 @@ public fun DisplaySettingsButton(modifier: Modifier = Modifier, title: String = 
     ButtonItem(
         title = title,
         modifier = modifier,
-        onClick = { context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) },
+        onClick = { openDisplaySettings(context) },
     )
+}
+
+private fun openDisplaySettings(context: Context) {
+    try {
+        context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    } catch (_: ActivityNotFoundException) {
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

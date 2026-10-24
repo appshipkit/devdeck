@@ -17,11 +17,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.core.view.drawToBitmap
+import io.devdeck.logs.DeckLogger
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +39,13 @@ public object ScreenCapture {
 
     internal var galleryVersion by mutableIntStateOf(0)
 
-    internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val captureCounter = AtomicInteger()
+
+    internal val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main.immediate + CoroutineExceptionHandler { _, error ->
+            DeckLogger.log("Capture failed", tag = "Capture", payload = error.toString())
+        },
+    )
 
     public fun captureDirectory(context: Context): File {
         val base = context.getExternalFilesDir(null) ?: context.filesDir
@@ -50,8 +60,11 @@ public object ScreenCapture {
     public fun uriFor(context: Context, file: File): Uri = FileProvider.getUriForFile(context, "${context.packageName}.devdeck.files", file)
 
     internal fun newCaptureFile(context: Context, prefix: String, extension: String): File {
-        val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        return File(captureDirectory(context), "${prefix}_$stamp.$extension")
+        val stamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+        val directory = captureDirectory(context)
+        var file = File(directory, "${prefix}_$stamp.$extension")
+        while (file.exists()) file = File(directory, "${prefix}_${stamp}_${captureCounter.incrementAndGet()}.$extension")
+        return file
     }
 
     internal fun notifyGalleryChanged() {
@@ -61,9 +74,15 @@ public object ScreenCapture {
     public suspend fun takeScreenshot(activity: Activity): File? {
         val bitmap = captureWindow(activity) ?: return null
         val file = newCaptureFile(activity, "screenshot", "png")
-        withContext(Dispatchers.IO) {
-            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val written = withContext(Dispatchers.IO) {
+            try {
+                file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            } catch (_: IOException) {
+                file.delete()
+                false
+            }
         }
+        if (!written) return null
         notifyGalleryChanged()
         return file
     }
@@ -73,8 +92,12 @@ public object ScreenCapture {
         if (decorView.width == 0 || decorView.height == 0) return null
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return runCatching { decorView.drawToBitmap() }.getOrNull()
         val bitmap = createBitmap(decorView.width, decorView.height)
-        val result = suspendCancellableCoroutine { continuation ->
-            PixelCopy.request(activity.window, bitmap, { continuation.resume(it) }, Handler(Looper.getMainLooper()))
+        val result = try {
+            suspendCancellableCoroutine<Int> { continuation ->
+                PixelCopy.request(activity.window, bitmap, { continuation.resume(it) }, Handler(Looper.getMainLooper()))
+            }
+        } catch (_: IllegalArgumentException) {
+            return null
         }
         return if (result == PixelCopy.SUCCESS) bitmap else null
     }

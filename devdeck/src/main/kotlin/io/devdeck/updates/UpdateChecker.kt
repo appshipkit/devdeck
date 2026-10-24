@@ -72,9 +72,9 @@ public object UpdateChecker {
     public fun signOut() {
         if (job?.isActive == true) return
         val current = source ?: return
-        current.signOut()
+        val result = runCatching { current.signOut() }
         isSignedIn = current.isSignedIn()
-        status = UpdateStatus.Idle
+        status = result.fold(onSuccess = { UpdateStatus.Idle }, onFailure = { UpdateStatus.Failed(it.describe()) })
     }
 
     public fun install() {
