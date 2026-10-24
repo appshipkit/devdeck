@@ -55,3 +55,16 @@ public fun JsonInputItem(
         )
     }
 }
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun JsonInputItem(
+    title: String,
+    value: String,
+    onValueCommit: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    previewLines: Int = 6,
+) {
+    JsonInputItem(title, value, onValueCommit, modifier, enabled, previewLines, subtitle = null)
+}

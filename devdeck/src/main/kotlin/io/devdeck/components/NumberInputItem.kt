@@ -58,3 +58,30 @@ public fun NumberInputItem(
         subtitle = subtitle,
     )
 }
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun NumberInputItem(
+    title: String,
+    value: Double,
+    onValueCommit: (Double) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    allowDecimals: Boolean = true,
+    range: ClosedFloatingPointRange<Double>? = null,
+) {
+    NumberInputItem(title, value, onValueCommit, modifier, enabled, allowDecimals, range, subtitle = null)
+}
+
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Composable
+public fun NumberInputItem(
+    title: String,
+    value: Long,
+    onValueCommit: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    range: LongRange? = null,
+) {
+    NumberInputItem(title, value, onValueCommit, modifier, enabled, range, subtitle = null)
+}
