@@ -229,6 +229,7 @@ public final class io/devdeck/actions/AppActions {
 	public static final field INSTANCE Lio/devdeck/actions/AppActions;
 	public final fun clearAppData (Landroid/content/Context;)V
 	public final fun clearCache (Landroid/content/Context;)V
+	public final fun clearCacheInBackground (Landroid/content/Context;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isWebViewDebuggingEnabled ()Z
 	public final fun killApp ()V
 	public final fun restart (Landroid/content/Context;)V
@@ -428,7 +429,8 @@ public final class io/devdeck/components/JsonEditorKt {
 }
 
 public final class io/devdeck/components/JsonInputItemKt {
-	public static final fun JsonInputItem (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZILandroidx/compose/runtime/Composer;II)V
+	public static final synthetic fun JsonInputItem (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZILandroidx/compose/runtime/Composer;II)V
+	public static final fun JsonInputItem (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZILjava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/devdeck/components/KeyValueItemKt {
@@ -436,8 +438,10 @@ public final class io/devdeck/components/KeyValueItemKt {
 }
 
 public final class io/devdeck/components/NumberInputItemKt {
-	public static final fun NumberInputItem (Ljava/lang/String;DLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZZLkotlin/ranges/ClosedFloatingPointRange;Landroidx/compose/runtime/Composer;II)V
-	public static final fun NumberInputItem (Ljava/lang/String;JLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLkotlin/ranges/LongRange;Landroidx/compose/runtime/Composer;II)V
+	public static final synthetic fun NumberInputItem (Ljava/lang/String;DLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZZLkotlin/ranges/ClosedFloatingPointRange;Landroidx/compose/runtime/Composer;II)V
+	public static final fun NumberInputItem (Ljava/lang/String;DLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZZLkotlin/ranges/ClosedFloatingPointRange;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final synthetic fun NumberInputItem (Ljava/lang/String;JLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLkotlin/ranges/LongRange;Landroidx/compose/runtime/Composer;II)V
+	public static final fun NumberInputItem (Ljava/lang/String;JLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLkotlin/ranges/LongRange;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/devdeck/components/PageLinkItemKt {
@@ -475,7 +479,8 @@ public final class io/devdeck/components/SwitchItemKt {
 }
 
 public final class io/devdeck/components/TextInputItemKt {
-	public static final fun TextInputItem-lnmUPtQ (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZIZZLkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final synthetic fun TextInputItem-lnmUPtQ (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZIZZLkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun TextInputItem-yDE52rk (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZIZZLkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/devdeck/components/TextItemKt {
@@ -895,10 +900,12 @@ public final class io/devdeck/network/NetworkLogger {
 	public final fun getCalls ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getMaxBodyChars ()I
 	public final fun getMaxCalls ()I
+	public final fun getMaxTotalBodyChars ()I
 	public final fun getRedactedFields ()Ljava/util/Set;
 	public final fun getRedactedHeaders ()Ljava/util/Set;
 	public final fun setMaxBodyChars (I)V
 	public final fun setMaxCalls (I)V
+	public final fun setMaxTotalBodyChars (I)V
 	public final fun setRedactedFields (Ljava/util/Set;)V
 	public final fun setRedactedHeaders (Ljava/util/Set;)V
 	public final fun start (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;)J

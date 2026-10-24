@@ -8,6 +8,11 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ### Added
 - MIT license, code of conduct, and a demo GIF in the README showing each feature's effect in the sample app.
+- `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
+- `AppActions.clearCacheInBackground()` clears the cache off the main thread.
+- `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`; feature flags of every type now show *Overridden* and a *Reset to default* action.
+- Share buttons on the Logs and Network activity pages, and share-all / delete-all in the capture gallery.
+- Consumer R8 rules for devdeck-okhttp, devdeck-timber and devdeck-appdistribution, so minified builds don't fail when OkHttp, Timber or Firebase isn't on the classpath.
 
 ### Changed
 - The sample's fake update feed offers 1.1.0 now that the sample is 1.0.0.
@@ -17,10 +22,29 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - The device & app snapshot shows share, save and copy as small icons on the card; they are not part of the shared image.
 - The deep link launcher opens links from a send icon inside the field, leaving more room on small phones.
 - The sample app is named DevDeck.
+- Clearing logs, crash logs, breadcrumbs, requests, console lines, captures or shared preferences, and resetting all feature flags, now ask for a second tap.
+- Network request actions (*Copy URL*, *Copy cURL*, *Share*) and label rows wrap on narrow screens instead of overflowing.
+- Category, level and status colors have dark-theme variants, and labels on colored fills pick a readable text color.
+- Filter pills, action pills, suggestion rows and code block buttons have 48dp touch targets; expandable log rows announce their state to TalkBack.
+- Bug report and log exports are written to the app's cache and only the newest 20 are kept, instead of piling up in external storage.
+- Network redaction matches field names regardless of case, `_` or `-` (`accessToken`, `client-secret`), masks numbers and booleans too, and also hides `X-Auth-Token`, `X-Access-Token`, `X-CSRF-Token` and `X-XSRF-Token` headers by default.
+- README states that DevDeck stays out of release builds only when added with `debugImplementation`.
 
 ### Fixed
 - Search placeholders and the network count row stay on one line on small phones.
 - The permissions list refreshes after a permission dialog or settings screen closes, and shows when a revoke only applies after the app restarts.
+- Tap breadcrumbs no longer record what was typed into text fields, so passwords can't end up in crash files or bug reports.
+- Taking a screenshot no longer crashes the app when the window has no surface or the disk is full, and two captures in the same second no longer overwrite each other.
+- The OkHttp interceptor no longer holds back streaming text responses while capturing them, and skips bodies with no content type.
+- Clearing the console no longer brings back lines that were waiting to be shown.
+- Starting a screen recording again while one is running no longer stops it.
+- Logcat timestamps get the right year after New Year.
+- Lifecycle logs are no longer recorded twice after `DevDeck.updateConfig`.
+- Opening display settings or signing out of Firebase App Distribution no longer crashes when it fails.
+- Crash logs, captures, shared preferences, bug reports and cache clearing no longer read or write files on the main thread.
+- Expanded log rows keep their state when new lines arrive.
+- Dependabot no longer proposes Android Gradle Plugin major or minor updates, as the 1.0.0 entry promised.
+- README install instructions use the `v`-prefixed version (`v1.0.0`) that JitPack needs.
 
 ## [1.0.0] - 2026-10-24
 
