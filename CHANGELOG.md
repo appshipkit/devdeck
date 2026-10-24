@@ -25,7 +25,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - The deep link launcher opens links from a send icon inside the field, leaving more room on small phones.
 - The sample app is named DevDeck.
 - Permissions open on their own page instead of expanding inside the System section.
-- The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable, R8 obfuscated or shrunk, signed with the debug or a release key, where it was installed from, target and min SDK, and install and update times, plus a shortcut to the app's system settings. `AppInfo()` and the device & app snapshot show the same details.
+- The App section starts with *App info*: version, package, build type and flavor (from the app's `BuildConfig` when it exists), whether the build is debuggable, R8 obfuscated or shrunk, signed with the debug or a release key, where it was installed from, target and min SDK, and install and update times. `AppInfo()` and the device & app snapshot show the same details.
 - Toggle flags no longer show an *Overridden* subtitle.
 - Clearing logs, crash logs, breadcrumbs, requests, console lines, captures or shared preferences, and resetting all feature flags, now ask for a second tap.
 - Network request actions (*Copy URL*, *Copy cURL*, *Share*) and label rows wrap on narrow screens instead of overflowing.
