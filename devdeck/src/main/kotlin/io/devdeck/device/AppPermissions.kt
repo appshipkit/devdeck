@@ -103,23 +103,33 @@ internal object AppPermissions {
 
     private fun specialGranted(context: Context, name: String): Boolean? = when {
         name == SYSTEM_ALERT_WINDOW -> Settings.canDrawOverlays(context)
+
         name == WRITE_SETTINGS -> Settings.System.canWrite(context)
+
         name == REQUEST_INSTALL_PACKAGES && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
             context.packageManager.canRequestPackageInstalls()
+
         name == MANAGE_EXTERNAL_STORAGE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Environment.isExternalStorageManager()
+
         name == SCHEDULE_EXACT_ALARM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+
         else -> null
     }
 
     private fun specialSettingsIntent(context: Context, name: String): Intent? {
         val action = when {
             name == SYSTEM_ALERT_WINDOW -> Settings.ACTION_MANAGE_OVERLAY_PERMISSION
+
             name == WRITE_SETTINGS -> Settings.ACTION_MANAGE_WRITE_SETTINGS
+
             name == REQUEST_INSTALL_PACKAGES && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+
             name == MANAGE_EXTERNAL_STORAGE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
                 Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
+
             name == SCHEDULE_EXACT_ALARM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+
             else -> return null
         }
         return Intent(action, packageUri(context))

@@ -50,10 +50,12 @@ public class DevDeckOkHttpInterceptor(
         val response = try {
             when (effect) {
                 is NetworkEffect.Fail -> simulateFailure(chain, effect.failure)
+
                 is NetworkEffect.Slow -> {
                     pause(chain, effect.delayMillis)
                     chain.proceed(request)
                 }
+
                 null -> chain.proceed(request)
             }
         } catch (error: Exception) {
@@ -89,10 +91,12 @@ public class DevDeckOkHttpInterceptor(
         when (failure) {
             NetworkFailure.NoConnection ->
                 throw UnknownHostException("Unable to resolve host \"${request.url.host}\": No address associated with hostname $SIMULATED")
+
             NetworkFailure.Timeout -> {
                 pause(chain, chain.readTimeoutMillis().takeIf { it > 0 }?.toLong() ?: DEFAULT_TIMEOUT_MILLIS)
                 throw SocketTimeoutException("timeout $SIMULATED")
             }
+
             NetworkFailure.ServerError -> return serverError(request)
         }
     }
@@ -115,10 +119,11 @@ public class DevDeckOkHttpInterceptor(
         val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(millis)
         while (true) {
             if (chain.call().isCanceled()) throw IOException("Canceled")
-            val remaining = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime())
-            if (remaining <= 0) return
+            val remainingNanos = deadline - System.nanoTime()
+            if (remainingNanos <= 0) return
+            val step = minOf(remainingNanos, TimeUnit.MILLISECONDS.toNanos(PAUSE_STEP_MILLIS))
             try {
-                Thread.sleep(minOf(remaining, PAUSE_STEP_MILLIS))
+                Thread.sleep(step / NANOS_PER_MILLI, (step % NANOS_PER_MILLI).toInt())
             } catch (error: InterruptedException) {
                 Thread.currentThread().interrupt()
                 throw InterruptedIOException("Interrupted").apply { initCause(error) }
@@ -179,6 +184,7 @@ public class DevDeckOkHttpInterceptor(
         const val HTTP_UNAVAILABLE = 503
         const val DEFAULT_TIMEOUT_MILLIS = 10_000L
         const val PAUSE_STEP_MILLIS = 50L
+        const val NANOS_PER_MILLI = 1_000_000L
         const val LARGE_BODY_FACTOR = 4
         const val THROTTLE_CHUNK_BYTES = 8_192L
         val STREAMING_SUBTYPES = listOf("event-stream", "x-mixed-replace", "x-ndjson")

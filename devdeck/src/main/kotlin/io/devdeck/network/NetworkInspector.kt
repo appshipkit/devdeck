@@ -102,11 +102,13 @@ public fun NetworkInspector(
         }
         when {
             visible.isEmpty() -> TextItem(if (calls.isEmpty()) "No requests yet" else "No requests match")
+
             view == NetworkView.Timeline -> InfoGroup(dividerThreshold = 2) {
                 visible.take(maxItems).forEach { call ->
                     NetworkCallCard(call, highlights, repeatCount = repeatCounts[call.groupKey] ?: 1)
                 }
             }
+
             else -> InfoGroup(dividerThreshold = 2) { groups.take(maxItems).forEach { group -> NetworkGroupCard(group, highlights) } }
         }
     }

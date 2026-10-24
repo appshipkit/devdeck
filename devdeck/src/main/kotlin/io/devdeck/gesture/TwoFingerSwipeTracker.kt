@@ -16,6 +16,7 @@ internal class TwoFingerSwipeTracker(private val minDistancePx: Float) {
                 consumed = false
                 return false
             }
+
             pointers.size != FINGERS -> {
                 start = null
                 if (pointers.size > FINGERS) consumed = true

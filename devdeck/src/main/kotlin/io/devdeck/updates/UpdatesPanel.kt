@@ -156,11 +156,16 @@ internal fun updateAvailableColor(isDark: Boolean): Color = if (isDark) Color(0x
 
 private fun statusText(status: UpdateStatus, source: UpdateSource): String = when (status) {
     UpdateStatus.Idle -> if (source.requiresSignIn && !UpdateChecker.isSignedIn) "Sign in to check ${source.name}" else "Not checked yet"
+
     UpdateStatus.Checking -> "Checking ${source.name}…"
+
     UpdateStatus.UpToDate -> "You're on the latest version · checked ${UpdateChecker.lastCheckedAtMillis?.let(::time).orEmpty()}"
+
     is UpdateStatus.Available -> "${status.update.label} is available"
+
     is UpdateStatus.Installing -> status.progress?.let { "Downloading ${status.update.label} · ${(it * 100).toInt()}%" }
         ?: "Preparing ${status.update.label}…"
+
     is UpdateStatus.Failed -> "Check failed: ${status.message}"
 }
 

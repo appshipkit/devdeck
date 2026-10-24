@@ -104,12 +104,14 @@ private fun loadThumbnail(file: File): ImageBitmap? = runCatching {
             val sample = (maxOf(bounds.outWidth, bounds.outHeight) / THUMBNAIL_SIZE_PX).coerceAtLeast(1)
             BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample })?.asImageBitmap()
         }
+
         "mp4" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             android.media.ThumbnailUtils.createVideoThumbnail(file, android.util.Size(THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX), null)
                 .asImageBitmap()
         } else {
             null
         }
+
         else -> null
     }
 }.getOrNull()

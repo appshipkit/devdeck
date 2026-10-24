@@ -96,6 +96,7 @@ internal object BreadcrumbCollector {
                     downX = event.rawX
                     downY = event.rawY
                 }
+
                 MotionEvent.ACTION_UP -> if (taps && abs(event.rawX - downX) < slop && abs(event.rawY - downY) < slop) {
                     val label = describeTap(activity, event.rawX.toInt(), event.rawY.toInt())
                     if (label !=

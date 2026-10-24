@@ -6,6 +6,17 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     labels: [dependencies, skip-changelog]
+    ignore:
+      - dependency-name: "androidx.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "org.jetbrains.kotlin*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "com.squareup.okhttp3:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.jakewharton.timber:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.google.firebase:*"
+        update-types: ["version-update:semver-major"]
     groups:
       androidx-and-compose:
         patterns: ["androidx.*"]

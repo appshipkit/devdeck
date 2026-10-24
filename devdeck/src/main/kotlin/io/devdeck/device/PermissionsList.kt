@@ -100,11 +100,15 @@ private fun PermissionAction(permission: AppPermission) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     when {
         permission.kind == PermissionKind.InstallTime -> Note("Always granted at install")
+
         permission.kind == PermissionKind.Unavailable -> Note("Not on this Android version")
+
         permission.kind == PermissionKind.Special ->
             ActionPill(text = "Open settings", onClick = { AppPermissions.openSettings(context, permission) }, compact = true)
+
         !permission.granted && activity != null ->
             ActionPill(text = "Request", onClick = { AppPermissions.request(activity, permission) }, compact = true)
+
         AppPermissions.canRevoke(permission) && activity != null -> RevokePill(onRevoke = {
             if (AppPermissions.revoke(activity, permission)) {
                 Toast.makeText(
@@ -114,6 +118,7 @@ private fun PermissionAction(permission: AppPermission) {
                 ).show()
             }
         })
+
         permission.granted -> Note("Revoke needs Android 13+ or App settings", muted)
     }
 }
