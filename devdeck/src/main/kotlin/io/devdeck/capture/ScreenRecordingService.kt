@@ -50,6 +50,7 @@ public class ScreenRecordingService : Service() {
                     start(resultCode, data)
                 }
             }
+
             ACTION_STOP -> finish()
         }
         return START_NOT_STICKY

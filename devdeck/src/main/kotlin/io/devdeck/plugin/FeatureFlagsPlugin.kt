@@ -69,12 +69,14 @@ public class FeatureFlagsPlugin(
                     enabled = flag.editable,
                     onCheckedChange = { store[flag] = it },
                 )
+
                 is FeatureFlag.Text -> TextInputItem(
                     title = flag.title,
                     value = store[flag],
                     enabled = flag.editable,
                     onValueCommit = { store[flag] = it },
                 )
+
                 is FeatureFlag.Number -> NumberInputItem(
                     title = flag.title,
                     value = store[flag],
@@ -83,6 +85,7 @@ public class FeatureFlagsPlugin(
                     range = flag.range,
                     onValueCommit = { store[flag] = it },
                 )
+
                 is FeatureFlag.Json -> JsonInputItem(
                     title = flag.title,
                     value = store[flag],

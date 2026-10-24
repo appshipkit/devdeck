@@ -47,24 +47,29 @@ internal fun highlightJson(text: String, colors: JsonColors): AnnotatedString = 
                 addStyle(SpanStyle(color = color), index, end)
                 index = end
             }
+
             char == '-' || char.isDigit() -> {
                 var end = index + 1
                 while (end < text.length && (text[end].isDigit() || text[end] in ".eE+-")) end++
                 addStyle(SpanStyle(color = colors.number), index, end)
                 index = end
             }
+
             text.startsWith("true", index) || text.startsWith("null", index) -> {
                 addStyle(SpanStyle(color = colors.literal), index, index + 4)
                 index += 4
             }
+
             text.startsWith("false", index) -> {
                 addStyle(SpanStyle(color = colors.literal), index, index + 5)
                 index += 5
             }
+
             char in "{}[]:," -> {
                 addStyle(SpanStyle(color = colors.punctuation), index, index + 1)
                 index++
             }
+
             else -> index++
         }
     }

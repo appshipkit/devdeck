@@ -48,7 +48,9 @@ public object NetworkSimulator {
         if (current.urlFilter.isNotEmpty() && !url.contains(current.urlFilter, ignoreCase = true)) return null
         return when (current.condition) {
             NetworkCondition.Normal -> null
+
             NetworkCondition.Slow -> NetworkEffect.Slow(current.delayMillis, current.bytesPerSecond)
+
             NetworkCondition.Failing ->
                 if (random.nextInt(100) < current.failureRatePercent) NetworkEffect.Fail(current.failure) else null
         }

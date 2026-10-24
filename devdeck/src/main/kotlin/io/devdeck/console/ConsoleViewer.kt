@@ -124,6 +124,7 @@ public fun ConsoleViewer(
         }
         when {
             visible.isEmpty() -> TextItem(if (source.isEmpty()) "Nothing logged yet" else "No lines match")
+
             view == ConsoleView.ByTag -> {
                 val groups = visible.groupBy { it.tag }.entries.sortedByDescending { it.value.last().timestampMillis }
                 InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
@@ -134,6 +135,7 @@ public fun ConsoleViewer(
                     }
                 }
             }
+
             else -> {
                 InfoGroup(dividerThreshold = LIST_DIVIDER_THRESHOLD) {
                     visible.asReversed().take(maxRendered).forEach { line -> ConsoleLineRow(line, showTag = fixedTag == null) }

@@ -124,18 +124,25 @@ private fun PreferenceEditor(name: String, key: String) {
     val editor = prefs.values
     when (val value = editor.all[key]) {
         null -> TextItem("This key no longer exists")
+
         is Boolean -> SwitchItem(key, checked = value, subtitle = "Boolean", onCheckedChange = {
             editor.edit { putBoolean(key, it) }
         })
+
         is Int -> NumberInputItem(key, value = value.toLong(), onValueCommit = { editor.edit { putInt(key, it.toInt()) } })
+
         is Long -> NumberInputItem(key, value = value, onValueCommit = { editor.edit { putLong(key, it) } })
+
         is Float -> NumberInputItem(key, value = value.toDouble(), onValueCommit = { editor.edit { putFloat(key, it.toFloat()) } })
+
         is String -> if (Json.isJson(value)) {
             JsonInputItem(key, value = value, onValueCommit = { editor.edit { putString(key, it) } })
         } else {
             TextInputItem(key, value = value, singleLine = false, onValueCommit = { editor.edit { putString(key, it) } })
         }
+
         is Set<*> -> value.forEach { BulletItem(it.toString()) }
+
         else -> BulletItem(key, value.toString())
     }
     SectionDivider()
