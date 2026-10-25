@@ -74,9 +74,6 @@ public fun CaptureGallery(modifier: Modifier = Modifier) {
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = { context.shareFiles(files, subject = "Captures") }, enabled = files.isNotEmpty()) {
-                Icon(DeckIcons.Share, contentDescription = "Share all captures")
-            }
             ConfirmDeleteButton(
                 contentDescription = "Delete all captures",
                 onConfirm = { delete(files) },
@@ -86,7 +83,9 @@ public fun CaptureGallery(modifier: Modifier = Modifier) {
         }
         if (loaded?.isEmpty() == true) TextItem("No screenshots or recordings yet")
         InfoGroup(dividerThreshold = 2) {
-            files.forEach { file -> key(file.path) { GalleryRow(file, onDelete = { delete(listOf(file)) }) } }
+            files.forEach { file ->
+                key(file.path) { GalleryRow(file, onDelete = { delete(listOf(file)) }) }
+            }
         }
     }
 }
@@ -117,38 +116,35 @@ private fun GalleryRow(file: File, onDelete: () -> Unit) {
                 Image(image, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp))
             } else {
                 Text(
-                    if (file.extension == "mp4") "▶" else "…",
+                    if (file.isCaptureVideo) "▶" else "…",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.clearAndSetSemantics {},
                 )
             }
         }
-        Text(
-            file.name,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        Row {
-            IconButton(onClick = { context.shareFiles(listOf(file)) }) {
-                Icon(DeckIcons.Share, contentDescription = "Share ${file.name}")
+        // Actions sit under the name so the name keeps the full width on narrow phones.
+        Column(Modifier.weight(1f)) {
+            Text(file.name, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { context.shareFiles(listOf(file)) }) {
+                    Icon(DeckIcons.Share, contentDescription = "Share ${file.name}", modifier = Modifier.size(20.dp))
+                }
+                ConfirmDeleteButton(contentDescription = "Delete ${file.name}", onConfirm = onDelete, confirmText = "Tap again to delete")
             }
-            ConfirmDeleteButton(contentDescription = "Delete ${file.name}", onConfirm = onDelete, confirmText = "Tap again to delete")
         }
     }
 }
 
 private fun loadThumbnail(file: File): ImageBitmap? = runCatching {
-    when (file.extension) {
-        "png" -> {
+    when {
+        file.isCaptureImage -> {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(file.path, bounds)
             val sample = (maxOf(bounds.outWidth, bounds.outHeight) / THUMBNAIL_SIZE_PX).coerceAtLeast(1)
             BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample })?.asImageBitmap()
         }
 
-        "mp4" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        file.isCaptureVideo -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             android.media.ThumbnailUtils.createVideoThumbnail(file, android.util.Size(THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX), null)
                 .asImageBitmap()
         } else {

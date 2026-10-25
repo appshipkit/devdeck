@@ -15,6 +15,7 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import io.devdeck.DECK_OVERLAY_TAG
 import io.devdeck.DeckVisibility
 import io.devdeck.gesture.inputObserver
 import java.util.Collections
@@ -176,5 +177,4 @@ internal object BreadcrumbCollector {
 
     private const val DRAWER_CHECK_DELAY_MILLIS = 150L
     private const val COMPOSE_VIEW_PREFIX = "androidx.compose.ui.platform.AndroidComposeView"
-    private const val DECK_OVERLAY_TAG = "io.devdeck.overlay"
 }

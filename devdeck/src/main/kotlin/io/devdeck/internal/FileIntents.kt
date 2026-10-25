@@ -5,11 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import io.devdeck.capture.ScreenCapture
+import io.devdeck.capture.isCaptureImage
+import io.devdeck.capture.isCaptureVideo
+import io.devdeck.capture.mediaType
 import java.io.File
 
 internal fun Context.openFile(file: File) {
     val uri = ScreenCapture.uriFor(this, file)
-    val type = if (file.extension == "mp4") "video/mp4" else "image/png"
+    val type = file.mediaType
     val intent = Intent(Intent.ACTION_VIEW)
         .setDataAndType(uri, type)
         .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -33,9 +36,9 @@ internal fun Context.shareFiles(files: List<File>, text: String? = null, subject
         Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
     }
     intent.type = when {
-        files.all { it.extension == "png" } -> "image/png"
-        files.all { it.extension == "mp4" } -> "video/mp4"
-        files.all { it.extension == "txt" } -> "text/plain"
+        files.map { it.mediaType }.distinct().size == 1 -> files.first().mediaType
+        files.all { it.isCaptureImage } -> "image/*"
+        files.all { it.isCaptureVideo } -> "video/*"
         else -> "*/*"
     }
     text?.let { intent.putExtra(Intent.EXTRA_TEXT, it) }

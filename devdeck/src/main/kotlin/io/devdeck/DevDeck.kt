@@ -117,10 +117,10 @@ public object DevDeck {
         if (activity !is ComponentActivity) return
         if (DeckExclusions.isExcluded(activity, current.excludedActivityPrefixes) || !current.includeActivity(activity)) return
         val decorView = activity.window.decorView as? ViewGroup ?: return
-        if (decorView.findViewWithTag<View>(VIEW_TAG) != null || HostedActivities.contains(activity)) return
+        if (decorView.findViewWithTag<View>(DECK_OVERLAY_TAG) != null || HostedActivities.contains(activity)) return
 
         val overlay = ComposeView(activity).apply {
-            tag = VIEW_TAG
+            tag = DECK_OVERLAY_TAG
             setViewTreeLifecycleOwner(activity)
             setViewTreeViewModelStoreOwner(activity)
             setViewTreeSavedStateRegistryOwner(activity)
@@ -172,8 +172,9 @@ public object DevDeck {
 
     internal fun removeOverlay(activity: Activity) {
         val decorView = activity.window?.decorView as? ViewGroup ?: return
-        decorView.findViewWithTag<View>(VIEW_TAG)?.let(decorView::removeView)
+        decorView.findViewWithTag<View>(DECK_OVERLAY_TAG)?.let(decorView::removeView)
     }
-
-    private const val VIEW_TAG = "io.devdeck.overlay"
 }
+
+/** Tag of the view DevDeck adds to each activity, so captures and tap tracking can skip it. */
+internal const val DECK_OVERLAY_TAG = "io.devdeck.overlay"

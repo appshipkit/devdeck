@@ -55,6 +55,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -311,15 +314,26 @@ private data class HeaderChip(val text: String, val accent: Color?, val onClick:
 
 @Composable
 private fun StopRecordingButton(onClick: () -> Unit) {
-    Box(
+    val shape = RoundedCornerShape(50)
+    Row(
         Modifier
-            .size(28.dp)
-            .clip(CircleShape)
+            .clip(shape)
             .background(RecordingRed)
-            .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = onClick),
-        contentAlignment = Alignment.Center,
+            .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = onClick)
+            .semantics { contentDescription = "Stop recording" }
+            .padding(start = 8.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Icon(DeckIcons.Stop, contentDescription = "Stop recording", tint = Color.White, modifier = Modifier.size(14.dp))
+        Box(Modifier.size(10.dp).background(Color.White, RoundedCornerShape(2.dp)))
+        Text(
+            "Stop",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            maxLines = 1,
+            modifier = Modifier.clearAndSetSemantics {},
+        )
     }
 }
 
