@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -40,8 +41,18 @@ public object ScreenCapture {
     public var isRecording: Boolean by mutableStateOf(false)
         internal set
 
-    // True while a screenshot is being taken, so DevDeck's floating button, badges and recording bar stay out of it.
-    internal var isCapturing by mutableStateOf(false)
+    // Screenshots in progress; while any are, DevDeck's floating button, badges and recording bar stay out of them.
+    private var capturesInProgress by mutableIntStateOf(0)
+
+    internal val isCapturing: Boolean get() = capturesInProgress > 0
+
+    internal sealed interface LongScreenshotOutcome {
+        class Saved(val file: File) : LongScreenshotOutcome
+
+        data object NothingToScroll : LongScreenshotOutcome
+
+        data object Failed : LongScreenshotOutcome
+    }
 
     internal var isRecordingPaused by mutableStateOf(false)
 
@@ -96,25 +107,42 @@ public object ScreenCapture {
 
     /**
      * Captures the screen's main scrolling content in one tall image (Android 12+), from what's on screen down,
-     * within a few screens and seconds. Returns null when there is nothing to scroll; use [takeScreenshot] then.
+     * within a few screens and seconds. Returns null when there is nothing to scroll or the capture failed; use
+     * [takeScreenshot] then. Safe to call from any thread.
      */
-    public suspend fun takeLongScreenshot(activity: Activity): File? {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
-        val bitmap = withOverlaysHidden {
-            val window = captureWindow(activity) ?: return@withOverlaysHidden null
-            runCatching { LongScreenshot.capture(activity, window) }.getOrNull()
-        } ?: return null
-        return savePng(activity, bitmap, "long_screenshot")
+    public suspend fun takeLongScreenshot(activity: Activity): File? = (longScreenshot(activity) as? LongScreenshotOutcome.Saved)?.file
+
+    internal suspend fun longScreenshot(activity: Activity): LongScreenshotOutcome = withContext(Dispatchers.Main.immediate) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@withContext LongScreenshotOutcome.NothingToScroll
+        val result = withOverlaysHidden {
+            val window = captureWindow(activity) ?: return@withOverlaysHidden LongScreenshot.Result.Failed
+            try {
+                LongScreenshot.capture(activity, window)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                DeckLogger.log("Long screenshot failed", tag = "Capture", payload = error.toString())
+                LongScreenshot.Result.Failed
+            }
+        }
+        when (result) {
+            is LongScreenshot.Result.Captured ->
+                savePng(activity, result.bitmap, "long_screenshot")?.let { LongScreenshotOutcome.Saved(it) } ?: LongScreenshotOutcome.Failed
+
+            LongScreenshot.Result.NothingToScroll -> LongScreenshotOutcome.NothingToScroll
+
+            LongScreenshot.Result.Failed -> LongScreenshotOutcome.Failed
+        }
     }
 
     private suspend fun <T> withOverlaysHidden(block: suspend () -> T): T {
-        isCapturing = true
+        capturesInProgress++
         return try {
             // Give the overlay a frame to disappear before the window is copied.
             delay(OVERLAY_HIDE_MILLIS)
             block()
         } finally {
-            isCapturing = false
+            capturesInProgress--
         }
     }
 

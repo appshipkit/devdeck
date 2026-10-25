@@ -55,6 +55,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -318,8 +320,8 @@ private fun StopRecordingButton(onClick: () -> Unit) {
             .clip(shape)
             .background(RecordingRed)
             .clickable(role = Role.Button, onClickLabel = "Stop recording", onClick = onClick)
-            .padding(start = 8.dp, end = 10.dp, top = 4.dp, bottom = 4.dp)
-            .semantics(mergeDescendants = true) {},
+            .semantics { contentDescription = "Stop recording" }
+            .padding(start = 8.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -330,6 +332,7 @@ private fun StopRecordingButton(onClick: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
             maxLines = 1,
+            modifier = Modifier.clearAndSetSemantics {},
         )
     }
 }

@@ -1,5 +1,6 @@
 package io.devdeck.capture
 
+import android.app.Activity
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -14,17 +15,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 public fun ScreenshotButton(title: String = "Take a screenshot") {
-    val context = LocalContext.current
-    val drawerState = LocalDeckState.current
+    val capture = rememberCaptureAfterClosing()
     ButtonItem(title = title, onClick = {
-        val activity = context.findActivity() ?: return@ButtonItem
-        drawerState?.close()
-        ScreenCapture.scope.launch {
-            if (drawerState != null) snapshotFlow { drawerState.isVisible }.first { !it }
-            delay(CAPTURE_SETTLE_MILLIS)
+        capture { activity ->
             val file = ScreenCapture.takeScreenshot(activity)
-            val message = if (file != null) "Screenshot saved" else "Screenshot failed"
-            Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+            if (file != null) "Screenshot saved" else "Screenshot failed"
         }
     })
 }
@@ -32,17 +27,31 @@ public fun ScreenshotButton(title: String = "Take a screenshot") {
 @Composable
 public fun LongScreenshotButton(title: String = "Take a long screenshot") {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-    val context = LocalContext.current
-    val drawerState = LocalDeckState.current
+    val capture = rememberCaptureAfterClosing()
     ButtonItem(title = title, subtitle = "The whole scrolling screen in one image", onClick = {
-        val activity = context.findActivity() ?: return@ButtonItem
-        drawerState?.close()
-        ScreenCapture.scope.launch {
-            if (drawerState != null) snapshotFlow { drawerState.isVisible }.first { !it }
-            delay(CAPTURE_SETTLE_MILLIS)
-            val file = ScreenCapture.takeLongScreenshot(activity)
-            val message = if (file != null) "Long screenshot saved" else "Nothing to scroll on this screen"
-            Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+        capture { activity ->
+            when (ScreenCapture.longScreenshot(activity)) {
+                is ScreenCapture.LongScreenshotOutcome.Saved -> "Long screenshot saved"
+                ScreenCapture.LongScreenshotOutcome.NothingToScroll -> "Nothing to scroll on this screen"
+                ScreenCapture.LongScreenshotOutcome.Failed -> "Long screenshot failed"
+            }
         }
     })
+}
+
+/** Closes the drawer, waits for it to leave the screen, runs the capture and shows the message it returns. */
+@Composable
+private fun rememberCaptureAfterClosing(): (suspend (Activity) -> String) -> Unit {
+    val context = LocalContext.current
+    val drawerState = LocalDeckState.current
+    return { block ->
+        context.findActivity()?.let { activity ->
+            drawerState?.close()
+            ScreenCapture.scope.launch {
+                if (drawerState != null) snapshotFlow { drawerState.isVisible }.first { !it }
+                delay(CAPTURE_SETTLE_MILLIS)
+                Toast.makeText(activity, block(activity), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

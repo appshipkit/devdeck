@@ -15,6 +15,5 @@ internal val File.mediaType: String
         ?: when {
             isCaptureVideo -> "video/*"
             isCaptureImage -> "image/*"
-            extension == "txt" -> "text/plain"
             else -> "application/octet-stream"
         }

@@ -126,7 +126,7 @@ private fun GalleryRow(file: File, onDelete: () -> Unit) {
         Column(Modifier.weight(1f)) {
             Text(file.name, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { context.shareFiles(listOf(file)) }, modifier = Modifier.size(ActionSize)) {
+                IconButton(onClick = { context.shareFiles(listOf(file)) }) {
                     Icon(DeckIcons.Share, contentDescription = "Share ${file.name}", modifier = Modifier.size(20.dp))
                 }
                 ConfirmDeleteButton(contentDescription = "Delete ${file.name}", onConfirm = onDelete, confirmText = "Tap again to delete")
@@ -154,5 +154,3 @@ private fun loadThumbnail(file: File): ImageBitmap? = runCatching {
         else -> null
     }
 }.getOrNull()
-
-private val ActionSize = 40.dp
