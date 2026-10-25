@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.view.doOnAttach
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -118,6 +119,13 @@ public object DevDeck {
         if (DeckExclusions.isExcluded(activity, current.excludedActivityPrefixes) || !current.includeActivity(activity)) return
         val decorView = activity.window.decorView as? ViewGroup ?: return
         if (decorView.findViewWithTag<View>(DECK_OVERLAY_TAG) != null || HostedActivities.contains(activity)) return
+        // A ComposeView can't be measured before it's attached, and some windows (edge-to-edge activities on recent
+        // Android) measure views added in onStart without attaching them first. So the overlay is added after the
+        // window is attached, posted so it isn't added in the middle of the attach pass (which would skip it).
+        if (!decorView.isAttachedToWindow) {
+            decorView.doOnAttach { decorView.post { attach(activity) } }
+            return
+        }
 
         val overlay = ComposeView(activity).apply {
             tag = DECK_OVERLAY_TAG

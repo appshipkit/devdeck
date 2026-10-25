@@ -23,7 +23,7 @@ import io.devdeck.rememberDeckState
 import io.devdeck.sample.debugmenu.sampleDeckStyle
 
 @Composable
-fun SampleScreen(plugins: List<DeckPlugin>, flagStore: FeatureFlagStore, onOpenLegacy: () -> Unit) {
+fun SampleScreen(plugins: List<DeckPlugin>, flagStore: FeatureFlagStore, onOpenLegacy: () -> Unit, onOpenFeed: () -> Unit) {
     val drawerState = rememberDeckState()
     val options = rememberDrawerOptions()
 
@@ -70,6 +70,9 @@ fun SampleScreen(plugins: List<DeckPlugin>, flagStore: FeatureFlagStore, onOpenL
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 OutlinedButton(onClick = onOpenLegacy, modifier = Modifier.fillMaxWidth()) {
                     Text("Open View-based screen (global install)")
+                }
+                OutlinedButton(onClick = onOpenFeed, modifier = Modifier.fillMaxWidth()) {
+                    Text("Open endless feed (try a long screenshot)")
                 }
             }
         }
