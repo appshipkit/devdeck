@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,8 +65,9 @@ private fun EndlessFeed() {
     val listState = rememberLazyListState()
     val nearEnd by remember {
         derivedStateOf {
-            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            last >= listState.layoutInfo.totalItemsCount - LOAD_AHEAD
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            last >= info.totalItemsCount - LOAD_AHEAD
         }
     }
     LaunchedEffect(listState) {
@@ -93,7 +93,7 @@ private fun EndlessFeed() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.weight(1f),
         ) {
-            items((1..count).toList(), key = { it }) { number -> FeedItem(number) }
+            items(count, key = { it }) { index -> FeedItem(index + 1) }
             item(key = "loading") {
                 Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(Modifier.size(28.dp))

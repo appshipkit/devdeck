@@ -115,7 +115,7 @@ public object DevDeck {
 
     private fun attach(activity: Activity) {
         val current = config ?: return
-        if (activity !is ComponentActivity) return
+        if (activity !is ComponentActivity || activity.isFinishing || activity.isDestroyed) return
         if (DeckExclusions.isExcluded(activity, current.excludedActivityPrefixes) || !current.includeActivity(activity)) return
         val decorView = activity.window.decorView as? ViewGroup ?: return
         if (decorView.findViewWithTag<View>(DECK_OVERLAY_TAG) != null || HostedActivities.contains(activity)) return
