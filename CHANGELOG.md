@@ -48,6 +48,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - README states that DevDeck stays out of release builds only when added with `debugImplementation`.
 
 ### Fixed
+- Apps no longer crash when `DevDeck.install` adds the drawer to an edge-to-edge Compose activity on recent Android ("Cannot locate windowRecomposer"); the overlay is now added once the window is attached.
 - Search placeholders and the network count row stay on one line on small phones.
 - The permissions list refreshes after a permission dialog or settings screen closes, and shows when a revoke only applies after the app restarts.
 - Tap breadcrumbs no longer record what was typed into text fields, so passwords can't end up in crash files or bug reports.

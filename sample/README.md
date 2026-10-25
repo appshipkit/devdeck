@@ -8,8 +8,9 @@ The sample shows the two ways to attach the drawer:
 |---|---|---|
 | **Main screen** (Compose) | `DevDeckHost(plugins = …)` wraps the screen's content | `ui/SampleScreen.kt` |
 | **View-based screen** (plain Views, no Compose) | `DevDeck.install(...)` in `Application.onCreate` adds it to the activity automatically | `SampleApp.kt`, `LegacyViewActivity.kt` |
+| **Endless feed** (Compose, edge-to-edge) | Same as the View-based screen, through `includeActivity` | `EndlessFeedActivity.kt` |
 
-Both screens share one plugin list, so their drawers show the same menu.
+All screens share one plugin list, so their drawers show the same menu. The endless feed loads 20 more items whenever you reach the bottom; use it to try *Take a long screenshot* on content that never ends.
 
 ## Project layout
 
@@ -18,6 +19,7 @@ sample/src/main/kotlin/io/devdeck/sample/
 ├── SampleApp.kt              Creates the flag store and plugin list, and installs DevDeck app-wide
 ├── MainActivity.kt           Hosts the Compose screen
 ├── LegacyViewActivity.kt     View-only screen; also the target of the devdeck://sample/legacy deep link
+├── EndlessFeedActivity.kt    Compose list that keeps loading pages, for trying long screenshots
 ├── debugmenu/                Everything that defines what's inside the drawer
 │   ├── SampleDeckStyle.kt    The drawer's title and subtitle, shared by both screens
 │   ├── SamplePlugins.kt      The plugin list and network highlight rules: the whole debug menu in one place

@@ -28,7 +28,7 @@ class SampleApp : Application() {
             application = this,
             plugins = plugins,
             style = sampleDeckStyle,
-            includeActivity = { it is LegacyViewActivity },
+            includeActivity = { it is LegacyViewActivity || it is EndlessFeedActivity },
         )
         DeckLogger.log("App started")
         Timber.i("Sample app started")

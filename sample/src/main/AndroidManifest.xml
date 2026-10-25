@@ -19,6 +19,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".EndlessFeedActivity"
+            android:exported="false" />
+        <activity
             android:name=".LegacyViewActivity"
             android:exported="true">
             <intent-filter>

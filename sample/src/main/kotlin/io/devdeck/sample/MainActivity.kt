@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
                     plugins = app.plugins,
                     flagStore = app.flagStore,
                     onOpenLegacy = { startActivity(Intent(this, LegacyViewActivity::class.java)) },
+                    onOpenFeed = { startActivity(Intent(this, EndlessFeedActivity::class.java)) },
                 )
             }
         }
