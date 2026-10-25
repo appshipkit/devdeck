@@ -11,7 +11,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
 - `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
-- *Take a long screenshot* (Android 12+) captures the whole scrolling screen in one image (`LongScreenshotButton()`, `ScreenCapture.takeLongScreenshot()`).
+- *Take a long screenshot* (Android 12+) captures the scrolling screen in one image from the current position down, up to 5 screens, 8 seconds, or until nothing new appears, so endless feeds stay bounded (`LongScreenshotButton()`, `ScreenCapture.takeLongScreenshot()`).
 - The gallery's *Share all* button is gone; each capture keeps its own share button.
 - The gallery also lists JPEG, WebP, GIF, WebM and other common image and video files in its folder.
 - While recording the screen, a small floating bar shows the time with pause/resume (Android 7+) and stop, so you don't have to reopen the drawer; the drawer header shows a *Recording* chip with a red *Stop* button that stays in place while the chips scroll (tapping the chip opens the screen capture tools), and the notification has Pause/Resume too.

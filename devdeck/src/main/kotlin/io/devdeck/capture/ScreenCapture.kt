@@ -95,8 +95,8 @@ public object ScreenCapture {
     }
 
     /**
-     * Captures the screen's main scrolling content in one tall image (Android 12+). Returns null when there is
-     * nothing to scroll; use [takeScreenshot] then.
+     * Captures the screen's main scrolling content in one tall image (Android 12+), from what's on screen down,
+     * within a few screens and seconds. Returns null when there is nothing to scroll; use [takeScreenshot] then.
      */
     public suspend fun takeLongScreenshot(activity: Activity): File? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
