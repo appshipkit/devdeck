@@ -15,6 +15,7 @@ public fun ScreenCaptureTools(modifier: Modifier = Modifier, title: String = "Sc
     }
     ExpandableItem(title = title, modifier = modifier) {
         ScreenshotButton()
+        LongScreenshotButton()
         ScreenRecordButton()
         GalleryButton()
     }

@@ -11,10 +11,10 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
 - `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
-- The capture gallery can save one capture or all of them to `Download/DevDeck` (Android 10+), so they're easy to copy to a computer, and captures can be long-pressed and dragged into other apps or onto a desktop showing the device (ChromeOS, DeX, Phone Link, split screen).
-- Images and videos dropped onto *Generate a bug report* are copied to the gallery and attached (Android 7+).
+- *Take a long screenshot* (Android 12+) captures the whole scrolling screen in one image (`LongScreenshotButton()`, `ScreenCapture.takeLongScreenshot()`).
+- The gallery's *Share all* button is gone; each capture keeps its own share button.
 - The gallery also lists JPEG, WebP, GIF, WebM and other common image and video files in its folder.
-- While recording the screen, a small floating bar shows the time with pause/resume (Android 7+) and stop, so you don't have to reopen the drawer; the drawer header shows a *Recording* chip with a red stop button that stays in place while the chips scroll (tapping the chip opens the screen capture tools), and the notification has Pause/Resume too.
+- While recording the screen, a small floating bar shows the time with pause/resume (Android 7+) and stop, so you don't have to reopen the drawer; the drawer header shows a *Recording* chip with a red *Stop* button that stays in place while the chips scroll (tapping the chip opens the screen capture tools), and the notification has Pause/Resume too.
 - A *System language & region* button in the User Interface section opens Android's language and region settings (`LocaleSettingsButton()`; hide it with `AppearancePlugin(localeSettings = false)`).
 - The feature flags page has *Restart screen* and *Restart app* buttons, so flag changes that are read once per screen or process take effect.
 - After switching endpoints, `EndpointPlugin` shows a *Restart app* button so the app picks up the new endpoint, unless `restartOnChange` or `onChanged` already applies it.

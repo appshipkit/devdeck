@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.core.content.edit
 import io.devdeck.capture.RecordingControls
+import io.devdeck.capture.ScreenCapture
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
 import io.devdeck.performance.PerformanceMonitor
@@ -123,9 +124,9 @@ internal fun DevDeckOverlay(
                 PerformanceOverlay()
             }
 
-            SimulationBadge()
+            if (!ScreenCapture.isCapturing) SimulationBadge()
 
-            if (!isVisible) RecordingControls()
+            if (!isVisible && !ScreenCapture.isCapturing) RecordingControls()
 
             if (isVisible) {
                 Box(
@@ -155,7 +156,7 @@ internal fun DevDeckOverlay(
                     )
                 }
             } else if (trigger is DeckTrigger.FloatingButton) {
-                FloatingTrigger(trigger = trigger, onClick = state::open)
+                if (!ScreenCapture.isCapturing) FloatingTrigger(trigger = trigger, onClick = state::open)
             }
         }
     }

@@ -1,17 +1,12 @@
 package io.devdeck.bugreport
 
 import android.content.Context
-import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -27,17 +22,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.toAndroidDragEvent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.breadcrumbs.Breadcrumbs
-import io.devdeck.capture.CaptureTransfer
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.SectionDivider
@@ -47,7 +36,6 @@ import io.devdeck.components.TextItem
 import io.devdeck.console.ConsoleFormat
 import io.devdeck.device.appVersionInfo
 import io.devdeck.device.deviceInfo
-import io.devdeck.internal.findActivity
 import io.devdeck.internal.shareFiles
 import io.devdeck.logcat.LogcatReader
 import io.devdeck.logs.DeckLogger
@@ -84,9 +72,6 @@ public fun BugReportScreen(modifier: Modifier = Modifier, buildInfo: () -> Map<S
         SwitchItem("Include device and app info", checked = includeDeviceInfo, onCheckedChange = { includeDeviceInfo = it })
 
         SectionTitle("Attachments")
-        if (CaptureTransfer.canDragBetweenApps) {
-            AttachmentDropZone(onDropped = { files -> selected.addAll(files.filterNot { it in selected }) })
-        }
         if (captures.isEmpty()) TextItem("Take a screenshot or recording first to attach it")
         captures.forEach { file ->
             val checked = file in selected
@@ -124,61 +109,6 @@ public fun BugReportScreen(modifier: Modifier = Modifier, buildInfo: () -> Map<S
             },
         )
     }
-}
-
-/** Accepts images and videos dragged from another app or a computer, copies them to the gallery and attaches them. */
-@Composable
-private fun AttachmentDropZone(onDropped: (List<File>) -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var hovering by remember { mutableStateOf(false) }
-    var dragging by remember { mutableStateOf(false) }
-    val target = remember {
-        object : DragAndDropTarget {
-            override fun onStarted(event: DragAndDropEvent) {
-                dragging = true
-            }
-
-            override fun onEntered(event: DragAndDropEvent) {
-                hovering = true
-            }
-
-            override fun onExited(event: DragAndDropEvent) {
-                hovering = false
-            }
-
-            override fun onEnded(event: DragAndDropEvent) {
-                hovering = false
-                dragging = false
-            }
-
-            override fun onDrop(event: DragAndDropEvent): Boolean {
-                val activity = context.findActivity() ?: return false
-                val dragEvent = event.toAndroidDragEvent()
-                scope.launch {
-                    val files = CaptureTransfer.importDrop(activity, dragEvent)
-                    if (files.isEmpty()) Toast.makeText(context, "Couldn't read the dropped file", Toast.LENGTH_SHORT).show()
-                    onDropped(files)
-                }
-                return true
-            }
-        }
-    }
-    val colors = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(12.dp)
-    Text(
-        text = if (hovering) "Release to attach" else "Drop images or videos here to attach them",
-        style = MaterialTheme.typography.bodySmall,
-        color = if (dragging) colors.primary else colors.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .dragAndDropTarget(shouldStartDragAndDrop = { CaptureTransfer.isMediaDrag(it.toAndroidDragEvent()) }, target = target)
-            .background(if (hovering) colors.primary.copy(alpha = 0.12f) else Color.Transparent, shape)
-            .border(1.dp, if (dragging) colors.primary else colors.outlineVariant, shape)
-            .padding(vertical = 14.dp, horizontal = 12.dp),
-    )
 }
 
 private fun buildReport(context: Context, description: String, includeDeviceInfo: Boolean, buildInfo: Map<String, String>): String =

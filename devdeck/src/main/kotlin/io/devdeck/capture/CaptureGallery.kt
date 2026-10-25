@@ -2,11 +2,9 @@ package io.devdeck.capture
 
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +24,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -61,24 +58,6 @@ public fun CaptureGallery(modifier: Modifier = Modifier) {
         value = withContext(Dispatchers.IO) { ScreenCapture.captures(context) }
     }
     val files = loaded.orEmpty()
-    val save: (List<File>) -> Unit = { targets ->
-        if (CaptureTransfer.canSaveToDownloads) {
-            scope.launch {
-                val saved = CaptureTransfer.saveToDownloads(context, targets)
-                val message = if (saved ==
-                    targets.size
-                ) {
-                    "Saved to Download/DevDeck"
-                } else {
-                    "Saved $saved of ${targets.size} to Download/DevDeck"
-                }
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            // Before Android 10, saving to Downloads needs a storage permission DevDeck doesn't ask for.
-            context.shareFiles(targets, subject = "Captures")
-        }
-    }
     val delete: (List<File>) -> Unit = { targets ->
         scope.launch {
             withContext(Dispatchers.IO) { targets.forEach { it.delete() } }
@@ -95,14 +74,6 @@ public fun CaptureGallery(modifier: Modifier = Modifier) {
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = { context.shareFiles(files, subject = "Captures") }, enabled = files.isNotEmpty()) {
-                Icon(DeckIcons.Share, contentDescription = "Share all captures")
-            }
-            if (CaptureTransfer.canSaveToDownloads) {
-                IconButton(onClick = { save(files) }, enabled = files.isNotEmpty()) {
-                    Icon(DeckIcons.Download, contentDescription = "Save all captures to Downloads")
-                }
-            }
             ConfirmDeleteButton(
                 contentDescription = "Delete all captures",
                 onConfirm = { delete(files) },
@@ -111,24 +82,16 @@ public fun CaptureGallery(modifier: Modifier = Modifier) {
             )
         }
         if (loaded?.isEmpty() == true) TextItem("No screenshots or recordings yet")
-        if (files.isNotEmpty() && CaptureTransfer.canDragBetweenApps) {
-            Text(
-                "Long-press a capture to drag it into another app, or to your computer on ChromeOS, DeX or Phone Link.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-        }
         InfoGroup(dividerThreshold = 2) {
             files.forEach { file ->
-                key(file.path) { GalleryRow(file, onSave = { save(listOf(file)) }, onDelete = { delete(listOf(file)) }) }
+                key(file.path) { GalleryRow(file, onDelete = { delete(listOf(file)) }) }
             }
         }
     }
 }
 
 @Composable
-private fun GalleryRow(file: File, onSave: () -> Unit, onDelete: () -> Unit) {
+private fun GalleryRow(file: File, onDelete: () -> Unit) {
     val context = LocalContext.current
     val thumbnail by produceState<ImageBitmap?>(null, file) {
         value = withContext(Dispatchers.IO) { loadThumbnail(file) }
@@ -136,15 +99,6 @@ private fun GalleryRow(file: File, onSave: () -> Unit, onDelete: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .then(
-                if (CaptureTransfer.canDragBetweenApps) {
-                    Modifier.dragAndDropSource { _ ->
-                        DragAndDropTransferData(CaptureTransfer.dragClip(context, file), flags = CaptureTransfer.dragFlags())
-                    }
-                } else {
-                    Modifier
-                },
-            )
             .clickable(role = Role.Button, onClickLabel = "Open") { context.openFile(file) }
             .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -174,11 +128,6 @@ private fun GalleryRow(file: File, onSave: () -> Unit, onDelete: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { context.shareFiles(listOf(file)) }, modifier = Modifier.size(ActionSize)) {
                     Icon(DeckIcons.Share, contentDescription = "Share ${file.name}", modifier = Modifier.size(20.dp))
-                }
-                if (CaptureTransfer.canSaveToDownloads) {
-                    IconButton(onClick = onSave, modifier = Modifier.size(ActionSize)) {
-                        Icon(DeckIcons.Download, contentDescription = "Save ${file.name} to Downloads", modifier = Modifier.size(20.dp))
-                    }
                 }
                 ConfirmDeleteButton(contentDescription = "Delete ${file.name}", onConfirm = onDelete, confirmText = "Tap again to delete")
             }

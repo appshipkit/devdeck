@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
@@ -38,6 +39,9 @@ public object ScreenCapture {
 
     public var isRecording: Boolean by mutableStateOf(false)
         internal set
+
+    // True while a screenshot is being taken, so DevDeck's floating button, badges and recording bar stay out of it.
+    internal var isCapturing by mutableStateOf(false)
 
     internal var isRecordingPaused by mutableStateOf(false)
 
@@ -86,8 +90,36 @@ public object ScreenCapture {
     }
 
     public suspend fun takeScreenshot(activity: Activity): File? {
-        val bitmap = captureWindow(activity) ?: return null
-        val file = newCaptureFile(activity, "screenshot", "png")
+        val bitmap = withOverlaysHidden { captureWindow(activity) } ?: return null
+        return savePng(activity, bitmap, "screenshot")
+    }
+
+    /**
+     * Captures the screen's main scrolling content in one tall image (Android 12+). Returns null when there is
+     * nothing to scroll; use [takeScreenshot] then.
+     */
+    public suspend fun takeLongScreenshot(activity: Activity): File? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+        val bitmap = withOverlaysHidden {
+            val window = captureWindow(activity) ?: return@withOverlaysHidden null
+            runCatching { LongScreenshot.capture(activity, window) }.getOrNull()
+        } ?: return null
+        return savePng(activity, bitmap, "long_screenshot")
+    }
+
+    private suspend fun <T> withOverlaysHidden(block: suspend () -> T): T {
+        isCapturing = true
+        return try {
+            // Give the overlay a frame to disappear before the window is copied.
+            delay(OVERLAY_HIDE_MILLIS)
+            block()
+        } finally {
+            isCapturing = false
+        }
+    }
+
+    private suspend fun savePng(activity: Activity, bitmap: Bitmap, prefix: String): File? {
+        val file = newCaptureFile(activity, prefix, "png")
         val written = withContext(Dispatchers.IO) {
             try {
                 file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -138,3 +170,5 @@ public object ScreenCapture {
         )
     }
 }
+
+private const val OVERLAY_HIDE_MILLIS = 100L

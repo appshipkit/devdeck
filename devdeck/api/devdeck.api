@@ -334,6 +334,7 @@ public final class io/devdeck/capture/ScreenCapture {
 	public final fun captureDirectory (Landroid/content/Context;)Ljava/io/File;
 	public final fun captures (Landroid/content/Context;)Ljava/util/List;
 	public final fun isRecording ()Z
+	public final fun takeLongScreenshot (Landroid/app/Activity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun takeScreenshot (Landroid/app/Activity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun uriFor (Landroid/content/Context;Ljava/io/File;)Landroid/net/Uri;
 }
@@ -361,6 +362,7 @@ public final class io/devdeck/capture/ScreenRecordingService : android/app/Servi
 }
 
 public final class io/devdeck/capture/ScreenshotButtonKt {
+	public static final fun LongScreenshotButton (Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ScreenshotButton (Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
