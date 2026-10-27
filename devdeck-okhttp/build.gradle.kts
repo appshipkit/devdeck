@@ -2,11 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    `maven-publish`
+    alias(libs.plugins.maven.publish)
 }
-
-group = providers.gradleProperty("GROUP").get()
-version = providers.gradleProperty("VERSION_NAME").get()
 
 android {
     namespace = "io.devdeck.okhttp"
@@ -31,12 +28,6 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 kotlin {
@@ -52,17 +43,4 @@ dependencies {
     testImplementation(libs.okhttp)
     testImplementation(libs.mockwebserver)
     testImplementation(libs.junit)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                groupId = project.group.toString()
-                artifactId = "devdeck-okhttp"
-                version = project.version.toString()
-            }
-        }
-    }
 }

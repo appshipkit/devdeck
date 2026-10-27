@@ -3,11 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
-    `maven-publish`
+    alias(libs.plugins.maven.publish)
 }
-
-group = providers.gradleProperty("GROUP").get()
-version = providers.gradleProperty("VERSION_NAME").get()
 
 android {
     namespace = "io.devdeck"
@@ -37,12 +34,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 kotlin {
@@ -62,17 +53,4 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.json)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                groupId = project.group.toString()
-                artifactId = "devdeck"
-                version = project.version.toString()
-            }
-        }
-    }
 }
