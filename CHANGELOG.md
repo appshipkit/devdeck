@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-27
+
 ### Added
 - MIT license and code of conduct.
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
