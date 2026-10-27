@@ -59,6 +59,8 @@ DevDeck uses [Semantic Versioning](https://semver.org/) with AndroidX-style pre-
    - creates the `vX.Y.Z` tag and a GitHub release with the changelog notes, marked as a pre-release for alpha, beta and rc versions,
    - closes the `vX.Y.Z` milestone (stable releases only).
 
+**Publishing an older release:** to put an already tagged version on Maven Central (for example one released before DevDeck moved there), create a branch from its tag, add the Maven Central setup, and run the **Publish to Maven Central** workflow (Actions tab) with that branch. The tag itself stays as it was.
+
 You can also bump locally with `scripts/bump-version.sh <fix|feature|major|alpha|beta|rc|stable|auto|version>` and open the PR yourself. `./gradlew publishToMavenLocal` installs the libraries in `~/.m2` to try them in another project.
 
 ## One-time repository setup
