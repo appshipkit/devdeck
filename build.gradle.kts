@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.binary.compatibility.validator)
+    alias(libs.plugins.maven.publish) apply false
 }
 
 val ktlint: Configuration = configurations.create("ktlint")
@@ -100,5 +101,16 @@ subprojects {
     }
     plugins.withId("com.android.library") {
         tasks.named("check") { dependsOn(apiCheck) }
+    }
+}
+
+// Maven Central: every published module signs its artifacts when a signing key is available (CI release), and
+// coordinates and POM metadata come from gradle.properties (shared) and each module's gradle.properties.
+subprojects {
+    plugins.withId("com.vanniktech.maven.publish") {
+        extensions.configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
+            publishToMavenCentral(automaticRelease = true)
+            if (providers.gradleProperty("signingInMemoryKey").isPresent) signAllPublications()
+        }
     }
 }

@@ -7,7 +7,7 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 ## [Unreleased]
 
 ### Added
-- MIT license, code of conduct, and a demo GIF in the README showing each feature's effect in the sample app.
+- MIT license and code of conduct.
 - `NetworkLogger.maxTotalBodyChars` (default 12M characters) caps the bodies kept across all calls; the oldest bodies are dropped first, their calls stay listed.
 - `AppActions.clearCacheInBackground()` clears the cache off the main thread.
 - `TextInputItem`, `NumberInputItem` and `JsonInputItem` take an optional `subtitle`.
@@ -23,7 +23,9 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ### Changed
 - The sample's fake update feed offers 1.1.0 now that the sample is 1.0.0.
-- README install lines use a `LATEST_VERSION` placeholder that matches the JitPack badge, plus a version catalog example.
+- **Published to Maven Central** as `io.github.appshipkit:devdeck` (and `devdeck-okhttp`, `devdeck-timber`, `devdeck-appdistribution`) instead of JitPack. Change your dependency lines from `com.github.appshipkit.devdeck:<module>:v1.0.0` to `io.github.appshipkit:<module>:<version>`; the JitPack repository is no longer needed. The library's own code and packages are unchanged.
+- Versions follow AndroidX style: stable `1.2.0`, pre-releases `1.2.0-alpha01`, `-beta01`, `-rc01`.
+- The README is reorganised with a table of contents, a quick start and shorter feature sections, and the demo GIF is gone.
 - Drawer pages slide in and out instead of switching instantly.
 - The network inspector's clear button sits in the count row, like the other lists.
 - The device & app snapshot shows share, save and copy as small icons on the card; they are not part of the shared image.

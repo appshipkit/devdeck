@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Release type: fix (0.1.0 -> 0.1.1), feature (-> 0.2.0), major (-> 1.0.0), or auto from CHANGELOG.md"
+        description: "Release type: fix (1.1.0 -> 1.1.1), feature (-> 1.2.0), major (-> 2.0.0), alpha / beta / rc (-> 1.2.0-alpha01 ...), stable (1.2.0-rc01 -> 1.2.0), or auto from CHANGELOG.md"
         type: choice
-        options: [auto, fix, feature, major]
+        options: [auto, fix, feature, major, alpha, beta, rc, stable]
         default: auto
 
 permissions:
