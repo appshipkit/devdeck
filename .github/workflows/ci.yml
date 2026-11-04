@@ -24,7 +24,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: ktlint and Android Lint
         run: ./gradlew ktlintCheck lintDebug lintRelease --continue
       - name: Upload lint reports
@@ -48,7 +48,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Build, test and publish locally
         run: ./gradlew assembleDebug assembleRelease testDebugUnitTest publishToMavenLocal
       - name: Public API check
