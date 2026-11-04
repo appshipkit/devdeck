@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-04
+
 ### Added
 - `DeckTrigger.FloatingButton(icon = Icons.Default.Build)` sets the floating button's icon from an `ImageVector`; the composable `icon` slot is now documented too.
 - `DeckStyle(titleIcon = …)` replaces the bug icon next to the drawer title; `titleIcon = null` shows the title without an icon.
