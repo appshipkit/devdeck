@@ -13,9 +13,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +50,12 @@ public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (Str
     val loaded by produceState<List<String>?>(null, context, version) {
         value = withContext(Dispatchers.IO) { StorageFiles.sharedPreferencesNames(context) }
     }
-    val names = remember(loaded, include) { loaded.orEmpty().filter(include) }
+    // Library files (WebView, Firebase, DevDeck itself) are hidden unless asked for, so the app's own files stand out.
+    var showLibraryFiles by rememberSaveable { mutableStateOf(false) }
+    val (libraryNames, appNames) = remember(loaded, include) {
+        loaded.orEmpty().filter(include).partition { LibraryPreferences.isLibrary(it, context.packageName) }
+    }
+    val names = if (showLibraryFiles) appNames + libraryNames else appNames
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -74,6 +81,15 @@ public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (Str
         }
         if (loaded != null && names.isEmpty()) TextItem("No SharedPreferences files")
         InfoGroup(dividerThreshold = 2) { names.forEach { name -> key(name, version) { PreferenceFileRow(name) } } }
+        if (libraryNames.isNotEmpty()) {
+            SectionDivider()
+            SwitchItem(
+                title = "Show library files",
+                subtitle = "${libraryNames.size} from libraries and the system, such as WebView or Firebase",
+                checked = showLibraryFiles,
+                onCheckedChange = { showLibraryFiles = it },
+            )
+        }
     }
 }
 

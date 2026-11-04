@@ -34,7 +34,7 @@ fun SampleScreen(plugins: List<DeckPlugin>, flagStore: FeatureFlagStore, onOpenL
         side = options.side,
         gestures = options.gestures,
         trigger = options.trigger,
-        style = sampleDeckStyle.copy(oneSectionAtATime = options.oneSectionAtATime),
+        style = options.style(sampleDeckStyle),
     ) {
         Scaffold { padding ->
             Column(
