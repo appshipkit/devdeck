@@ -6,6 +6,13 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+### Added
+- `DeckTrigger.FloatingButton(icon = Icons.Default.Build)` sets the floating button's icon from an `ImageVector`; the composable `icon` slot is now documented too.
+- `DeckStyle(titleIcon = …)` replaces the bug icon next to the drawer title; `titleIcon = null` shows the title without an icon.
+
+### Changed
+- The SharedPreferences browser lists only the app's own files. Files written by libraries and the system (WebView, Firebase, Google Play services, AndroidX, DevDeck) are behind a *Show library files* switch.
+
 ## [1.1.0] - 2026-10-27
 
 ### Added

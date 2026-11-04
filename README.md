@@ -121,6 +121,12 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 - The swipe is detected without taking touches, so taps, scrolls and system back keep working.
 - On an emulator, a mouse can't do a two-finger swipe: use Ctrl + Shift + D or the floating button.
 - If your app uses two-finger horizontal pans (maps, canvases), turn the swipe off.
+- To use your own icon on the floating button, pass an `ImageVector` or any composable:
+
+```kotlin
+trigger = DeckTrigger.FloatingButton(icon = Icons.Default.Build)
+trigger = DeckTrigger.FloatingButton(icon = { Icon(painterResource(R.drawable.ic_debug), contentDescription = "Open debug menu") })
+```
 
 The drawer header shows the app version, plus chips for a new test build, an active recording (with a *Stop* button) and any network or memory simulation.
 
@@ -168,7 +174,7 @@ DevDeck.install(
 | `UiToolsPlugin` | User Interface | Slow animations, keylines, screenshots, long screenshots, recording, gallery | ✓ |
 | `AppearancePlugin` | User Interface | Dark mode and app language overrides, system language and display settings | ✓ |
 | `PerformancePlugin` | System | Frame rate, jank and memory overlay, memory details | ✓ |
-| `StoragePlugin` | System | SharedPreferences browser and editor, storage usage | ✓ |
+| `StoragePlugin` | System | SharedPreferences browser and editor (the app's own files first; library files such as WebView or Firebase behind a switch), storage usage | ✓ |
 | `DevicePlugin` | System | Permissions, developer options | ✓ |
 | `InfoPlugin` | Info | App info, device info, shareable snapshot, bug report, version | ✓ |
 
@@ -306,6 +312,13 @@ DevDeck.updateConfig { it.copy(plugins = it.plugins + cachePlugin) }
 ```
 
 `DeckStyle` also sets the panel width and colors; `collapsibleSections = false` shows every section open, and `oneSectionAtATime = true` closes the others when one opens.
+
+The icon next to the title is `titleIcon`: pass your own composable, or `null` to show the title without an icon. `Icon` picks up the tile's colour. The floating button's icon is set on the trigger (see [Opening the drawer](#opening-the-drawer)).
+
+```kotlin
+style = DeckStyle(titleIcon = { Icon(painterResource(R.drawable.ic_logo), contentDescription = null) })
+style = DeckStyle(titleIcon = null)
+```
 
 **Payment screens:** DevDeck skips Adyen, Primer, Netcetera 3DS, Cardinal Commerce, Stripe, Braintree, Checkout.com and PayPal activities automatically (`DeckExclusions.PAYMENT_SDKS`). Add your own with `excludedActivityPrefixes`, and set `DevDeck.isEnabled = false` during 3DS inside your own screens.
 

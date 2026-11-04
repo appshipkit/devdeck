@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -143,7 +144,7 @@ private fun DeckPageContent(
 ) {
     Column(Modifier.fillMaxSize().background(background).windowInsetsPadding(WindowInsets.safeDrawing.only(insetSides))) {
         if (page == null) {
-            DeckHeader(title = style.title, subtitle = style.subtitle, onClose = state::close)
+            DeckHeader(title = style.title, subtitle = style.subtitle, icon = style.titleIcon, onClose = state::close)
         } else {
             DeckPageBar(title = page.title, onBack = { state.navigateBack() }, onClose = state::close)
         }
@@ -172,7 +173,7 @@ private const val PAGE_TRANSITION_MILLIS = 280
 private const val FOCUS_TIMEOUT_MILLIS = 2_000L
 
 @Composable
-private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
+private fun DeckHeader(title: String, subtitle: String?, icon: (@Composable () -> Unit)?, onClose: () -> Unit) {
     val context = LocalContext.current
     val version = remember(context) { appVersionInfo(context)?.let { "${it.versionName} (${it.versionCode})" } }
     val warning = LocalDeckColors.current?.warning ?: MaterialTheme.colorScheme.error
@@ -181,13 +182,15 @@ private fun DeckHeader(title: String, subtitle: String?, onClose: () -> Unit) {
     val heldBytes = MemorySimulator.heldBytes
     Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(44.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(DeckIcons.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+            if (icon != null) {
+                Box(
+                    Modifier.size(44.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onPrimary, content = icon)
+                }
+                Spacer(Modifier.width(12.dp))
             }
-            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     text = title,

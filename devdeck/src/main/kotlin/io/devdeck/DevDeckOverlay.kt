@@ -213,7 +213,7 @@ private fun FloatingTrigger(trigger: DeckTrigger.FloatingButton, onClick: () -> 
                 .size(TriggerSize),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                trigger.icon?.invoke() ?: Icon(DeckIcons.BugReport, contentDescription = "Open debug menu")
+                trigger.icon?.invoke() ?: Icon(DeckIcons.BugReport, contentDescription = OPEN_DESCRIPTION)
             }
         }
         if (UpdateChecker.availableUpdate != null) {
