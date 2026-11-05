@@ -23,7 +23,7 @@ fun DrawerControls(options: DrawerOptions, modifier: Modifier = Modifier) {
         Text("Drawer controls", style = MaterialTheme.typography.titleMedium)
         ControlSwitch("Drawer enabled", options.enabled) { options.enabled = it }
         ControlSwitch("Two-finger swipe to open", options.twoFingerSwipe) { options.twoFingerSwipe = it }
-        ControlSwitch("Ctrl + Shift + D shortcut", options.keyboardShortcut) { options.keyboardShortcut = it }
+        ControlSwitch("Ctrl + Shift + K shortcut", options.keyboardShortcut) { options.keyboardShortcut = it }
         ControlSwitch("Floating button", options.floatingButton) { options.floatingButton = it }
         ControlSwitch("Custom floating button icon", options.customIcon, enabled = options.floatingButton) { options.customIcon = it }
         ControlSwitch("One section open at a time", options.oneSectionAtATime) { options.oneSectionAtATime = it }

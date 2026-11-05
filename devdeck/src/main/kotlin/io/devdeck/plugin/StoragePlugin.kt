@@ -3,6 +3,7 @@ package io.devdeck.plugin
 import androidx.compose.runtime.Composable
 import io.devdeck.components.ExpandableItem
 import io.devdeck.components.PageLinkItem
+import io.devdeck.storage.PreferenceFileRules
 import io.devdeck.storage.SharedPreferencesBrowser
 import io.devdeck.storage.StorageUsage
 
@@ -11,7 +12,16 @@ public class StoragePlugin(
     private val usage: Boolean = true,
     private val includePreferences: (String) -> Boolean = { true },
     override val section: String? = "System 📱",
+    private val preferenceRules: PreferenceFileRules = PreferenceFileRules(),
 ) : DeckPlugin {
+
+    @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        sharedPreferences: Boolean = true,
+        usage: Boolean = true,
+        includePreferences: (String) -> Boolean = { true },
+        section: String? = "System 📱",
+    ) : this(sharedPreferences, usage, includePreferences, section, PreferenceFileRules())
 
     override val id: String = "storage"
 
@@ -19,7 +29,7 @@ public class StoragePlugin(
     override fun Content() {
         if (sharedPreferences) {
             PageLinkItem("Shared preferences", subtitle = "View, edit and delete keys") {
-                SharedPreferencesBrowser(include = includePreferences)
+                SharedPreferencesBrowser(include = includePreferences, rules = preferenceRules)
             }
         }
         if (usage) ExpandableItem("Storage usage") { StorageUsage() }

@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.min
 import androidx.core.content.edit
 import io.devdeck.capture.RecordingControls
 import io.devdeck.capture.ScreenCapture
+import io.devdeck.crash.CrashPrompt
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
 import io.devdeck.performance.PerformanceMonitor
@@ -127,6 +128,8 @@ internal fun DevDeckOverlay(
             if (!ScreenCapture.isCapturing) SimulationBadge()
 
             if (!isVisible && !ScreenCapture.isCapturing) RecordingControls()
+
+            if (!isVisible && !ScreenCapture.isCapturing) CrashPrompt(state)
 
             if (isVisible) {
                 Box(

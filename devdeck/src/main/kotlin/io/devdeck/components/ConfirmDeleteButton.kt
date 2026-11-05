@@ -29,7 +29,7 @@ import kotlinx.coroutines.delay
 
 /** A delete icon button that asks for a second tap within a few seconds before running [onConfirm]. */
 @Composable
-internal fun ConfirmDeleteButton(
+public fun ConfirmDeleteButton(
     contentDescription: String,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,

@@ -3,9 +3,13 @@ package io.devdeck
 import android.view.KeyEvent
 import androidx.compose.runtime.Immutable
 
+/**
+ * The key combination that toggles the drawer. The default is Ctrl + Shift + K: the Android emulator keeps most other
+ * Ctrl + Shift + letter combinations (D opens its D-pad panel) and never passes them to the app.
+ */
 @Immutable
 public data class DeckShortcut(
-    val keyCode: Int = KeyEvent.KEYCODE_D,
+    val keyCode: Int = KeyEvent.KEYCODE_K,
     val ctrl: Boolean = true,
     val shift: Boolean = true,
     val alt: Boolean = false,

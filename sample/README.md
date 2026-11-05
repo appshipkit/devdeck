@@ -191,14 +191,14 @@ DevDeckHost(
 |---|---|
 | Drawer enabled | `enabled` |
 | Two-finger swipe to open | `DeckGestures(twoFingerSwipe)` |
-| Ctrl + Shift + D shortcut | `DeckGestures(keyboardShortcut = DeckShortcut())` / `null` |
+| Ctrl + Shift + K shortcut | `DeckGestures(keyboardShortcut = DeckShortcut())` / `null` |
 | Floating button | `DeckTrigger.FloatingButton()` / `DeckTrigger.None` |
 | Side | `DeckSide.Start` / `End` |
 | Open drawer | `deckState.open()` |
 
 ## Things to try
 
-1. **Open the drawer** by tapping the floating bug button, tapping *Open drawer*, swiping left with two fingers anywhere on the screen, or pressing **Ctrl + Shift + D**. The shortcut is the easiest way on an emulator, because a mouse can't do a two-finger swipe. Sections start collapsed; tap a header such as *Logs 📚* to open it.
+1. **Open the drawer** by tapping the floating bug button, tapping *Open drawer*, swiping left with two fingers anywhere on the screen, or pressing **Ctrl + Shift + K**. The shortcut is the easiest way on an emulator, because a mouse can't do a two-finger swipe. Sections start collapsed; tap a header such as *Logs 📚* to open it.
 2. **Network:** tap every *Network demo* button (some of them several times), then open *Logs → Network activity*.
    - Try the *Errors* and *GraphQL* filters and search for `countries`.
    - Switch to **By endpoint** to see each API grouped with its call count and failures, then open a group for its stats and every call.
