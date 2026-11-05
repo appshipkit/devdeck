@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import io.devdeck.LocalDeckState
 import io.devdeck.components.BulletItem
+import io.devdeck.components.ButtonItem
 import io.devdeck.components.ConfirmButtonItem
 import io.devdeck.components.ConfirmDeleteButton
 import io.devdeck.components.InfoGroup
@@ -42,8 +43,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Composable
 public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (String) -> Boolean = { true }) {
+    SharedPreferencesBrowser(modifier, include, PreferenceFileRules())
+}
+
+/** Lists the app's SharedPreferences files; [rules] decide which ones count as library files or are never shown. */
+@Composable
+public fun SharedPreferencesBrowser(
+    modifier: Modifier = Modifier,
+    include: (String) -> Boolean = { true },
+    rules: PreferenceFileRules = PreferenceFileRules(),
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var version by remember { mutableIntStateOf(0) }
@@ -52,9 +64,13 @@ public fun SharedPreferencesBrowser(modifier: Modifier = Modifier, include: (Str
     }
     // Library files (WebView, Firebase, DevDeck itself) are hidden unless asked for, so the app's own files stand out.
     var showLibraryFiles by rememberSaveable { mutableStateOf(false) }
-    val (libraryNames, appNames) = remember(loaded, include) {
-        loaded.orEmpty().filter(include).partition { LibraryPreferences.isLibrary(it, context.packageName) }
+    val overrides = PreferenceOverrides.observe(context)
+    PreferenceOverrides.rules = rules
+    val kinds = remember(loaded, include, rules, overrides) {
+        loaded.orEmpty().filter(include).groupBy { rules.kindOf(it, context.packageName, overrides) }
     }
+    val appNames = kinds[PreferenceFileKind.App].orEmpty()
+    val libraryNames = kinds[PreferenceFileKind.Library].orEmpty()
     val names = if (showLibraryFiles) appNames + libraryNames else appNames
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -119,11 +135,28 @@ public fun SharedPreferencesFile(name: String, modifier: Modifier = Modifier) {
             }
         }
         SectionDivider()
+        MoveFileButton(name)
         ConfirmButtonItem(title = "Clear all keys", onConfirm = {
             prefs.values.edit { clear() }
             prefs.refresh()
         })
     }
+}
+
+/** Lets a tester correct the automatic sorting; the choice is kept in DevDeck's settings. */
+@Composable
+private fun MoveFileButton(name: String) {
+    val context = LocalContext.current
+    val overrides = PreferenceOverrides.observe(context)
+    val isLibrary = remember(name, overrides) {
+        PreferenceOverrides.rules.kindOf(name, context.packageName, overrides) ==
+            PreferenceFileKind.Library
+    }
+    ButtonItem(
+        title = if (isLibrary) "Move to app files" else "Move to library files",
+        subtitle = if (isLibrary) "List this file with the app's own files" else "List this file only when library files are shown",
+        onClick = { PreferenceOverrides.move(context, name, if (isLibrary) PreferenceFileKind.App else PreferenceFileKind.Library) },
+    )
 }
 
 @Composable

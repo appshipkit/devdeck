@@ -32,6 +32,25 @@ class UpdateCheckerTest {
     }
 
     @Test
+    fun `a release that isn't newer than the installed build means up to date`() = runBlocking {
+        UpdateChecker.use(FakeSource(result = { AvailableUpdate("1.1.0", 10100) }))
+        UpdateChecker.installedVersionCode = 10200
+
+        UpdateChecker.refresh()
+
+        assertEquals(UpdateStatus.UpToDate, UpdateChecker.status)
+        assertNull(UpdateChecker.availableUpdate)
+    }
+
+    @Test
+    fun `newer means a higher version code, and a missing one is trusted`() {
+        assertTrue(AvailableUpdate("1.3.0", 10300).isNewerThan(10200))
+        assertFalse(AvailableUpdate("1.2.0", 10200).isNewerThan(10200))
+        assertTrue(AvailableUpdate("1.3.0").isNewerThan(10200))
+        assertTrue(AvailableUpdate("1.3.0", 10300).isNewerThan(null))
+    }
+
+    @Test
     fun `no release means up to date`() = runBlocking {
         UpdateChecker.use(FakeSource(result = { null }))
 

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.edit
+import io.devdeck.device.appVersionInfo
 import io.devdeck.internal.DeckSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +42,9 @@ public object UpdateChecker {
     internal var notifier: ((AvailableUpdate) -> Unit)? = null
     internal var clock: () -> Long = System::currentTimeMillis
 
+    /** The running build's version code; a source's update with a version code at or below it is not offered. */
+    internal var installedVersionCode: Long? = null
+
     private var prefs: SharedPreferences? = null
     private val scope by lazy { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
     private var job: Job? = null
@@ -49,6 +53,7 @@ public object UpdateChecker {
         this.source = source
         this.checkIntervalMillis = checkIntervalMillis
         prefs = DeckSettings.of(context)
+        installedVersionCode = appVersionInfo(context)?.versionCode
         isSignedIn = source.isSignedIn()
     }
 
@@ -106,7 +111,15 @@ public object UpdateChecker {
         val current = source ?: return
         status = UpdateStatus.Checking
         status = runCatching { current.checkForUpdate() }.fold(
-            onSuccess = { update -> if (update == null) UpdateStatus.UpToDate else UpdateStatus.Available(update) },
+            onSuccess = { update ->
+                if (update == null ||
+                    !update.isNewerThan(installedVersionCode)
+                ) {
+                    UpdateStatus.UpToDate
+                } else {
+                    UpdateStatus.Available(update)
+                }
+            },
             onFailure = { UpdateStatus.Failed(it.describe()) },
         )
         lastCheckedAtMillis = clock()
@@ -129,6 +142,7 @@ public object UpdateChecker {
         notifier = null
         prefs = null
         clock = System::currentTimeMillis
+        installedVersionCode = null
     }
 
     private fun notifyOnce(update: AvailableUpdate) {
@@ -147,3 +161,9 @@ public object UpdateChecker {
 
 internal fun isCheckDue(lastCheckedAtMillis: Long?, nowMillis: Long, intervalMillis: Long): Boolean =
     lastCheckedAtMillis == null || nowMillis - lastCheckedAtMillis >= intervalMillis
+
+/** Without both version codes there is nothing to compare, so the source's answer is trusted. */
+internal fun AvailableUpdate.isNewerThan(installedVersionCode: Long?): Boolean {
+    val offered = versionCode ?: return true
+    return installedVersionCode == null || offered > installedVersionCode
+}

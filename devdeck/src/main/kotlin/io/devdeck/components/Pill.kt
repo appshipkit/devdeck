@@ -15,8 +15,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.devdeck.internal.contentColorOn
 
+/** A small monospace label, like the method and status tags on network calls: [filled], or outlined in [color]. */
 @Composable
-internal fun Pill(text: String, color: Color, filled: Boolean = true) {
+public fun Pill(text: String, color: Color, modifier: Modifier = Modifier, filled: Boolean = true) {
     val shape = CircleShape
     Text(
         text = text,
@@ -25,7 +26,7 @@ internal fun Pill(text: String, color: Color, filled: Boolean = true) {
         color = if (filled) contentColorOn(color) else color,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
+        modifier = modifier
             .then(if (filled) Modifier.background(color, shape) else Modifier.border(1.dp, color, shape))
             .padding(horizontal = 8.dp, vertical = 2.dp),
     )

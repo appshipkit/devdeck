@@ -9,6 +9,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,20 +74,23 @@ public fun CrashList(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun CrashDetail(crash: CrashRecord) {
+internal fun CrashDetail(crash: CrashRecord) {
     val context = LocalContext.current
+    LaunchedEffect(crash) { if (CrashReporter.unseenCrash?.file == crash.file) CrashReporter.markSeen() }
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 BulletItem("Time", formatTime(crash.timestampMillis))
                 BulletItem("Thread", crash.thread)
             }
-            IconButton(onClick = { context.shareFiles(listOf(crash.file), text = crash.stackTrace, subject = crash.title) }) {
+            IconButton(onClick = { context.shareFiles(listOf(crash.file), text = crash.report, subject = crash.title) }) {
                 Icon(DeckIcons.Share, contentDescription = "Share crash")
             }
         }
-        crash.steps?.let { CodeBlock(it, label = "Steps before the crash", collapsedLines = 12, copyable = true) }
-        CodeBlock(crash.stackTrace, label = "Stack trace", collapsedLines = 40, copyable = true)
+        CodeBlock(crash.stackTrace, label = "Stack trace", collapsedLines = 15, copyable = true)
+        crash.sections.ifEmpty { listOfNotNull(crash.steps?.let { CrashReporter.SECTION_STEPS to it }) }.forEach { (title, content) ->
+            CodeBlock(content, label = title, collapsedLines = 12, copyable = true)
+        }
     }
 }
 

@@ -21,6 +21,7 @@ import io.devdeck.plugin.PerformancePlugin
 import io.devdeck.plugin.StoragePlugin
 import io.devdeck.plugin.UiToolsPlugin
 import io.devdeck.plugin.UpdatesPlugin
+import io.devdeck.storage.PreferenceFileRules
 import io.devdeck.timber.TimberLogsPlugin
 
 fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugin> = listOf(
@@ -39,7 +40,8 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
     PerformancePlugin(),
-    StoragePlugin(),
+    // Keeps a sample-only cache with the library files and never lists the session file.
+    StoragePlugin(preferenceRules = PreferenceFileRules(library = setOf("image_cache*"), hidden = setOf("secure_session"))),
     DevicePlugin(),
     tapCounterPlugin,
     controlsDemoPlugin,

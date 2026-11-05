@@ -6,6 +6,21 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+### Added
+- Crash reports include app and device details, heap use and uptime, the last 20 network calls (with errors and an excerpt of failed responses) and the last 50 `DeckLogger` entries, next to the breadcrumbs. Sizes are set with `CrashReporter.networkCallsInReport`, `logsInReport` and `stepsInReport`.
+- `CrashReporter.addSection(title) { … }` adds your own context to every crash report.
+- After a relaunch, an *App crashed last time* bar offers View, Share and dismiss, and the drawer header shows a *Crashed last time* chip (`CrashReporter.unseenCrash`, `CrashReporter.markSeen()`).
+- On Android 11+, ANRs (with the system's thread dump) and native crashes are saved as crash reports on the next launch.
+- `PreferenceFileRules` (`StoragePlugin(preferenceRules = …)`, `SharedPreferencesBrowser(rules = …)`) marks SharedPreferences files as app files, library files or hidden; testers can move a file between the lists from its page.
+- `DeckHeaderChips.add(key) { … }` adds your own chips to the drawer header.
+- `Pill` and `ConfirmDeleteButton` are public building blocks.
+
+### Changed
+- The default keyboard shortcut is now **Ctrl + Shift + K**. The Android emulator keeps Ctrl + Shift + D for its D-pad panel, so the old default never reached the app there.
+
+### Fixed
+- The *New version* chip no longer offers a build that isn't newer than the installed one (compared by version code).
+
 ## [1.2.0] - 2026-11-04
 
 ### Added

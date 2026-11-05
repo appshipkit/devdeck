@@ -48,7 +48,7 @@ fun SampleScreen(plugins: List<DeckPlugin>, flagStore: FeatureFlagStore, onOpenL
                 Text("DevDeck sample", style = MaterialTheme.typography.headlineMedium)
                 Text(
                     "This screen hosts the drawer with DevDeckHost. Open it with a two-finger swipe left, " +
-                        "the floating bug, the button below, or Ctrl + Shift + D on a keyboard (works in the emulator).",
+                        "the floating bug, the button below, or Ctrl + Shift + K on a keyboard (works in the emulator).",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Button(onClick = drawerState::open, enabled = options.enabled, modifier = Modifier.fillMaxWidth()) {

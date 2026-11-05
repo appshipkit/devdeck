@@ -114,12 +114,12 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 | How | Default | Change it |
 |---|---|---|
 | Two-finger swipe toward the drawer, anywhere on screen | On | `gestures = DeckGestures(twoFingerSwipe = false)` |
-| **Ctrl + Shift + D** (emulator or hardware keyboard) | On | `DeckGestures(keyboardShortcut = DeckShortcut(...))`, or `null` to turn off |
+| **Ctrl + Shift + K** (emulator or hardware keyboard) | On | `DeckGestures(keyboardShortcut = DeckShortcut(...))`, or `null` to turn off |
 | Floating bug button (drag it anywhere; it stays there) | On | `trigger = DeckTrigger.None` |
 | Code | — | `DevDeck.open()`, `DevDeck.close()`, `DevDeck.toggle()` |
 
 - The swipe is detected without taking touches, so taps, scrolls and system back keep working.
-- On an emulator, a mouse can't do a two-finger swipe: use Ctrl + Shift + D or the floating button.
+- On an emulator, a mouse can't do a two-finger swipe: use Ctrl + Shift + K or the floating button. Avoid Ctrl + Shift + letters the emulator keeps for its own panels (A–I, L–P, R–V).
 - If your app uses two-finger horizontal pans (maps, canvases), turn the swipe off.
 - To use your own icon on the floating button, pass an `ImageVector` or any composable:
 
@@ -168,7 +168,7 @@ DevDeck.install(
 | `TimberLogsPlugin` | Logs | Every Timber call (`devdeck-timber`) | — |
 | `LogsPlugin` | Logs | Your `DeckLogger.log(...)` entries, one row per tag | ✓ |
 | `BreadcrumbsPlugin` | Logs | Screens, taps, requests and app events | ✓ |
-| `CrashPlugin` | Logs | Saved crashes with stack traces | ✓ |
+| `CrashPlugin` | Logs | Crash reports with the steps, network calls and logs before each crash; ANRs and native crashes on Android 11+ | ✓ |
 | `AppActionsPlugin` | App | Deep links, WebView debugging, restart, clear cache or data, kill | ✓ |
 | `UpdatesPlugin` | App | New test builds, release notes and install (`devdeck-appdistribution` for Firebase) | needs a source |
 | `UiToolsPlugin` | User Interface | Slow animations, keylines, screenshots, long screenshots, recording, gallery | ✓ |
@@ -264,6 +264,22 @@ Log pages have level filters, search, an *All / By tag* view, pause, share and c
 
 **Breadcrumbs** record what led up to a problem: screens, app events, taps (`Modifier.breadcrumb("Place order")` labels Compose controls), requests, and your own steps (`Breadcrumbs.add(...)`). The last 50 are saved with every crash and the last 100 go into bug reports.
 
+### Crash reports
+
+`CrashPlugin` saves a report when the app crashes, before the process dies. Each report has:
+
+- the stack trace and thread;
+- app version, device, Android version, heap use and how long the app had been running;
+- the last 50 breadcrumbs, 20 network calls (method, URL, status, duration, errors and an excerpt of failed responses, with secrets already masked) and 50 `DeckLogger` entries;
+- any sections your app adds.
+
+After the relaunch, a small bar at the bottom says *App crashed last time*, with **View**, **Share** and dismiss, and the drawer header shows a *Crashed last time* chip. On Android 11+, ANRs (with the system's thread dump) and native crashes are picked up from the system on the next launch too.
+
+```kotlin
+CrashReporter.addSection("User") { "id=${session.userId}, plan=${session.plan}" }   // runs while crashing: keep it quick
+CrashReporter.networkCallsInReport = 30                                            // also logsInReport, stepsInReport
+```
+
 ### Screen capture, bug reports and info
 
 - **Screenshots and recordings:** under User Interface. While recording, a small floating bar shows the time with pause and stop, so the drawer can stay closed. DevDeck's own floating button and badges are left out of screenshots.
@@ -293,8 +309,32 @@ val cachePlugin = deckPlugin(id = "cache", section = "System 📱") {
 | `SegmentedPills`, `FilterPill`, `FilterPillRow`, `ActionPill`, `ActionPillRow`, `SearchField` | View switchers, filters and search |
 | `BulletItem`, `InfoGroup`, `KeyValueItem`, `CodeBlock`, `TextItem` | Showing information |
 
+| `Pill`, `ConfirmDeleteButton` | Tags like the network method and status, and a delete icon that asks for a second tap |
+
 - Close or navigate from a plugin with `LocalDeckState.current?.close()` or `?.navigateTo(title) { … }`.
 - For setup work, implement `DeckPlugin` and override `onAttach(context)`.
+
+### Header chips, crash report sections and preference files
+
+```kotlin
+// A chip under the drawer title; return null while there is nothing to show.
+DeckHeaderChips.add("environment") { if (isStaging) DeckHeaderChip("Staging", Color(0xFFF57C00)) else null }
+
+// Extra context in every crash report.
+CrashReporter.addSection("Experiment") { experiments.activeNames().joinToString() }
+
+// Which SharedPreferences files are the app's, which are library files and which are never listed.
+// Names are exact, or a prefix ending in *.
+StoragePlugin(
+    preferenceRules = PreferenceFileRules(
+        app = setOf("com.google.maps.cache"),   // looks like a library file, but it's yours
+        library = setOf("analytics_*"),         // listed only after "Show library files"
+        hidden = setOf("secure_session"),       // never listed
+    ),
+)
+```
+
+Testers can also move a file between the app and library lists from its page (*Move to library files* / *Move to app files*); that choice is kept on the device.
 
 ### Customizing
 

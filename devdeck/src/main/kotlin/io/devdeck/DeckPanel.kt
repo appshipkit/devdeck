@@ -68,6 +68,8 @@ import io.devdeck.capture.ScreenCapture
 import io.devdeck.capture.formatRecordingTime
 import io.devdeck.capture.rememberRecordingElapsed
 import io.devdeck.components.DeckCard
+import io.devdeck.crash.CrashDetail
+import io.devdeck.crash.CrashReporter
 import io.devdeck.device.appVersionInfo
 import io.devdeck.internal.DeckIcons
 import io.devdeck.plugin.UPDATES_PLUGIN_ID
@@ -225,11 +227,12 @@ private fun DeckHeader(title: String, subtitle: String?, icon: (@Composable () -
         val updateColor = updateAvailableColor(LocalDeckColors.current?.isDark == true)
         val deckState = LocalDeckState.current
         val recordingElapsed = if (ScreenCapture.isRecording) rememberRecordingElapsed() else 0L
+        val appChips = DeckHeaderChips.current()
         val chips = buildList {
             if (ScreenCapture.isRecording) {
                 val label = if (ScreenCapture.isRecordingPaused) "Recording paused" else "Recording"
                 add(
-                    HeaderChip(
+                    DeckHeaderChip(
                         "$label · ${formatRecordingTime(recordingElapsed)}",
                         RecordingRed,
                         onClick = { deckState?.pendingFocus = RECORDING_FOCUS },
@@ -237,11 +240,15 @@ private fun DeckHeader(title: String, subtitle: String?, icon: (@Composable () -
                 )
             }
             if (update != null) {
-                add(HeaderChip("New version · ${update.label}", updateColor, onClick = { deckState?.pendingFocus = UPDATES_PLUGIN_ID }))
+                add(DeckHeaderChip("New version · ${update.label}", updateColor, onClick = { deckState?.pendingFocus = UPDATES_PLUGIN_ID }))
             }
-            if (network.isActive) add(HeaderChip(network.summary, warning))
-            if (heldBytes > 0) add(HeaderChip("Holding ${mb(heldBytes)}", warning))
-            if (MemorySimulator.killOnBackground) add(HeaderChip("Kill when backgrounded", warning))
+            if (network.isActive) add(DeckHeaderChip(network.summary, warning))
+            if (heldBytes > 0) add(DeckHeaderChip("Holding ${mb(heldBytes)}", warning))
+            if (MemorySimulator.killOnBackground) add(DeckHeaderChip("Kill when backgrounded", warning))
+            CrashReporter.unseenCrash?.let { crash ->
+                add(DeckHeaderChip("Crashed last time", RecordingRed, onClick = { deckState?.navigateTo("Crash") { CrashDetail(crash) } }))
+            }
+            addAll(appChips)
         }
         if (chips.isNotEmpty()) {
             Row(Modifier.padding(top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -313,8 +320,6 @@ private fun CloseButton(onClose: () -> Unit) {
 // 40dp keeps the touch target close to the guideline while pulling the settings and close buttons together.
 private val HeaderButtonSize = 40.dp
 
-private data class HeaderChip(val text: String, val accent: Color?, val onClick: (() -> Unit)? = null)
-
 @Composable
 private fun StopRecordingButton(onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
@@ -341,10 +346,10 @@ private fun StopRecordingButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun Chip(chip: HeaderChip) {
+private fun Chip(chip: DeckHeaderChip) {
     val shape = RoundedCornerShape(50)
     val card = LocalDeckColors.current?.card ?: MaterialTheme.colorScheme.surface
-    val accent = chip.accent
+    val accent = chip.color
     Text(
         text = chip.text,
         style = MaterialTheme.typography.labelMedium,
