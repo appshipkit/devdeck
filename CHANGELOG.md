@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-09
+
 ### Added
 - Crash reports include app and device details, heap use and uptime, the last 20 network calls (with errors and an excerpt of failed responses) and the last 50 `DeckLogger` entries, next to the breadcrumbs. Sizes are set with `CrashReporter.networkCallsInReport`, `logsInReport` and `stepsInReport`.
 - `CrashReporter.addSection(title) { … }` adds your own context to every crash report.
