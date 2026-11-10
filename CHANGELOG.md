@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-10
+
 ### Added
 - `DeckGestures(oneFingerSwipe = true)` opens the drawer with a one-finger swipe in from its edge, next to the two-finger swipe; each can be turned on or off. A 200dp strip in the middle of that edge is excluded from Android's back gesture while the drawer is closed.
 
