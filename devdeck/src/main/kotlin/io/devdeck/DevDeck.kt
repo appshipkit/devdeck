@@ -16,6 +16,8 @@ import androidx.core.view.doOnAttach
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import io.devdeck.gesture.EDGE_WIDTH
+import io.devdeck.gesture.EdgeSwipeTracker
 import io.devdeck.gesture.SWIPE_DISTANCE
 import io.devdeck.gesture.TwoFingerSwipeTracker
 import io.devdeck.gesture.activePointers
@@ -164,13 +166,19 @@ public object DevDeck {
         val observer = activity.inputObserver() ?: return
         if (observer.hasGlobalListeners) return
         observer.hasGlobalListeners = true
-        val tracker = TwoFingerSwipeTracker(SWIPE_DISTANCE.value * activity.resources.displayMetrics.density)
+        val density = activity.resources.displayMetrics.density
+        val tracker = TwoFingerSwipeTracker(SWIPE_DISTANCE.value * density)
+        val edgeTracker = EdgeSwipeTracker(SWIPE_DISTANCE.value * density, EDGE_WIDTH.value * density)
         observer.touchListeners += { event ->
             val active = config
-            if (active != null && isEnabled && active.gestures.twoFingerSwipe && !state.isOpen && !HostedActivities.contains(activity)) {
+            if (active != null && isEnabled && active.gestures.anySwipe && !state.isOpen && !HostedActivities.contains(activity)) {
                 val rtl = activity.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 val drawerOnRight = (active.side == DeckSide.End) != rtl
-                if (tracker.update(event.activePointers(), towardsLeft = drawerOnRight)) state.open()
+                val pointers = event.activePointers()
+                val width = activity.window?.decorView?.width?.toFloat() ?: 0f
+                val twoFinger = active.gestures.twoFingerSwipe && tracker.update(pointers, towardsLeft = drawerOnRight)
+                val oneFinger = active.gestures.oneFingerSwipe && edgeTracker.update(pointers, towardsLeft = drawerOnRight, widthPx = width)
+                if (twoFinger || oneFinger) state.open()
             }
         }
         observer.keyListeners += { event ->

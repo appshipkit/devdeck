@@ -19,6 +19,7 @@ import io.devdeck.sample.R
 class DrawerOptions {
     var enabled by mutableStateOf(true)
     var twoFingerSwipe by mutableStateOf(true)
+    var oneFingerSwipe by mutableStateOf(false)
     var keyboardShortcut by mutableStateOf(true)
     var floatingButton by mutableStateOf(true)
     var customIcon by mutableStateOf(false)
@@ -29,6 +30,7 @@ class DrawerOptions {
     val gestures: DeckGestures
         get() = DeckGestures(
             twoFingerSwipe = twoFingerSwipe,
+            oneFingerSwipe = oneFingerSwipe,
             keyboardShortcut = if (keyboardShortcut) DeckShortcut() else null,
         )
 

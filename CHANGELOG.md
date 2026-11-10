@@ -6,6 +6,15 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+### Added
+- `DeckGestures(oneFingerSwipe = true)` opens the drawer with a one-finger swipe in from its edge, next to the two-finger swipe; each can be turned on or off. A 200dp strip in the middle of that edge is excluded from Android's back gesture while the drawer is closed.
+
+### Changed
+- Fields in URLs and bodies are no longer masked by default (`NetworkLogger.redactedFields` is empty); auth, cookie, API-key and CSRF headers still are. To mask fields again, set `NetworkLogger.redactedFields = NetworkLogger.DEFAULT_REDACTED_FIELDS`.
+
+### Fixed
+- Debug apps could abort (`JNI DETECTED ERROR` / out of native memory) while DevDeck masked secrets in large response bodies. Kotlin's `Regex.replace` creates a matcher per match and on Android each one copies the whole body into native memory; redaction now uses one matcher per body, skips bodies without any secret field name, and runs once instead of inside the state update's retry loop. A 240K-character GraphQL body now takes tens of milliseconds instead of seconds.
+
 ## [1.2.1] - 2026-11-09
 
 ### Added

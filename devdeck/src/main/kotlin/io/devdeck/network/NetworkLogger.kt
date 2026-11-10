@@ -29,7 +29,15 @@ public object NetworkLogger {
         "X-XSRF-Token",
     )
 
-    public var redactedFields: Set<String> = setOf(
+    /**
+     * Field names whose values are masked in URLs and bodies. Empty by default: DevDeck runs in debug builds and
+     * masking every body costs time on large responses. Turn it on with
+     * `NetworkLogger.redactedFields = NetworkLogger.DEFAULT_REDACTED_FIELDS`, or your own names.
+     */
+    public var redactedFields: Set<String> = emptySet()
+
+    /** Common secret field names, for [redactedFields]. */
+    public val DEFAULT_REDACTED_FIELDS: Set<String> = setOf(
         "password",
         "passwd",
         "token",
@@ -83,12 +91,15 @@ public object NetworkLogger {
         durationMillis: Long? = null,
         protocol: String? = null,
     ) {
+        // Redacted once, outside update(): its lambda can run again when calls finish at the same time.
+        val safeHeaders = redact(headers)
+        val safeBody = body?.let { NetworkRedaction.body(it, redactedFields) }?.truncate()
         update(id) {
             it.copy(
                 responseCode = code,
                 responseMessage = message,
-                responseHeaders = redact(headers),
-                responseBody = body?.let { NetworkRedaction.body(it, redactedFields) }?.truncate(),
+                responseHeaders = safeHeaders,
+                responseBody = safeBody,
                 responseContentType = contentType,
                 responseSize = size,
                 durationMillis = durationMillis,

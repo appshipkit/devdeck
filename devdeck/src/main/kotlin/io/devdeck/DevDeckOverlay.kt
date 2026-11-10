@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,6 +55,8 @@ import androidx.core.content.edit
 import io.devdeck.capture.RecordingControls
 import io.devdeck.capture.ScreenCapture
 import io.devdeck.crash.CrashPrompt
+import io.devdeck.gesture.EDGE_EXCLUSION_HEIGHT
+import io.devdeck.gesture.EDGE_WIDTH
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
 import io.devdeck.performance.PerformanceMonitor
@@ -116,6 +120,17 @@ internal fun DevDeckOverlay(
                 onDragStarted = { state.onDragStarted() },
                 onDragStopped = { velocity -> state.onDragStopped(direction * velocity / panelWidthPx) },
             )
+
+            // Lets a one-finger swipe in from the drawer's edge reach the app instead of Android's back gesture.
+            if (gestures.oneFingerSwipe && !isVisible) {
+                Box(
+                    Modifier
+                        .align(if (isRight) AbsoluteAlignment.CenterRight else AbsoluteAlignment.CenterLeft)
+                        .width(EDGE_WIDTH)
+                        .height(EDGE_EXCLUSION_HEIGHT)
+                        .systemGestureExclusion(),
+                )
+            }
 
             if (UiTools.isKeylineOverlayEnabled) {
                 KeylineOverlay()

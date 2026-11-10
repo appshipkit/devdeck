@@ -191,6 +191,7 @@ DevDeckHost(
 |---|---|
 | Drawer enabled | `enabled` |
 | Two-finger swipe to open | `DeckGestures(twoFingerSwipe)` |
+| One-finger swipe from the edge | `DeckGestures(oneFingerSwipe)` |
 | Ctrl + Shift + K shortcut | `DeckGestures(keyboardShortcut = DeckShortcut())` / `null` |
 | Floating button | `DeckTrigger.FloatingButton()` / `DeckTrigger.None` |
 | Side | `DeckSide.Start` / `End` |
