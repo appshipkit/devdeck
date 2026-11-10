@@ -2,6 +2,7 @@ package io.devdeck.network
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,7 +37,7 @@ class NetworkRedactionTest {
     fun `matches camelCase and dashed variants of secret keys`() {
         val body = NetworkRedaction.body(
             """{"accessToken":"a1","refreshToken":"r1","idToken":"i1","clientSecret":"c1","apiKey":"k1","user":"sam"}""",
-            NetworkLogger.redactedFields,
+            NetworkLogger.DEFAULT_REDACTED_FIELDS,
         )
 
         listOf("a1", "r1", "i1", "c1", "k1").forEach { assertFalse(body, body.contains("\"$it\"")) }
@@ -84,5 +85,38 @@ class NetworkRedactionTest {
     fun `leaves urls without secrets untouched`() {
         val url = "https://api.example.com/orders?page=1"
         assertEquals(url, NetworkRedaction.url(url, keys))
+    }
+
+    @Test
+    fun `masks every secret in a large body with many strings`() {
+        // About the size of a captured GraphQL page: thousands of strings, one secret per item.
+        val body = buildString {
+            append("{\"data\":[")
+            var i = 0
+            while (length < 240_000) {
+                if (i > 0) append(',')
+                append("{\"id\":\"p$i\",\"name\":\"Sneaker $i\",\"access_token\":\"t$i\"}")
+                i++
+            }
+            append("]}")
+        }
+
+        val redacted = NetworkRedaction.body(body, keys)
+
+        assertFalse(Regex("\"t\\d+\"").containsMatchIn(redacted))
+        assertEquals(Regex("access_token").findAll(body).count(), Regex("\"access_token\":\"██\"").findAll(redacted).count())
+        assertTrue(redacted.contains("\"name\":\"Sneaker 0\""))
+    }
+
+    @Test
+    fun `returns bodies without secret fields untouched`() {
+        val body = """{"data":{"products":[{"id":"1","name":"Sneaker"}]}}"""
+
+        assertSame(body, NetworkRedaction.body(body, keys))
+    }
+
+    @Test
+    fun `still masks url-encoded form field names`() {
+        assertEquals("user=sam&pass%77ord=██", NetworkRedaction.body("user=sam&pass%77ord=s3cret", keys))
     }
 }

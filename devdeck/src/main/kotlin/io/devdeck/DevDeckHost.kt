@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import io.devdeck.gesture.deckSwipes
 import io.devdeck.gesture.inputObserver
-import io.devdeck.gesture.twoFingerSwipe
 import io.devdeck.internal.findActivity
 import io.devdeck.plugin.DeckPlugin
 import io.devdeck.plugin.DeckPluginContent
@@ -32,7 +32,14 @@ public fun DevDeckHost(
     val isRight = (side == DeckSide.End) == (LocalLayoutDirection.current == LayoutDirection.Ltr)
     val openDeck = remember(state) { { state.open() } }
     HostActivityEffect(if (enabled) gestures.keyboardShortcut else null, state)
-    Box(modifier.twoFingerSwipe(enabled && gestures.twoFingerSwipe, towardsLeft = isRight, onSwipe = openDeck)) {
+    Box(
+        modifier.deckSwipes(
+            enabled && gestures.twoFingerSwipe,
+            enabled && gestures.oneFingerSwipe,
+            towardsLeft = isRight,
+            onSwipe = openDeck,
+        ),
+    ) {
         content()
         DevDeckOverlay(
             drawerContent = drawerContent,

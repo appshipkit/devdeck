@@ -114,6 +114,7 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 | How | Default | Change it |
 |---|---|---|
 | Two-finger swipe toward the drawer, anywhere on screen | On | `gestures = DeckGestures(twoFingerSwipe = false)` |
+| One-finger swipe in from the drawer's edge | Off | `gestures = DeckGestures(oneFingerSwipe = true)` |
 | **Ctrl + Shift + K** (emulator or hardware keyboard) | On | `DeckGestures(keyboardShortcut = DeckShortcut(...))`, or `null` to turn off |
 | Floating bug button (drag it anywhere; it stays there) | On | `trigger = DeckTrigger.None` |
 | Code | — | `DevDeck.open()`, `DevDeck.close()`, `DevDeck.toggle()` |
@@ -121,6 +122,7 @@ OkHttpClient.Builder().apply { DebugTools.interceptors().forEach(::addIntercepto
 - The swipe is detected without taking touches, so taps, scrolls and system back keep working.
 - On an emulator, a mouse can't do a two-finger swipe: use Ctrl + Shift + K or the floating button. Avoid Ctrl + Shift + letters the emulator keeps for its own panels (A–I, L–P, R–V).
 - If your app uses two-finger horizontal pans (maps, canvases), turn the swipe off.
+- The one-finger swipe starts within 24dp of the drawer's edge. To keep it from triggering Android's back gesture, a 200dp strip in the middle of that edge is excluded from back; turn it on only if your screens don't use that edge themselves. Both swipes can be on at once.
 - To use your own icon on the floating button, pass an `ImageVector` or any composable:
 
 ```kotlin
@@ -210,7 +212,7 @@ val enabled: Boolean = flags[Flags.newCheckout]
 
 - **Views:** *Timeline*, or *By endpoint* grouped by GraphQL operation or method and path, with counts, failures and timings.
 - **Details:** overview, query params, headers and pretty-printed bodies, with Copy URL, Copy cURL and Share.
-- **Redaction:** auth, cookie, API-key and CSRF headers, and passwords, tokens, secrets and API keys in URLs and bodies (`NetworkLogger.redactedHeaders` / `redactedFields`). Field names match regardless of case, `_` or `-`.
+- **Redaction:** auth, cookie, API-key and CSRF headers are masked (`NetworkLogger.redactedHeaders`). Fields in URLs and bodies are shown as they are; to mask them too, set `NetworkLogger.redactedFields = NetworkLogger.DEFAULT_REDACTED_FIELDS` (passwords, tokens, secrets, API keys) or your own names. Field names match regardless of case, `_` or `-`.
 - **Limits:** the last 300 calls (`maxCalls`), with per-body and total body caps (`maxBodyChars`, `maxTotalBodyChars`). Streaming and untyped bodies pass through uncaptured.
 
 ```kotlin
@@ -270,7 +272,7 @@ Log pages have level filters, search, an *All / By tag* view, pause, share and c
 
 - the stack trace and thread;
 - app version, device, Android version, heap use and how long the app had been running;
-- the last 50 breadcrumbs, 20 network calls (method, URL, status, duration, errors and an excerpt of failed responses, with secrets already masked) and 50 `DeckLogger` entries;
+- the last 50 breadcrumbs, 20 network calls (method, URL, status, duration, errors and an excerpt of failed responses, masked the same way as the network inspector) and 50 `DeckLogger` entries;
 - any sections your app adds.
 
 After the relaunch, a small bar at the bottom says *App crashed last time*, with **View**, **Share** and dismiss, and the drawer header shows a *Crashed last time* chip. On Android 11+, ANRs (with the system's thread dump) and native crashes are picked up from the system on the next launch too.
@@ -383,7 +385,7 @@ style = DeckStyle(titleIcon = null)
 ## Security
 
 - **Keep DevDeck out of store builds.** It shows network traffic, logs, preferences and files, and can change app state.
-- **Secrets are masked** in the network inspector, but your own logs, logcat lines and preference values are shown as they are.
+- **Auth headers are masked** in the network inspector. Request and response bodies, URLs, your own logs, logcat lines and preference values are shown as they are, unless you turn on `NetworkLogger.redactedFields`.
 - **Nothing leaves the device on its own.** Data is only shared when a tester taps *Share* or sends a bug report.
 - **Found a vulnerability?** Report it privately, as described in [SECURITY.md](SECURITY.md).
 
