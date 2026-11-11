@@ -2,6 +2,7 @@ package io.devdeck.sample.debugmenu
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import io.devdeck.actions.DeepLink
 import io.devdeck.flags.FeatureFlagStore
 import io.devdeck.network.NetworkHighlight
 import io.devdeck.plugin.AppActionsPlugin
@@ -35,7 +36,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
@@ -46,6 +47,13 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     tapCounterPlugin,
     controlsDemoPlugin,
     InfoPlugin(buildInfo = { mapOf("Endpoint" to SampleEndpoints.current(context).url) }),
+)
+
+// Testers pick these by name; the URIs stay hidden.
+private val sampleDeepLinks = listOf(
+    DeepLink("View-based screen", "devdeck://sample/legacy", group = "Screens", description = "Screen using DevDeck.install"),
+    DeepLink("Endless feed", "devdeck://sample/feed", group = "Screens"),
+    DeepLink("Missing screen", "devdeck://sample/missing", group = "Error cases", description = "Nothing handles it, so a toast says so"),
 )
 
 private val networkHighlights = listOf(

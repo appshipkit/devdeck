@@ -162,7 +162,7 @@ DevDeck.install(
 | Plugin | Section | What you get | Default |
 |---|---|---|---|
 | `EndpointPlugin` | Configuration | Endpoint picker, with *Restart app* after a switch | needs endpoints |
-| `FeatureFlagsPlugin` | Configuration | Toggle, text, number and JSON flags; restart buttons; reset all, import and export | needs flags |
+| `FeatureFlagsPlugin` | Configuration | Toggle, text, number and JSON flags; search by name or key; restart buttons; reset all, import and export | needs flags |
 | `NetworkSimulatorPlugin` | Simulate | Slow or failing network for OkHttp calls | ✓ |
 | `MemorySimulatorPlugin` | Simulate | Memory warnings, heap pressure, kill in background | ✓ |
 | `NetworkLogsPlugin` | Logs | Network inspector | ✓ |
@@ -171,7 +171,7 @@ DevDeck.install(
 | `LogsPlugin` | Logs | Your `DeckLogger.log(...)` entries, one row per tag | ✓ |
 | `BreadcrumbsPlugin` | Logs | Screens, taps, requests and app events | ✓ |
 | `CrashPlugin` | Logs | Crash reports with the steps, network calls and logs before each crash; ANRs and native crashes on Android 11+ | ✓ |
-| `AppActionsPlugin` | App | Deep links, WebView debugging, restart, clear cache or data, kill | ✓ |
+| `AppActionsPlugin` | App | Deep links (typed, or a saved list by name), WebView debugging, restart, clear cache or data, kill | ✓ |
 | `UpdatesPlugin` | App | New test builds, release notes and install (`devdeck-appdistribution` for Firebase) | needs a source |
 | `UiToolsPlugin` | User Interface | Slow animations, keylines, screenshots, long screenshots, recording, gallery | ✓ |
 | `AppearancePlugin` | User Interface | Dark mode and app language overrides, system language and display settings | ✓ |
@@ -205,7 +205,17 @@ val enabled: Boolean = flags[Flags.newCheckout]
 ```
 
 - **Endpoints:** after a switch, *Restart app* applies it (or pass `restartOnChange = true`). For two pickers, give each a `key`: `EndpointPlugin(cdnEndpoints, title = "CDN", key = "cdn")`.
-- **Flags:** `section` becomes a header and `category` a sub-page. JSON flags get a preview and a full-page editor. *Restart screen* and *Restart app* apply flags your app reads once.
+- **Flags:** `section` becomes a header and `category` a sub-page. A search field at the top finds flags by name or key across every section (`checkout v2` also finds `checkout_v2`), showing the key under each result. JSON flags get a preview and a full-page editor. *Restart screen* and *Restart app* apply flags your app reads once.
+- **Deep links:** give testers a list to open by name; the URIs stay out of sight. Typing in the link field filters the list, or opens any other link.
+
+  ```kotlin
+  AppActionsPlugin(
+      savedDeepLinks = listOf(
+          DeepLink("Product page", "myapp://product/123", group = "Shop"),
+          DeepLink("Order with a refund", "myapp://orders/456?state=refunded", group = "Orders", description = "Seeded on staging"),
+      ),
+  )
+  ```
 - **Your own flag system** (LaunchDarkly, Firebase, in-house): implement `FeatureFlagStore` (`get`, `set`, `isOverridden`, `reset`).
 
 ### Network inspector
