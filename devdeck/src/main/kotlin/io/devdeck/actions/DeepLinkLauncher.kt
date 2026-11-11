@@ -29,11 +29,27 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.SectionTitle
+import io.devdeck.components.TextItem
 import io.devdeck.internal.DeckIcons
 import io.devdeck.internal.DeckSettings
 
+@Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Composable
 public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<String> = emptyList(), restrictToApp: Boolean = true) {
+    DeepLinkLauncher(modifier, suggestions, restrictToApp, links = emptyList())
+}
+
+/**
+ * A field to open any deep link, plus the app's saved [links] by name (their URIs stay out of sight) and the last
+ * few opened. Typing in the field also filters the saved links by name, group, description or URI.
+ */
+@Composable
+public fun DeepLinkLauncher(
+    modifier: Modifier = Modifier,
+    suggestions: List<String> = emptyList(),
+    restrictToApp: Boolean = true,
+    links: List<DeepLink> = emptyList(),
+) {
     val context = LocalContext.current
     var uri by rememberSaveable { mutableStateOf("") }
     var recent by remember { mutableStateOf(DeepLinkHistory.load(context)) }
@@ -44,7 +60,13 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         OutlinedTextField(
             value = uri,
             onValueChange = { uri = it },
-            placeholder = { Text("myapp://product/123", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            placeholder = {
+                Text(
+                    if (links.isEmpty()) "myapp://product/123" else "Deep link, or search saved links",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
             keyboardActions = KeyboardActions(onGo = { if (uri.isNotBlank()) open(uri.trim()) }),
@@ -59,6 +81,13 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
         )
+        val query = uri.trim()
+        val shown = remember(links, query) { if (query.isEmpty()) links else links.filter { it.matches(query) } }
+        shown.groupBy { it.group ?: SAVED_TITLE }.forEach { (group, groupLinks) ->
+            SectionTitle(group)
+            groupLinks.forEach { link -> ButtonItem(title = link.name, subtitle = link.description, onClick = { open(link.uri) }) }
+        }
+        if (links.isNotEmpty() && query.isNotEmpty() && shown.isEmpty()) TextItem("No saved links match \"$query\"")
         if (suggestions.isNotEmpty()) {
             SectionTitle("Suggested")
             suggestions.forEach { link ->
@@ -71,7 +100,9 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         if (recent.isNotEmpty()) {
             SectionTitle("Recent")
             recent.forEach { link ->
-                ButtonItem(title = link, onClick = {
+                // A saved link shows by its name here too.
+                val saved = links.firstOrNull { it.uri == link }
+                ButtonItem(title = saved?.name ?: link, onClick = {
                     uri = link
                     open(link)
                 })
@@ -79,6 +110,8 @@ public fun DeepLinkLauncher(modifier: Modifier = Modifier, suggestions: List<Str
         }
     }
 }
+
+private const val SAVED_TITLE = "Saved links"
 
 private fun launchDeepLink(context: Context, link: String, restrictToApp: Boolean): Boolean {
     val intent = Intent(Intent.ACTION_VIEW, link.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

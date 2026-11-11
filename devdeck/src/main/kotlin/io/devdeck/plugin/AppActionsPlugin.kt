@@ -5,10 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import io.devdeck.actions.AppActions
+import io.devdeck.actions.DeepLink
 import io.devdeck.actions.DeepLinkLauncher
 import io.devdeck.components.ButtonItem
 import io.devdeck.components.ConfirmButtonItem
 import io.devdeck.components.ExpandableItem
+import io.devdeck.components.PageLinkItem
 import io.devdeck.components.SwitchItem
 import kotlinx.coroutines.launch
 
@@ -21,7 +23,20 @@ public class AppActionsPlugin(
     private val clearData: Boolean = true,
     private val kill: Boolean = true,
     override val section: String? = "App 🛠️",
+    private val savedDeepLinks: List<DeepLink> = emptyList(),
 ) : DeckPlugin {
+
+    @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        deepLinks: Boolean = true,
+        deepLinkSuggestions: List<String> = emptyList(),
+        webViewDebugging: Boolean = true,
+        restart: Boolean = true,
+        clearCache: Boolean = true,
+        clearData: Boolean = true,
+        kill: Boolean = true,
+        section: String? = "App 🛠️",
+    ) : this(deepLinks, deepLinkSuggestions, webViewDebugging, restart, clearCache, clearData, kill, section, emptyList())
 
     override val id: String = "app_actions"
 
@@ -29,7 +44,16 @@ public class AppActionsPlugin(
     override fun Content() {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        if (deepLinks) ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions) }
+        if (deepLinks) {
+            // Saved links get their own page so a long list doesn't push the other actions down.
+            if (savedDeepLinks.isEmpty()) {
+                ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions) }
+            } else {
+                PageLinkItem("Deep links", subtitle = "${savedDeepLinks.size} saved · or type your own") {
+                    DeepLinkLauncher(suggestions = deepLinkSuggestions, links = savedDeepLinks)
+                }
+            }
+        }
         if (webViewDebugging) {
             SwitchItem(
                 title = "WebView debugging",

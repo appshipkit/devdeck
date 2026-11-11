@@ -19,13 +19,13 @@ sample/src/main/kotlin/io/devdeck/sample/
 ├── SampleApp.kt              Creates the flag store and plugin list, and installs DevDeck app-wide
 ├── MainActivity.kt           Hosts the Compose screen
 ├── LegacyViewActivity.kt     View-only screen; also the target of the devdeck://sample/legacy deep link
-├── EndlessFeedActivity.kt    Compose list that keeps loading pages, for trying long screenshots
+├── EndlessFeedActivity.kt    Compose list that keeps loading pages, for trying long screenshots; opens from devdeck://sample/feed
 ├── debugmenu/                Everything that defines what's inside the drawer
 │   ├── SampleDeckStyle.kt    The drawer's title and subtitle, shared by both screens
 │   ├── SamplePlugins.kt      The plugin list and network highlight rules: the whole debug menu in one place
 │   ├── SampleFlags.kt        Feature-flag definitions (toggle, text, number, JSON)
 │   ├── SampleEndpoints.kt    Endpoint list and a helper that reads the selected one
-│   ├── SampleUpdateSource.kt A fake update feed that always offers v1.1.0
+│   ├── SampleUpdateSource.kt A fake update feed that always offers v9.0.0
 │   ├── ControlsDemoPlugin.kt Switch, checkbox, dropdown and radio components
 │   └── TapCounterPlugin.kt   A custom plugin built with deckPlugin { }
 ├── network/
@@ -59,7 +59,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(deepLinkSuggestions = listOf("devdeck://sample/legacy")),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
@@ -84,7 +84,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `LogsPlugin` | **Logs 📚**: custom `DeckLogger` logs. General, Analytics and Lifecycle rows with entry counts; each opens its own page. |
 | `BreadcrumbsPlugin` | **Logs 📚 → Breadcrumbs**: screens, taps, requests and app events. Open the View-based screen, tap its buttons and come back to see them named. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
-| `AppActionsPlugin` | **App 🛠️**: deep-link launcher (suggests `devdeck://sample/legacy`), WebView debugging, restart, clear cache or data, kill. |
+| `AppActionsPlugin` | **App 🛠️**: deep links (saved *View-based screen*, *Endless feed* and *Missing screen*, or type your own), WebView debugging, restart, clear cache or data, kill. |
 | `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v1.1.0 (10100) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
 | `UiToolsPlugin` | **User Interface 🎨**: slow animations, keyline overlay, screen capture tools. |
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |
@@ -214,7 +214,7 @@ DevDeckHost(
    - Try *Timeout* and *Server error 503*, a 50% *Failure rate*, or *Only URLs containing* `/orders`.
 8. **Low memory:** in *Simulate*, open *Send memory warning* and tap *Running low*. Open *Fill memory*, tap *+64 MB* and watch *Java heap* grow, then *Release*. Turn on *Kill app when backgrounded*, press Home, and reopen the sample from recents.
 9. **Storage:** change a flag, then open *System → Shared preferences → devdeck_flags* to see and edit the raw value.
-10. **Deep link:** in *App → Open a deep link*, tap the `devdeck://sample/legacy` suggestion.
+10. **Deep link:** in *App → Deep links*, tap *Endless feed*, or type `feed` to filter the saved links. *Missing screen* shows what happens when nothing handles a link.
 11. **Screen capture and bug report:** take a screenshot, then attach it in *Info → Generate a bug report* and share.
    - Open *Info → Device & app snapshot* and tap the share icon in the top-right corner of the card. The save icon puts the PNG in the capture gallery, where it can be attached to bug reports, and the copy icon copies the details as text.
 12. **Two-finger swipe:** swipe left with two fingers over any control on either screen. The drawer opens, and single-finger taps and scrolls on the screen keep working as normal.
