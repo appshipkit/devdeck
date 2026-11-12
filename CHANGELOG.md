@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-12
+
 ### Added
 - `AppActionsPlugin(deepLinkBaseUrl = "https://shop.example.com")` (and `DeepLinkLauncher(baseUrl = …)`) puts a base URL in front of deep links without a scheme, typed or saved, so `product/123` opens `https://shop.example.com/product/123`. It can also be a custom scheme such as `myapp://`.
 - Saved deep links can ask for values before opening: `{name}` parts of the URI become fields, described with `DeepLink(inputs = listOf(DeepLinkInput(key, label, default, hint, required)))`. The last values are remembered, the page shows the link it will open, and an empty optional value drops its query parameter.
