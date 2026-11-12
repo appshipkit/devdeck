@@ -6,6 +6,8 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-12
+
 ### Added
 - The feature flags page has a search field that finds flags by name or key across every section, ignoring case and separators, and shows each result's key.
 - `AppActionsPlugin(savedDeepLinks = listOf(DeepLink(name, uri, group, description)))` lists deep links testers open by name, grouped, without seeing the URI; typing in the link field filters them. `DeepLinkLauncher(links = …)` takes the same list.
