@@ -59,7 +59,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(savedDeepLinks = sampleDeepLinks),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkPrefix = "devdeck://sample/"),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
@@ -84,7 +84,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
 | `LogsPlugin` | **Logs 📚**: custom `DeckLogger` logs. General, Analytics and Lifecycle rows with entry counts; each opens its own page. |
 | `BreadcrumbsPlugin` | **Logs 📚 → Breadcrumbs**: screens, taps, requests and app events. Open the View-based screen, tap its buttons and come back to see them named. |
 | `CrashPlugin` | **Logs 📚 → Crash logs** plus a *Trigger test crash* button. |
-| `AppActionsPlugin` | **App 🛠️**: deep links (saved *View-based screen*, *Endless feed* and *Missing screen*, or type your own), WebView debugging, restart, clear cache or data, kill. |
+| `AppActionsPlugin` | **App 🛠️**: deep links (saved *View-based screen*, *View-based screen for an item* (asks for an item ID), *Endless feed* and *Missing screen*, or type your own; `feed` alone opens `devdeck://sample/feed`), WebView debugging, restart, clear cache or data, kill. |
 | `UpdatesPlugin` | **App 🛠️ → Test build updates**: `SampleUpdateSource` pretends v1.1.0 (10100) is out, so you can see the header chip, the dot on the bug button, release notes and a fake install. Real apps use `FirebaseAppDistributionSource`. |
 | `UiToolsPlugin` | **User Interface 🎨**: slow animations, keyline overlay, screen capture tools. |
 | `AppearancePlugin` | **User Interface 🎨**: dark mode override and app language (English, Spanish, French, Hindi). |

@@ -6,6 +6,11 @@ Add entries under **Unreleased** in each pull request. The *Bump version* workfl
 
 ## [Unreleased]
 
+### Added
+- `AppActionsPlugin(deepLinkPrefix = "myapp://")` (and `DeepLinkLauncher(prefix = …)`) adds a prefix to deep links without a scheme, typed or saved, so `product/123` opens `myapp://product/123`.
+- Saved deep links can ask for values before opening: `{name}` parts of the URI become fields, described with `DeepLink(inputs = listOf(DeepLinkInput(key, label, default, hint, required)))`. The last values are remembered, the page shows the link it will open, and an empty optional value drops its query parameter.
+- `FeatureFlagsPlugin(editable = false, readOnlyCategories = …, readOnlyFlags = …)` makes every flag, some categories or sections, or single flags read-only in the drawer. Read-only flags are skipped by *Reset all flags* and *Import*.
+
 ## [1.4.0] - 2026-11-12
 
 ### Added

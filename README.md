@@ -205,14 +205,20 @@ val enabled: Boolean = flags[Flags.newCheckout]
 ```
 
 - **Endpoints:** after a switch, *Restart app* applies it (or pass `restartOnChange = true`). For two pickers, give each a `key`: `EndpointPlugin(cdnEndpoints, title = "CDN", key = "cdn")`.
+- **Read-only flags:** `FeatureFlagsPlugin(flags, store, editable = false)` locks every flag; `readOnlyCategories = setOf("payments")` locks categories or sections by name; `readOnlyFlags = setOf("kill_switch")` locks single flags by key (as does `editable = false` on a flag). Read-only flags still show their value, are skipped by reset and import, and are still exported.
 - **Flags:** `section` becomes a header and `category` a sub-page. A search field at the top finds flags by name or key across every section (`checkout v2` also finds `checkout_v2`), showing the key under each result. JSON flags get a preview and a full-page editor. *Restart screen* and *Restart app* apply flags your app reads once.
-- **Deep links:** give testers a list to open by name; the URIs stay out of sight. Typing in the link field filters the list, or opens any other link.
+- **Deep links:** give testers a list to open by name; the URIs stay out of sight. Typing in the link field filters the list, or opens any other link. With `deepLinkPrefix`, links without a scheme (`product/123`, typed or saved) get it added. Parts written as `{name}` are asked for before the link opens; the last values are remembered, and an empty optional value drops its query parameter.
 
   ```kotlin
   AppActionsPlugin(
+      deepLinkPrefix = "myapp://",
       savedDeepLinks = listOf(
-          DeepLink("Product page", "myapp://product/123", group = "Shop"),
-          DeepLink("Order with a refund", "myapp://orders/456?state=refunded", group = "Orders", description = "Seeded on staging"),
+          DeepLink("Home", "home", group = "Shop"),
+          DeepLink(
+              "Product page", "product/{productId}?size={size}", group = "Shop",
+              inputs = listOf(DeepLinkInput("productId", label = "Product ID", default = "123"), DeepLinkInput("size", required = false)),
+          ),
+          DeepLink("Order with a refund", "orders/456?state=refunded", group = "Orders", description = "Seeded on staging"),
       ),
   )
   ```
