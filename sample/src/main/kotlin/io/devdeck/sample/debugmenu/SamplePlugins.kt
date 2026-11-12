@@ -3,6 +3,7 @@ package io.devdeck.sample.debugmenu
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import io.devdeck.actions.DeepLink
+import io.devdeck.actions.DeepLinkInput
 import io.devdeck.flags.FeatureFlagStore
 import io.devdeck.network.NetworkHighlight
 import io.devdeck.plugin.AppActionsPlugin
@@ -27,7 +28,8 @@ import io.devdeck.timber.TimberLogsPlugin
 
 fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugin> = listOf(
     SampleEndpoints.plugin,
-    FeatureFlagsPlugin(SampleFlags.all, flagStore),
+    // Flags still in development can be seen but not changed from the drawer.
+    FeatureFlagsPlugin(SampleFlags.all, flagStore, readOnlyCategories = setOf("growth")),
     NetworkSimulatorPlugin(),
     MemorySimulatorPlugin(),
     NetworkLogsPlugin(highlights = networkHighlights),
@@ -36,7 +38,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(savedDeepLinks = sampleDeepLinks),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkBaseUrl = "devdeck://sample/"),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
@@ -49,11 +51,21 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     InfoPlugin(buildInfo = { mapOf("Endpoint" to SampleEndpoints.current(context).url) }),
 )
 
-// Testers pick these by name; the URIs stay hidden.
+// Testers pick these by name; the URIs stay hidden. Links without a scheme get the devdeck://sample/ base URL.
 private val sampleDeepLinks = listOf(
-    DeepLink("View-based screen", "devdeck://sample/legacy", group = "Screens", description = "Screen using DevDeck.install"),
-    DeepLink("Endless feed", "devdeck://sample/feed", group = "Screens"),
-    DeepLink("Missing screen", "devdeck://sample/missing", group = "Error cases", description = "Nothing handles it, so a toast says so"),
+    DeepLink("View-based screen", "legacy", group = "Screens", description = "Screen using DevDeck.install"),
+    DeepLink(
+        "View-based screen for an item",
+        "legacy?item={item}&source={source}",
+        group = "Screens",
+        description = "Asks for an item ID first",
+        inputs = listOf(
+            DeepLinkInput("item", label = "Item ID", default = "42"),
+            DeepLinkInput("source", label = "Source", required = false),
+        ),
+    ),
+    DeepLink("Endless feed", "feed", group = "Screens"),
+    DeepLink("Missing screen", "missing", group = "Error cases", description = "Nothing handles it, so a toast says so"),
 )
 
 private val networkHighlights = listOf(

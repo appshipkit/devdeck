@@ -24,6 +24,7 @@ public class AppActionsPlugin(
     private val kill: Boolean = true,
     override val section: String? = "App 🛠️",
     private val savedDeepLinks: List<DeepLink> = emptyList(),
+    private val deepLinkBaseUrl: String? = null,
 ) : DeckPlugin {
 
     @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -36,7 +37,20 @@ public class AppActionsPlugin(
         clearData: Boolean = true,
         kill: Boolean = true,
         section: String? = "App 🛠️",
-    ) : this(deepLinks, deepLinkSuggestions, webViewDebugging, restart, clearCache, clearData, kill, section, emptyList())
+        savedDeepLinks: List<DeepLink> = emptyList(),
+    ) : this(deepLinks, deepLinkSuggestions, webViewDebugging, restart, clearCache, clearData, kill, section, savedDeepLinks, null)
+
+    @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        deepLinks: Boolean = true,
+        deepLinkSuggestions: List<String> = emptyList(),
+        webViewDebugging: Boolean = true,
+        restart: Boolean = true,
+        clearCache: Boolean = true,
+        clearData: Boolean = true,
+        kill: Boolean = true,
+        section: String? = "App 🛠️",
+    ) : this(deepLinks, deepLinkSuggestions, webViewDebugging, restart, clearCache, clearData, kill, section, emptyList(), null)
 
     override val id: String = "app_actions"
 
@@ -47,10 +61,10 @@ public class AppActionsPlugin(
         if (deepLinks) {
             // Saved links get their own page so a long list doesn't push the other actions down.
             if (savedDeepLinks.isEmpty()) {
-                ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions) }
+                ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions, baseUrl = deepLinkBaseUrl) }
             } else {
                 PageLinkItem("Deep links", subtitle = "${savedDeepLinks.size} saved · or type your own") {
-                    DeepLinkLauncher(suggestions = deepLinkSuggestions, links = savedDeepLinks)
+                    DeepLinkLauncher(suggestions = deepLinkSuggestions, links = savedDeepLinks, baseUrl = deepLinkBaseUrl)
                 }
             }
         }

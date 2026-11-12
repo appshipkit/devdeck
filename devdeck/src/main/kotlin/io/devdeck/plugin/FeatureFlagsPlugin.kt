@@ -45,13 +45,38 @@ import io.devdeck.internal.readClipboardText
 import io.devdeck.logs.DeckLogger
 import org.json.JSONObject
 
+/**
+ * Lists [flags] by section and category, with search, restart buttons and bulk edit.
+ *
+ * Editing can be turned off for every flag ([editable] = false), for whole categories or sections
+ * ([readOnlyCategories], matched by name, ignoring case) or for single flags ([readOnlyFlags], by key). Read-only
+ * flags still show their current value, are skipped by *Reset all flags* and *Import*, and are still exported.
+ */
 public class FeatureFlagsPlugin(
     private val flags: List<FeatureFlag<*>>,
     private val store: FeatureFlagStore,
     private val title: String = "Feature flags",
     override val section: String? = "Configuration 🔧",
     private val bulkEdit: Boolean = true,
+    private val editable: Boolean = true,
+    private val readOnlyCategories: Set<String> = emptySet(),
+    private val readOnlyFlags: Set<String> = emptySet(),
 ) : DeckPlugin {
+
+    @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+    public constructor(
+        flags: List<FeatureFlag<*>>,
+        store: FeatureFlagStore,
+        title: String = "Feature flags",
+        section: String? = "Configuration 🔧",
+        bulkEdit: Boolean = true,
+    ) : this(flags, store, title, section, bulkEdit, editable = true)
+
+    /** False when [flag] is read-only, by its own definition or by this plugin's settings. */
+    internal fun canEdit(flag: FeatureFlag<*>): Boolean = flag.editable &&
+        editable &&
+        flag.key !in readOnlyFlags &&
+        readOnlyCategories.none { it.equals(flag.category, ignoreCase = true) || it.equals(flag.section, ignoreCase = true) }
 
     override val id: String = "feature_flags"
 
@@ -92,17 +117,20 @@ public class FeatureFlagsPlugin(
         }
         SectionDivider()
         if (bulkEdit) {
+            val anyEditable = flags.any(::canEdit)
             Section("Bulk edit ✏️") {
-                ConfirmButtonItem(
-                    title = "Reset all flags",
-                    subtitle = "Remove every override",
-                    confirmTitle = "Tap again to reset all flags",
-                    onConfirm = {
-                        flags.forEach(store::reset)
-                        DeckLogger.log("Feature flags reset")
-                    },
-                )
-                ButtonItem(title = "Import from clipboard", onClick = { importFromClipboard(context) })
+                if (anyEditable) {
+                    ConfirmButtonItem(
+                        title = "Reset all flags",
+                        subtitle = "Remove every override",
+                        confirmTitle = "Tap again to reset all flags",
+                        onConfirm = {
+                            flags.filter(::canEdit).forEach(store::reset)
+                            DeckLogger.log("Feature flags reset")
+                        },
+                    )
+                }
+                if (anyEditable) ButtonItem(title = "Import from clipboard", onClick = { importFromClipboard(context) })
                 ButtonItem(title = "Export to clipboard", onClick = { exportToClipboard(context) })
             }
         }
@@ -140,22 +168,24 @@ public class FeatureFlagsPlugin(
         // Grouped like the regular pages, with the key under each title so a match by key is easy to spot.
         matches.groupBy { "${it.section} › ${it.category.replaceFirstChar { c -> c.titlecase() }}" }.forEach { (group, groupFlags) ->
             SectionTitle(group)
-            groupFlags.forEach { flag -> key(flag.key) { FlagRow(flag, subtitle = flag.key.takeIf { it != flag.title }) } }
+            groupFlags.forEach { flag -> key(flag.key) { FlagRow(flag, flag.key.takeIf { it != flag.title }) } }
         }
     }
 
     @Composable
     private fun FlagList(categoryFlags: List<FeatureFlag<*>>) {
-        categoryFlags.forEach { flag -> FlagRow(flag, subtitle = null) }
+        categoryFlags.forEach { flag -> FlagRow(flag, detail = null) }
     }
 
     @Composable
-    private fun FlagRow(flag: FeatureFlag<*>, subtitle: String?) {
+    private fun FlagRow(flag: FeatureFlag<*>, detail: String?) {
+        val enabled = canEdit(flag)
+        val subtitle = listOfNotNull(detail, if (enabled) null else "Read-only").joinToString(" · ").ifEmpty { null }
         when (flag) {
             is FeatureFlag.Toggle -> SwitchItem(
                 title = flag.title,
                 checked = store[flag],
-                enabled = flag.editable,
+                enabled = enabled,
                 subtitle = subtitle,
                 onCheckedChange = { store[flag] = it },
             )
@@ -163,7 +193,7 @@ public class FeatureFlagsPlugin(
             is FeatureFlag.Text -> TextInputItem(
                 title = flag.title,
                 value = store[flag],
-                enabled = flag.editable,
+                enabled = enabled,
                 subtitle = subtitle,
                 onValueCommit = { store[flag] = it },
             )
@@ -171,7 +201,7 @@ public class FeatureFlagsPlugin(
             is FeatureFlag.Number -> NumberInputItem(
                 title = flag.title,
                 value = store[flag],
-                enabled = flag.editable,
+                enabled = enabled,
                 allowDecimals = !flag.wholeNumber,
                 range = flag.range,
                 subtitle = subtitle,
@@ -181,7 +211,7 @@ public class FeatureFlagsPlugin(
             is FeatureFlag.Json -> JsonInputItem(
                 title = flag.title,
                 value = store[flag],
-                enabled = flag.editable,
+                enabled = enabled,
                 subtitle = subtitle,
                 onValueCommit = { store[flag] = it },
             )
@@ -197,7 +227,7 @@ public class FeatureFlagsPlugin(
     public fun importJson(raw: String): Int {
         val json = JSONObject(raw)
         var count = 0
-        flags.forEach { flag ->
+        flags.filter(::canEdit).forEach { flag ->
             if (json.has(flag.key) && flag.importValue(store, json.get(flag.key))) count++
         }
         return count
