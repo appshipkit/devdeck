@@ -50,13 +50,13 @@ public fun DeepLinkLauncher(
     restrictToApp: Boolean = true,
     links: List<DeepLink> = emptyList(),
 ) {
-    DeepLinkLauncher(modifier, suggestions, restrictToApp, links, prefix = null)
+    DeepLinkLauncher(modifier, suggestions, restrictToApp, links, baseUrl = null)
 }
 
 /**
  * A field to open any deep link, plus the app's saved [links] by name (their URIs stay out of sight) and the last
  * few opened. Typing in the field also filters the saved links by name, group, description or URI.
- * Links without a scheme get [prefix] (`product/123` opens `myapp://product/123` with prefix `myapp://`), and saved
+ * Links without a scheme get [baseUrl] in front (`product/123` opens `myapp://product/123` with base URL `myapp://`), and saved
  * links with `{placeholders}` ask for their values first.
  */
 @Composable
@@ -65,7 +65,7 @@ public fun DeepLinkLauncher(
     suggestions: List<String> = emptyList(),
     restrictToApp: Boolean = true,
     links: List<DeepLink> = emptyList(),
-    prefix: String? = null,
+    baseUrl: String? = null,
 ) {
     val context = LocalContext.current
     var uri by rememberSaveable { mutableStateOf("") }
@@ -73,14 +73,14 @@ public fun DeepLinkLauncher(
     val deckState = LocalDeckState.current
     var filling by remember { mutableStateOf<DeepLink?>(null) }
     val open: (String) -> Unit = { typed ->
-        val link = DeepLinkUris.withPrefix(typed, prefix)
+        val link = DeepLinkUris.withBaseUrl(typed, baseUrl)
         if (launchDeepLink(context, link, restrictToApp)) recent = DeepLinkHistory.add(context, link)
     }
     // Inside the drawer the form gets its own page; elsewhere it opens above the list.
     val openSaved: (DeepLink) -> Unit = { link ->
         when {
             !link.needsInput -> open(link.uri)
-            deckState != null -> deckState.navigateTo(link.name) { DeepLinkInputs(link, onOpen = open) }
+            deckState != null -> deckState.navigateTo(link.name) { DeepLinkInputs(link, baseUrl, onOpen = open) }
             else -> filling = link
         }
     }
@@ -92,7 +92,7 @@ public fun DeepLinkLauncher(
                 Text(
                     when {
                         links.isNotEmpty() -> "Deep link, or search saved links"
-                        !prefix.isNullOrBlank() -> "product/123"
+                        !baseUrl.isNullOrBlank() -> "product/123"
                         else -> "myapp://product/123"
                     },
                     maxLines = 1,
@@ -114,7 +114,7 @@ public fun DeepLinkLauncher(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
         )
         filling?.let { link ->
-            DeepLinkInputs(link, onOpen = {
+            DeepLinkInputs(link, baseUrl, onOpen = {
                 open(it)
                 filling = null
             })
@@ -151,7 +151,7 @@ public fun DeepLinkLauncher(
 
 /** Asks for a saved link's values, remembering the last ones used, and shows the link it will open. */
 @Composable
-private fun DeepLinkInputs(link: DeepLink, onOpen: (String) -> Unit) {
+private fun DeepLinkInputs(link: DeepLink, baseUrl: String?, onOpen: (String) -> Unit) {
     val context = LocalContext.current
     val fields = remember(link) { link.fields }
     val values = remember(link) {
@@ -169,7 +169,7 @@ private fun DeepLinkInputs(link: DeepLink, onOpen: (String) -> Unit) {
                 onValueCommit = { values[field.key] = it },
             )
         }
-        val target = DeepLinkUris.fill(link.uri, values)
+        val target = DeepLinkUris.withBaseUrl(DeepLinkUris.fill(link.uri, values), baseUrl)
         TextItem("Opens $target")
         ButtonItem(
             title = "Open ${link.name}",

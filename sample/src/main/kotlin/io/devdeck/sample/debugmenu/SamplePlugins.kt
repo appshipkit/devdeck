@@ -38,7 +38,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkPrefix = "devdeck://sample/"),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkBaseUrl = "devdeck://sample/"),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),
@@ -51,7 +51,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     InfoPlugin(buildInfo = { mapOf("Endpoint" to SampleEndpoints.current(context).url) }),
 )
 
-// Testers pick these by name; the URIs stay hidden. Links without a scheme get the devdeck://sample/ prefix.
+// Testers pick these by name; the URIs stay hidden. Links without a scheme get the devdeck://sample/ base URL.
 private val sampleDeepLinks = listOf(
     DeepLink("View-based screen", "legacy", group = "Screens", description = "Screen using DevDeck.install"),
     DeepLink(

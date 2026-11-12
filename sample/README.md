@@ -59,7 +59,7 @@ fun samplePlugins(context: Context, flagStore: FeatureFlagStore): List<DeckPlugi
     LogsPlugin(tags = listOf("General", "Analytics"), lifecycleLogs = true),
     BreadcrumbsPlugin(),
     CrashPlugin(testCrashButton = true),
-    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkPrefix = "devdeck://sample/"),
+    AppActionsPlugin(savedDeepLinks = sampleDeepLinks, deepLinkBaseUrl = "devdeck://sample/"),
     UpdatesPlugin(source = SampleUpdateSource, notify = true),
     UiToolsPlugin(),
     AppearancePlugin(languageTags = listOf("en", "es", "fr", "hi")),

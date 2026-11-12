@@ -24,7 +24,7 @@ public class AppActionsPlugin(
     private val kill: Boolean = true,
     override val section: String? = "App 🛠️",
     private val savedDeepLinks: List<DeepLink> = emptyList(),
-    private val deepLinkPrefix: String? = null,
+    private val deepLinkBaseUrl: String? = null,
 ) : DeckPlugin {
 
     @Deprecated("Kept for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -61,10 +61,10 @@ public class AppActionsPlugin(
         if (deepLinks) {
             // Saved links get their own page so a long list doesn't push the other actions down.
             if (savedDeepLinks.isEmpty()) {
-                ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions, prefix = deepLinkPrefix) }
+                ExpandableItem("Open a deep link") { DeepLinkLauncher(suggestions = deepLinkSuggestions, baseUrl = deepLinkBaseUrl) }
             } else {
                 PageLinkItem("Deep links", subtitle = "${savedDeepLinks.size} saved · or type your own") {
-                    DeepLinkLauncher(suggestions = deepLinkSuggestions, links = savedDeepLinks, prefix = deepLinkPrefix)
+                    DeepLinkLauncher(suggestions = deepLinkSuggestions, links = savedDeepLinks, baseUrl = deepLinkBaseUrl)
                 }
             }
         }

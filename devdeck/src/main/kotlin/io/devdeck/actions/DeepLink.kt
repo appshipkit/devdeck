@@ -15,7 +15,7 @@ import java.net.URLEncoder
  * ```
  *
  * [inputs] add a label, default or hint to those parts; a `{name}` without one is still asked for, as required.
- * A URI without a scheme (`product/123`) gets the launcher's prefix, such as `myapp://`.
+ * A URI without a scheme (`product/123`) gets the launcher's base URL, such as `myapp://` or `https://shop.example.com`.
  */
 @Immutable
 public class DeepLink(
@@ -54,7 +54,7 @@ public class DeepLinkInput(
     public val required: Boolean = true,
 )
 
-/** Builds the URI a deep link opens: fills placeholders and adds the prefix to links without a scheme. */
+/** Builds the URI a deep link opens: fills placeholders and adds the base URL to links without a scheme. */
 internal object DeepLinkUris {
 
     private val PLACEHOLDER = Regex("\\{([A-Za-z0-9_]+)\\}")
@@ -62,11 +62,11 @@ internal object DeepLinkUris {
 
     fun placeholders(uri: String): List<String> = PLACEHOLDER.findAll(uri).map { it.groupValues[1] }.distinct().toList()
 
-    /** `product/1` with prefix `myapp://` becomes `myapp://product/1`; links that already have a scheme are kept. */
-    fun withPrefix(link: String, prefix: String?): String {
-        if (prefix.isNullOrBlank() || link.isBlank() || SCHEME.containsMatchIn(link)) return link
+    /** `product/1` with base URL `myapp://` becomes `myapp://product/1`; links that already have a scheme are kept. */
+    fun withBaseUrl(link: String, baseUrl: String?): String {
+        if (baseUrl.isNullOrBlank() || link.isBlank() || SCHEME.containsMatchIn(link)) return link
         val path = link.trimStart('/')
-        return if (prefix.endsWith("/")) prefix + path else "$prefix/$path"
+        return if (baseUrl.endsWith("/")) baseUrl + path else "$baseUrl/$path"
     }
 
     /** Fills each `{key}` with its URL-encoded value; empty values drop their `key={key}` query parameter. */

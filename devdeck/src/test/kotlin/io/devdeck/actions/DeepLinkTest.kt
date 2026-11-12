@@ -22,13 +22,13 @@ class DeepLinkTest {
 class DeepLinkUrisTest {
 
     @Test
-    fun `adds the prefix only to links without a scheme`() {
-        assertEquals("myapp://product/1", DeepLinkUris.withPrefix("product/1", "myapp://"))
-        assertEquals("myapp://product/1", DeepLinkUris.withPrefix("/product/1", "myapp://"))
-        assertEquals("https://shop.example.com/sneakers", DeepLinkUris.withPrefix("sneakers", "https://shop.example.com"))
-        assertEquals("other://x", DeepLinkUris.withPrefix("other://x", "myapp://"))
-        assertEquals("https://a.com", DeepLinkUris.withPrefix("https://a.com", "myapp://"))
-        assertEquals("product/1", DeepLinkUris.withPrefix("product/1", null))
+    fun `adds the base URL only to links without a scheme`() {
+        assertEquals("myapp://product/1", DeepLinkUris.withBaseUrl("product/1", "myapp://"))
+        assertEquals("myapp://product/1", DeepLinkUris.withBaseUrl("/product/1", "myapp://"))
+        assertEquals("https://shop.example.com/sneakers", DeepLinkUris.withBaseUrl("sneakers", "https://shop.example.com"))
+        assertEquals("other://x", DeepLinkUris.withBaseUrl("other://x", "myapp://"))
+        assertEquals("https://a.com", DeepLinkUris.withBaseUrl("https://a.com", "myapp://"))
+        assertEquals("product/1", DeepLinkUris.withBaseUrl("product/1", null))
     }
 
     @Test
